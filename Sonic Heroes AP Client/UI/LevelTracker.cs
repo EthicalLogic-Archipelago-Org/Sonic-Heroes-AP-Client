@@ -750,11 +750,12 @@ public class LevelTracker
             ImGui.SetCursorPosX(_windowWidth / 2 - textSize.x / 2);
             ImGui.Text(text);
 
-            
 
+
+            var isMission2 = 0;
             foreach (var pair in Mod.ArchipelagoHandler.SlotData.StoriesActive.Where(pair => pair.Value > MissionsActive.None))
             {
-                var levelCompletions = Mod.SaveDataHandler.CustomSaveData.LevelsGoaled[pair.Key].Count(levelpair => levelpair.Value);
+                var levelCompletions = Mod.AbilityUnlockHandler.GetCompletedLevelsForTeam(pair.Key);
                 var levelsNeeded = Mod.ArchipelagoHandler.SlotData.GoalLevelCompletions;
                 
                 text = $"{pair.Key.ToString()} Level Completions: {levelCompletions} / {levelsNeeded}";
@@ -763,6 +764,9 @@ public class LevelTracker
                 ImGui.Text(text);
             }
 
+            if (Mod.ArchipelagoHandler.SlotData.GoalUnlockCondition is GoalUnlockCondition.LevelCompletions) 
+                return;
+            
             foreach (var emerald in Enum.GetValues<Emerald>())
             {
                 text = $"{emerald.ToString()} Chaos Emerald";

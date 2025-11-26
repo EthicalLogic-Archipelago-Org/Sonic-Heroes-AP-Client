@@ -1282,11 +1282,19 @@ public static Dictionary<PlayableCharacter, Team> PlayableCharToTeam = new Dicti
             }
 
             //Console.WriteLine($"Checking Mission Completion Location Here: Id = {(0x93930000 + locationId):X}");
-            Mod.SaveDataHandler.CustomSaveData.LevelsGoaled[story][(LevelId)levelIndex] = true;
+            //Mod.SaveDataHandler.CustomSaveData.LevelsGoaled[story][(LevelId)levelIndex] = true;
             Mod.LevelSpawnData.BonusStageUnlockCallback(story, (LevelId)levelIndex, goal: true);
+            slotData.RecalculateOpenLevels(!apHandler.IsLocationChecked(locationId));
             apHandler.CheckLocation(locationId);
-            slotData.RecalculateOpenLevels();
-
+            /*
+            var t = new Thread(start: () =>
+            {
+                Thread.Sleep(1000);
+                //Console.WriteLine($"Delayed Recalc Open Levels Here");
+                slotData.RecalculateOpenLevels();
+            });
+            t.Start();
+            */
         }
         catch (Exception e)
         {

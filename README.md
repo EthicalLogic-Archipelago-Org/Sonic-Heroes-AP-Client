@@ -23,7 +23,7 @@ You'll need
 * A legally obtained copy of the PC Version of Sonic Heroes
 * [SafeDiscShim](https://github.com/RibShark/SafeDiscShim/releases) \[CD RELEASE ONLY\]
 * [Reloaded-II Mod Loader](https://github.com/Reloaded-Project/Reloaded-II)
-* The [APWorld](https://github.com/Ethicallogic-Archipelago/SonicHeroesArchipelago) \[FOR GENERATION ONLY\] 
+* The [APWorld](https://github.com/Ethicallogic-Archipelago/SonicHeroesArchipelago) \[FOR GENERATION AND UNIVERSAL TRACKER\] 
 
 First, follow the setup for [Reloaded Mod Loader](https://github.com/Reloaded-Project/Reloaded-II)
 
@@ -31,7 +31,7 @@ Once you've set up the Sonic Heroes application, go to the add mods page in Relo
 
 After a world is hosted, in Reloaded, enable the Mod and click Configure. A UI will open up and you can set a server, port, slot name and password (if required).
 
-***STRONGLY RECOMMENDED*** - To get the UI overlay to show up providing you with more information throughout the session, you'll need to add the latest version of [D3D8to9](https://github.com/crosire/d3d8to9/releases) to your game directory.
+***REQUIRED*** - To get the UI overlay to show up providing you with more information throughout the session, you'll need to add the latest version of [D3D8to9](https://github.com/crosire/d3d8to9/releases) to your game directory. For Linux, add a DLL Override in the Proton/Wine prefix (can be done easily with winecfg)
 
 Finally, launch the game through Reloaded and if the mod is enabled and the correct settings are set the Mod will connect to AP.
 
@@ -55,7 +55,85 @@ The entire session is handled through the level select menu under `Challenge`. Y
 
 ## Sonic Heroes
 
-### Gates 
+
+## New Version >= 2.0.0 (currently Sonic Story only)
+
+### [Universal Tracker](https://github.com/FarisTheAncient/Archipelago)
+
+Universal Tracker is a client that allows you to see which locations are in logic (or expected to be done with the current items). Given how complicated the new logic is, UT is heavily recommended to help keep track of what's possible. 
+
+To use UT, just install it (and the Sonic Heroes APWorld) like a regular APWorld, relaunch the Archipelago client, and Universal Tracker client will be an option to launch. Just connect the client to the multiworld like a text client and it will show the possible locations in logic.
+
+The new version now has yaml-less support for Universal Tracker. 
+
+The legacy version does not work with Universal Tracker and will show incorrect information.
+
+
+
+### Characters and Abilities
+
+The new version now locks out characters and abilities (except for a single starting character). These abilities and characters are items in the multiworld that will unlock their respective ability once received. 
+
+There are 2 exceptions:
+- Flight requires Thundershoot
+- Triangle Jump requires Homing Attack
+
+In the In-game UI, If you have Flight but not Thundershoot or Triangle Jump without Homing Attack, that ability will be Yellow to indicate that you need the corresponding ability in order to use it.
+
+
+### Levels
+
+All 14 regular levels are unlocked from the start (though they are not possible to complete without more characters and abilities). 
+
+Bosses are currently not in the new version.
+
+The final boss is Metal Madness/Overlord.
+
+
+
+
+### Music Shuffle
+
+The new version has music shuffle. First, change the Music Shuffle Option to true and use the folder picker option Heroes BGM folder to point to the BGM folder in the Sonic Heroes game directory. Enabling the Heroes Shuffle option will add all of the Sonic Heroes songs to the pool to be selected from to replace the vanilla songs.
+
+Music is either a song (which loops) or a jingle (which doesnt loop).
+
+The following options help change how the music is shuffled. These will separate their respective songs into a separate pool to then shuffle only with themselves when enabled.
+- Separate Boss Music (Boss themes)
+- Separate Long Jingles (The intro theme and a theme for each team. These do not loop.)
+- Separate Menu Music (The 4 menu themes)
+- Separate Short Music (2P battle themes)
+
+
+### SA2, SADX, and Custom Music Shuffle
+
+There is support for Sonic Adventure 2 (with the Battle DLC) and Sonic Adventure DX music builtin. Just use the folder picker option for that specific game to point to the correct folder (ADX folder for SA2 and WMA folder for SADX) and enable the option to add that game's music to the pool.
+
+Custom Music requires a specific setup. First have a folder to store all of the custom music and use the folder picker option to point to that folder. Make sure that the file path is under 200 characters and that no individual folder has too long of a name.
+
+
+This music must be in a ADX format (with loops set for music in order to have the game loop that song). Then, create the following folders (with this exact name) in that folder:
+- ShortMusic
+- LongJingle
+- Jingle
+- Music
+- MenuMusic
+- BossMusic
+
+
+Place the desired ADX files in the folder corresponding to the type of music. If not enabling the specific Separate option for that type, then that folder is combined with either the Music folder or Jingle pool by the mod. 
+
+
+### Final Note about Music Shuffle
+
+If the pool is not large enough to fill all of the Heroes songs, then the vanilla song is placed there (this happens with SA2 only with Separate Boss Themes as Heroes has more boss themes than SA2).
+
+
+
+
+## Legacy Version <= 1.5.1
+
+### Gates
 
 The sonic heroes implementation follows similar patterns to SA2. The world is split into gate as specified in the options.
 Each gate has a random boss from the pool of Heroes bosses. Bosses are unlocked by collecting a set number of emblems.
@@ -125,6 +203,6 @@ The following traps can be activated in AP
 - Charmy Trap
 
 ## Special Thanks
-Thanks to EthicalLogic for developing the APWorld, Sewer56 for Reloaded-II, and Mayo and Seri for help playtesting.
+Thanks to EthicalLogic for developing the APWorld and taking over development of the Mod, Sewer56 for Reloaded-II, and Mayo and Seri for help playtesting.
 
 [![Game Banana](https://gamebanana.com/mods/embeddables/582396?type=large)](https://gamebanana.com/mods/582396)

@@ -201,26 +201,27 @@ public class StageObjHandler
             {
                 foreach (var s in StageObjsToMessWith)
                 {
-                    UnlockStageObjItemCallback(s, team, region);
+                    UnlockStageObjItemCallback(s, team, region, forceunlock);
                 }
             }
             else if (team is null)
             {
                 foreach (var t in Enum.GetValues<Team>())
                 {
-                    UnlockStageObjItemCallback(stageObjTypes, t, region);
+                    UnlockStageObjItemCallback(stageObjTypes, t, region, forceunlock);
                 }
             }
         
             else if (region is null)
             {
+                //TODO make handling for Regions such as Boss and Final Boss
                 /*
                 foreach (var r in Enum.GetValues<Region>())
                 {
                     UnlockStageObjItemCallback(stageObjTypes, team, r);
                 }
                 */
-                UnlockStageObjItemCallback(stageObjTypes, team, Region.Ocean);
+                UnlockStageObjItemCallback(stageObjTypes, team, Region.Ocean, forceunlock);
             }
             else
             {
@@ -228,6 +229,8 @@ public class StageObjHandler
                 if (forceunlock)
                     currState = false;
                 Console.WriteLine($"StageObjItemReceived. Obj: {(StageObjTypes)stageObjTypes} Team: {(Team)team} Region: {(Region)region} currState: {currState} newState: {!currState} forceunlock: {forceunlock}");
+                if (!Mod.IsDebug)
+                    currState = false;
                 Mod.SaveDataHandler!.CustomSaveData!.StageObjSpawnSaveData[(Team)team][(StageObjTypes)stageObjTypes] = !currState;
                 StageObjsPollUpdates((StageObjTypes)stageObjTypes, (Team)team, (Region)region, !currState);
                 

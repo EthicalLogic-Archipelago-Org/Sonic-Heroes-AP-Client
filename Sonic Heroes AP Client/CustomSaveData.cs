@@ -22,7 +22,7 @@ public class CustomSaveData
 
     public bool[] GateBossComplete = new bool[7];
     
-    public Dictionary<Team, Dictionary<LevelId, bool>> LevelsGoaled = Enum.GetValues<Team>().ToDictionary(x => x, x => Enum.GetValues<LevelId>().Where(id => (int)id < 16 && (int)id > 1).ToDictionary(y => y, y => false));
+    //public Dictionary<Team, Dictionary<LevelId, bool>> LevelsGoaled = Enum.GetValues<Team>().ToDictionary(x => x, x => Enum.GetValues<LevelId>().Where(id => (int)id < 16 && (int)id > 1).ToDictionary(y => y, y => false));
     
     public Dictionary<Team, Dictionary<LevelId, List<bool>>> BonusKeysPickedUp = Enum.GetValues<Team>().ToDictionary(x => x, x => Enum.GetValues<LevelId>().Where(id => (int)id < 16 && (int)id > 1).ToDictionary(y => y, y => Enumerable.Repeat(false, 3).ToList()));
     
@@ -143,8 +143,8 @@ public class TeamProgSaveData
         [Region.BigPlant] = Enum.GetValues<Ability>().ToDictionary(x => x, x => false),
         [Region.Ghost] = Enum.GetValues<Ability>().ToDictionary(x => x, x => false),
         [Region.Sky] = Enum.GetValues<Ability>().ToDictionary(x => x, x => false),
-        [Region.SpecialStage] = Enum.GetValues<Ability>().ToDictionary(x => x, x => false),
-        [Region.Boss] = Enum.GetValues<Ability>().ToDictionary(x => x, x => false),
-        [Region.FinalBoss] = Enum.GetValues<Ability>().ToDictionary(x => x, x => false),
+        [Region.SpecialStage] = Enum.GetValues<Ability>().ToDictionary(x => x, x => true),
+        [Region.Boss] = Enum.GetValues<Ability>().ToDictionary(x => x, x => true),
+        [Region.FinalBoss] = Enum.GetValues<Ability>().ToDictionary(x => x, x => true),
     };
 }

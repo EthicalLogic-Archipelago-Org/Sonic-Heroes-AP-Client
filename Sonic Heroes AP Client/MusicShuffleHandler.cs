@@ -17,13 +17,13 @@ public enum MusicType
 
 public static class MusicShuffleData
 {
-    public static string HeroesBGMFolder { get; set; } = Mod.Configuration.HeroesMusicShuffleOptions.MusicShuffleHeroesBGMFolder;
+    public static string HeroesBGMFolder { get; set; } = Mod.Configuration.HeroesMusicShuffleOptions.MusicShuffleHeroesBGMFolder.Replace("/", "\\");
     
-    public static string SA2ADXFolder { get; set; } = Mod.Configuration.SA2MusicShuffleOptions.MusicShuffleSA2ADXFolder;
+    public static string SA2ADXFolder { get; set; } = Mod.Configuration.SA2MusicShuffleOptions.MusicShuffleSA2ADXFolder.Replace("/", "\\");
     
-    public static string SADXWMAFolder { get; set; } = Mod.Configuration.SADXMusicShuffleOptions.MusicShuffleSADXWMAFolder;
+    public static string SADXWMAFolder { get; set; } = Mod.Configuration.SADXMusicShuffleOptions.MusicShuffleSADXWMAFolder.Replace("/", "\\");
     
-    public static string CustomFolder { get; set; } = Mod.Configuration.CustomMusicShuffleOptions.MusicShuffleCustomFolder;
+    public static string CustomFolder { get; set; } = Mod.Configuration.CustomMusicShuffleOptions.MusicShuffleCustomFolder.Replace("/", "\\");
     
     
     public static List<(string name, MusicType type)> HeroesSongs = new()
@@ -397,6 +397,12 @@ public class MusicShuffleHandler
             && !Mod.Configuration.SADXMusicShuffleOptions.MusicShuffleSADX
             && !Mod.Configuration.CustomMusicShuffleOptions.MusicShuffleCustom)
             return;
+        
+        //MusicShuffleData.HeroesBGMFolder = MusicShuffleData.HeroesBGMFolder.Replace("/", "\\");
+        //MusicShuffleData.SA2ADXFolder = MusicShuffleData.SA2ADXFolder.Replace("/", "\\");
+        //MusicShuffleData.SADXWMAFolder = MusicShuffleData.SADXWMAFolder.Replace("/", "\\");
+        //MusicShuffleData.CustomFolder = MusicShuffleData.CustomFolder.Replace("/", "\\");
+        
         //Console.WriteLine($"Shuffle Here: {seed}");
         Map = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         var allSongs = new List<(string name, MusicType type)>();

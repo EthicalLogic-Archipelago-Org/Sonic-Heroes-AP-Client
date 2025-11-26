@@ -9,6 +9,7 @@ using Archipelago.MultiClient.Net.Models;
 using Archipelago.MultiClient.Net.Packets;
 using Newtonsoft.Json.Linq;
 using Reloaded.Imgui.Hook.Misc;
+using Reloaded.Memory.Utilities;
 using Reloaded.Mod.Interfaces;
 using Sonic_Heroes_AP_Client.Configuration;
 using static Sonic_Heroes_AP_Client.SoundHandler;
@@ -375,7 +376,6 @@ public class ArchipelagoHandler
             
             //Console.WriteLine($"Mod Config Changed. Deathlink is now: {Mod.Configuration.TagOptions.DeathLink}");
             SlotData.CheckTags();
-            
         }
         catch (Exception e)
         {

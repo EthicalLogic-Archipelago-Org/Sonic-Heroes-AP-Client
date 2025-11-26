@@ -333,7 +333,7 @@ public class SlotData
     
     
     
-    public unsafe void RecalculateOpenLevels()
+    public unsafe void RecalculateOpenLevels(bool isCompletingNewLevel = false)
     {
         Mod.SaveDataHandler!.SaveData->EmblemCount = (byte)Mod.SaveDataHandler.CustomSaveData.Emblems;
         
@@ -344,7 +344,8 @@ public class SlotData
         var needEmeralds = GoalUnlockCondition is GoalUnlockCondition.Emeralds;
         var needLevelCompletions = GoalUnlockCondition is GoalUnlockCondition.LevelCompletions;
         var needLevelCompletionsAndEmeralds = GoalUnlockCondition is GoalUnlockCondition.LevelCompletionsandEmeralds;
-        
+
+        var hasCharacters = Mod.AbilityUnlockHandler!.HasAllCharsForTeam(Team.Sonic);
         var hasAbilities = Mod.AbilityUnlockHandler!.HasAllAbilitiesandCharsandLevelUpsForTeam(Team.Sonic);
         var hasEmeralds = GoalUnlockCondition is GoalUnlockCondition.LevelCompletionsandEmeralds or GoalUnlockCondition.Emeralds;
         var hasLevelCompletions = GoalUnlockCondition is GoalUnlockCondition.LevelCompletionsandEmeralds or GoalUnlockCondition.LevelCompletions;
@@ -364,17 +365,16 @@ public class SlotData
 
         if (hasLevelCompletions)
         {
-            var levelGoals = Mod.SaveDataHandler.CustomSaveData.LevelsGoaled[Team.Sonic].Keys.Count(level => Mod.SaveDataHandler.CustomSaveData.LevelsGoaled[Team.Sonic][level]);
+            var levelGoals = isCompletingNewLevel ? Mod.AbilityUnlockHandler.GetCompletedLevelsForTeam(Team.Sonic) + 1 : Mod.AbilityUnlockHandler.GetCompletedLevelsForTeam(Team.Sonic);
 
             if (levelGoals < Mod.ArchipelagoHandler.SlotData.GoalLevelCompletions)
             {
                 Console.WriteLine($"Need {Mod.ArchipelagoHandler.SlotData.GoalLevelCompletions} Levels Goals For Final Boss : Only Have {levelGoals}");
                 hasLevelCompletions = false;
             }
-                
         }
         
-        finalGate.BossLevel.IsUnlocked = (needLevelCompletionsAndEmeralds && hasLevelCompletions && hasEmeralds) || (needLevelCompletions && hasLevelCompletions) || (needEmeralds && hasEmeralds) || hasEmblemsForMetal;
+        finalGate.BossLevel.IsUnlocked = hasCharacters && ((needLevelCompletionsAndEmeralds && hasLevelCompletions && hasEmeralds) || (needLevelCompletions && hasLevelCompletions) || (needEmeralds && hasEmeralds) || hasEmblemsForMetal);
         
         Mod.SaveDataHandler.CustomSaveData.GateBossUnlocked[finalGate.Index] = finalGate.BossLevel.IsUnlocked;
 

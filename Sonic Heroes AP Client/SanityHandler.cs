@@ -376,7 +376,7 @@ public class SanityHandler
 
                 if (keysPickedUp > 0)
                 {
-                    if (Mod.SaveDataHandler.CustomSaveData.LevelsGoaled[story][level])
+                    if (Mod.AbilityUnlockHandler.GetIfLevelGoaled(story, level))
                     {
                         if (GameHandler.BonusStageForLevel.ContainsKey(level))
                         {

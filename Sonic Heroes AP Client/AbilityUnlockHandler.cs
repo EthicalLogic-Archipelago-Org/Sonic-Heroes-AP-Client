@@ -193,6 +193,7 @@ public class AbilityUnlockHandler
         UnlockAbilityForRegion(team, Region.BigPlant, ability);
         UnlockAbilityForRegion(team, Region.Ghost, ability);
         UnlockAbilityForRegion(team, Region.Sky, ability);
+        //UnlockAbilityForRegion(team, Region.SpecialStage, ability);
         //UnlockAbilityForRegion(team, Region.Boss, ability);
         //UnlockAbilityForRegion(team, Region.FinalBoss, ability);
     }
@@ -232,7 +233,7 @@ public class AbilityUnlockHandler
             }
             else
             {
-                Mod.SaveDataHandler!.CustomSaveData!.UnlockSaveData[(Team)team].AbilityUnlocks[(Region)region][(Ability)ability] = !Mod.SaveDataHandler!.CustomSaveData!.UnlockSaveData[(Team)team].AbilityUnlocks[(Region)region][(Ability)ability];
+                Mod.SaveDataHandler!.CustomSaveData!.UnlockSaveData[(Team)team].AbilityUnlocks[(Region)region][(Ability)ability] = !Mod.IsDebug || !Mod.SaveDataHandler!.CustomSaveData!.UnlockSaveData[(Team)team].AbilityUnlocks[(Region)region][(Ability)ability];
                 PollUpdates();
             }
         }
@@ -257,6 +258,46 @@ public class AbilityUnlockHandler
     public bool GetCharUnlock(Team team, FormationChar formationChar)
     {
         return Mod.SaveDataHandler!.CustomSaveData!.UnlockSaveData[team].CharsUnlocked[formationChar];
+    }
+
+    public bool GetIfLevelGoaled(Team team, LevelId level)
+    {
+        var locationId = 0xA0 + (int)team * 42 + ((int)level - 2) * 2 + 0; //the + 0 is the Act
+
+        if (team is not Team.SuperHard)
+            return Mod.ArchipelagoHandler.IsLocationChecked(locationId) ||
+                   Mod.ArchipelagoHandler.IsLocationChecked(locationId + 1);
+        
+        locationId = GameHandler.SuperHardModeId + ((int)level - 2);
+        return Mod.ArchipelagoHandler.IsLocationChecked(locationId);
+
+    }
+    
+    
+    public int GetCompletedLevelsForTeam(Team team)
+    {
+        var levelCompletions = 0;
+        try
+        {
+            foreach (var level in Enum.GetValues<LevelId>().Where(x => x is >= LevelId.SeasideHill and <= LevelId.FinalFortress))
+            {
+                var locationId = 0xA0 + (int)team * 42 + ((int)level - 2) * 2 + 0; //the + 0 is the Act
+
+                if (team is Team.SuperHard)
+                {
+                    locationId = GameHandler.SuperHardModeId + ((int)level - 2);
+                    levelCompletions += Mod.ArchipelagoHandler.IsLocationChecked(locationId) ? 1 : 0;
+                    continue;
+                }
+                
+                levelCompletions += Mod.ArchipelagoHandler.IsLocationChecked(locationId) || Mod.ArchipelagoHandler.IsLocationChecked(locationId + 1) ? 1 : 0;
+            }
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+        }
+        return levelCompletions;
     }
 
     public bool HasAllCharsForTeam(Team team)

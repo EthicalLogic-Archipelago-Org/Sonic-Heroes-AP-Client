@@ -239,7 +239,7 @@ public class LevelSpawnData
             if (keynum > 0)
             {
                 Mod.SaveDataHandler!.CustomSaveData!.BonusKeysPickedUp[team][level][keynum - 1] = true;
-                if (Mod.SaveDataHandler.CustomSaveData.LevelsGoaled[team][level])
+                if (Mod.AbilityUnlockHandler.GetIfLevelGoaled(team, level))
                 {
                     //unlocking bonus stage spawn here
                     Console.WriteLine($"Unlocking Bonus Stage Spawn for {team} {level}");
@@ -250,7 +250,7 @@ public class LevelSpawnData
 
             if (goal)
             {
-                Mod.SaveDataHandler!.CustomSaveData!.LevelsGoaled[team][level] =  true;
+                //Mod.SaveDataHandler!.CustomSaveData!.LevelsGoaled[team][level] =  true;
                 
                 int keys = 0;
 
@@ -446,29 +446,29 @@ public class LevelSpawnData
             
             //Console.WriteLine($"GetLevelSelectUIText Team {team} and Level {level} :: {unlockedSpawnEntries.Count}");
 
-            if (unlockedSpawnEntries.Count > 1)
-            {
-                if (Mod.LevelSpawnHandler!.SpawnPosIndex == 0)
-                {
-                    return "Start of Level";
-                }
-                else
-                {
-                    if (GetAllSpawnDataForLevel(team, level)[Mod.LevelSpawnHandler!.SpawnPosIndex].Bonusstage)
-                        return "Bonus Stage";
-                    
-                    string result = $"Checkpoint: {Mod.LevelSpawnHandler!.SpawnPosIndex}";
-                    
-                    if (GetAllSpawnDataForLevel(team, level)[Mod.LevelSpawnHandler!.SpawnPosIndex].Secret)
-                        result += $" SECRET!";
-                    return result;
-                }
-                
-            }
-            else
+            if (unlockedSpawnEntries.Count <= 1) 
+                return "Start of Level";
+            
+            
+            if (Mod.LevelSpawnHandler!.SpawnPosIndex == 0)
             {
                 return "Start of Level";
             }
+
+            if (GetAllSpawnDataForLevel(team, level)[Mod.LevelSpawnHandler!.SpawnPosIndex].Bonusstage)
+                return "Bonus Stage";
+                    
+            var result = $"Checkpoint: {Mod.LevelSpawnHandler!.SpawnPosIndex}";
+
+            if (GetAllSpawnDataForLevel(team, level)[Mod.LevelSpawnHandler!.SpawnPosIndex].Secret)
+            {
+                result += $" SECRET!";
+                if (!Mod.IsDebug)
+                    return "Start of Level";
+            }
+                        
+            return result;
+
         }
         catch (Exception e)
         {

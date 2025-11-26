@@ -380,7 +380,6 @@ public enum SHItem
 
 
 
-
 public class ItemHandler
 {
     private readonly Queue<SHItem> cachedItems;
@@ -1189,7 +1188,36 @@ public class ItemHandler
                     SoundHandler.PlaySound((int)Mod.ModuleBase, 0xE005);
                 break;
             case SHItem.TeamBlastFiller:
-                GameHandler.HandleTeamBlastFiller();
+                try
+                {
+                    GameHandler.HandleTeamBlastFiller();
+                    var team = Mod.GameHandler.GetCurrentStory();
+                    var level = Mod.GameHandler.GetCurrentLevel();
+                    var act = Mod.GameHandler.GetCurrentAct();
+
+                    if (team is Team.Sonic && Mod.ArchipelagoHandler.SlotData.SuperHardModeSonicAct2 && act is Act.Act2 or Act.Act3)
+                        team = Team.SuperHard;
+                    
+
+                    if (!GameHandler.LevelIdToRegion.TryGetValue(level, out Region region))
+                        break;
+
+                    if (!Mod.AbilityUnlockHandler.CanTeamBlast(team, region, false))
+                    {
+                        Mod.GameHandler?.SetRingCount(Mod.GameHandler.GetRingCount() + 10);
+                        if (Mod.Configuration!.PlaySounds)
+                            SoundHandler.PlaySound((int)Mod.ModuleBase, 0x1033);
+                        break;
+                    }
+                    Mod.GameHandler?.SetRingCount(Mod.GameHandler.GetRingCount() + 1);
+                    if (Mod.Configuration!.PlaySounds)
+                        SoundHandler.PlaySound((int)Mod.ModuleBase, 0x1004);
+                    break;
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                }
                 break;
             case SHItem.StealthTrap:
                 Mod.TrapHandler?.HandleStealthTrap();
@@ -1238,6 +1266,8 @@ public class ItemHandler
                     var team = GameHandler.PlayableCharToTeam[pair.Value];
                     var formation = GameHandler.PlayableCharToFormation[pair.Value];
                     var unlocked = Mod.AbilityUnlockHandler!.GetCharUnlock(team, formation);
+                    if (!Mod.IsDebug)
+                        unlocked = false;
                     Mod.AbilityUnlockHandler!.SetCharUnlock(team, formation, !unlocked);
                     Console.WriteLine($"Got Item: {itemName}");
                     handled = true;
