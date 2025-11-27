@@ -80,6 +80,10 @@
 - Deathlink should no longer double send in specific race conditions 
 - Lower Priority Checkpoints are allowed to be gotten after a higher priority one
 
+### Refactors
+- Extensive refactor to support new features (>9000 lines)
+
+
 ===================================================
 ===================================================
 ## Version 1.5.1 (Mod)
