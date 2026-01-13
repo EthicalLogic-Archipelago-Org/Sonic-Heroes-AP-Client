@@ -125,6 +125,9 @@ public class LevelTracker
             var team = GetTeamForLevelTracker();
             var levelId = GetLevelForLevelTracker();
 
+            if (team is Team.SuperHardMode)
+                team = Team.Sonic;
+
             //draw based on level and team
             var cursorPos = new ImVec2();
             ImGui.GetCursorScreenPos(cursorPos);
@@ -232,6 +235,29 @@ public class LevelTracker
             Console.WriteLine(e);
         }
         return LevelId.SeaGate;
+    }
+
+    private unsafe Act GetActForLevelTracker()
+    {
+        try
+        {
+            if (GameStateHandler.InGame(true))
+            {
+                return (Act)GameStateHandler.GetCurrentAct()!;
+            }
+            var levelSelectPtr = *(IntPtr*)(Mod.ModuleBase + 0x6777B4);
+            var actIndex = *(int*)(levelSelectPtr + 0x2BC);
+
+            if (GetLevelForLevelTracker() > LevelId.FinalFortress)
+                return Act.Act1;
+            
+            return (Act)actIndex;
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+        }
+        return Act.Act3;
     }
 
     private unsafe void WriteCenteredText(string text, Color color = default, bool largerText = false)
@@ -437,8 +463,8 @@ public class LevelTracker
             ImGui.GetCursorScreenPos(cursorPos);
             
             var gate = Mod.LevelSelectManager.FindGateForLevel(level, team);
-            var superHardGate = Mod.LevelSelectManager.FindGateForLevel(level, Team.SuperHardMode);
-            if (gate == null && superHardGate == null)
+            //var superHardGate = Mod.LevelSelectManager.FindGateForLevel(level, Team.SuperHardMode);
+            if (gate == null)
                 return;
             
             var act1CompleteId = 0xA0 + (int)team * 42 + ((int)level - 2) * 2 + 0;
@@ -814,8 +840,6 @@ public class LevelTracker
                 case >= LevelId.SeasideHill and <= LevelId.FinalFortress:
                     //regular level here
                     gate = Mod.LevelSelectManager.FindGateForLevel(level, team);
-                    if (gate == null)
-                        break;
                     
                     if (gate > 0)
                     {
@@ -1050,8 +1074,14 @@ public class LevelTracker
         {
             if (Mod.ArchipelagoHandler.SlotData.EntireRunUnlockType is EntireRunUnlockType.LegacyLevelGates)
                 return;
-            
-            var text = $"Characters Unlocked:{AbilityCharacterManager.GetLevelSelectUIStringForCharUnlocksForTeam(team)}";
+
+            var text = $"";
+            text = $"Team {team} Characters Unlocked:{AbilityCharacterManager.GetLevelSelectUIStringForCharUnlocksForTeam(team)}";
+            WriteCenteredText(text, Color.Empty);
+
+            if (team is not Team.Sonic || !(bool)Mod.LevelSelectManager.IsThisTeamEnabled(Team.SuperHardMode)!)
+                return;
+            text = $"Team {Team.SuperHardMode} Characters Unlocked:{AbilityCharacterManager.GetLevelSelectUIStringForCharUnlocksForTeam(Team.SuperHardMode)}";
             WriteCenteredText(text, Color.Empty);
         }
         catch (Exception e)

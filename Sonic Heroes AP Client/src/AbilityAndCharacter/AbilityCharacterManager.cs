@@ -71,8 +71,6 @@ public static class AbilityCharacterManager
         try
         {
             //Console.WriteLine($"HandleAbilityUnlockCheck Team: {team} Region: {region} ForceUnlock: {forceunlock}");
-            
-            
             AbilityCharacterGameWrites.SetHomingAttack(forceunlock || Mod.SaveDataHandler.CustomSaveData.UnlockSaveData[team].AbilityUnlocks[region][Ability.HomingAttack]);
             AbilityCharacterGameWrites.SetTornado(forceunlock || Mod.SaveDataHandler.CustomSaveData.UnlockSaveData[team].AbilityUnlocks[region][Ability.Tornado]);
             AbilityCharacterGameWrites.SetRocketAccel(forceunlock || Mod.SaveDataHandler.CustomSaveData.UnlockSaveData[team].AbilityUnlocks[region][Ability.RocketAccel]);
@@ -197,7 +195,7 @@ public static class AbilityCharacterManager
         return true;
     }
     
-    
+    //TODO handle SuperHard Mode when Team Sonic is passed in
     public static string GetLevelSelectUIStringForCharUnlocksForTeam(Team team)
     {
         var result = "";
@@ -216,6 +214,35 @@ public static class AbilityCharacterManager
                 result += $" {SonicHeroesDefinitions.CharacterNames[team][FormationChar.Flying]}";
             }
             return result;
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+        }
+        return result;
+    }
+
+
+    public static string GetLevelSelectUIStringForCharUnlocksForSonicSuperHard()
+    {
+        var result = "";
+        try
+        {
+
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+        }
+        return result;
+    }
+
+    public static string GetLevelSelectUIStringForCharUnlocksForFinalBoss()
+    {
+        var result = "";
+        try
+        {
+
         }
         catch (Exception e)
         {

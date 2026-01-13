@@ -1,5 +1,6 @@
 
 using Reloaded.Memory;
+using Reloaded.Memory.Enums;
 using Reloaded.Memory.Interfaces;
 using Sonic_Heroes_AP_Client.Definitions;
 
@@ -138,9 +139,14 @@ public static class AbilityCharacterGameWrites
     
     public static void SetFlying(bool value)
     {
-        var bytes = value ? new byte[] { 0x34 } : new byte[] { 0x35 };
-        Memory.Instance.SafeWrite(Mod.ModuleBase + 0x1C9C7F, bytes);
-        Memory.Instance.SafeWrite(Mod.ModuleBase + 0x1CA608, bytes);
+        //Console.WriteLine($"SetFlying: {value}");
+        //var bytes = value ? new byte[] { 0x34 } : new byte[] { 0x35 };
+        //Memory.Instance.SafeWrite(Mod.ModuleBase + 0x1C9C7F, bytes);
+        //Memory.Instance.SafeWrite(Mod.ModuleBase + 0x1CA608, bytes);
+        var bytes = value ? new byte[] { 0x00, 0x00, 0x34, 0x43 } : new byte[] { 0x00, 0x00, 0x80, 0xBF };
+        Memory.Instance.ChangeProtection(Mod.ModuleBase + 0x389FE4, 0x4, MemoryProtection.ReadWriteExecute);
+        Memory.Instance.SafeWrite(Mod.ModuleBase + 0x389FE4, bytes);
+        Memory.Instance.ChangeProtection(Mod.ModuleBase + 0x389FE4, 0x4, MemoryProtection.Read);
     }
     
     public static void SetThundershoot(bool value)

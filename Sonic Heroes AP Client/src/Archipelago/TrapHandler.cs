@@ -13,8 +13,8 @@ public enum FreezeType
 
 public static class TrapHandler
 {
-    public const int StealthTrapDuration = 10;
-    public const int FreezeTrapDuration = 10;
+    public const int StealthTrapDuration = 7;
+    public const int FreezeTrapDuration = 8;
     
     public const int NoSwapTrapDuration = 10;
     
@@ -31,6 +31,7 @@ public static class TrapHandler
     
     public static bool FreezeTrapRunning => previousFreeze != FreezeType.NoFreeze;
     private static FreezeType previousFreeze = FreezeType.NoFreeze;
+    private static int remainingFreezeDuration = 0;
     
     
     public static bool CharmyTrapRunning = false;
@@ -48,7 +49,7 @@ public static class TrapHandler
 
     public static bool IsAnyTrapRunning()
     {
-        return CharmyTrapRunning || FreezeTrapRunning || NoSwapTrapRunning || CharmyTrapRunning;
+        return StealthTrapRunning || FreezeTrapRunning || NoSwapTrapRunning || CharmyTrapRunning;
     }
 
     //Stealth
@@ -70,7 +71,7 @@ public static class TrapHandler
     {
         try
         {
-            var oldValue = Interlocked.Exchange(ref remainingStealthDuration, StealthTrapDuration);
+            Interlocked.Add(ref remainingStealthDuration, StealthTrapDuration);
             if (StealthTrapRunning)
                 return;
             StealthTrapRunning = true;
@@ -106,11 +107,26 @@ public static class TrapHandler
     {
         try
         {
+            Interlocked.Add(ref remainingFreezeDuration, duration);
             if (previousFreeze == freezeType)
                 return;
             previousFreeze = freezeType;
-            SoundHandler.PlaySound((int)Mod.ModuleBase, 0xE014);
-            ItemGameWrites.SetFreeze(freezeType);
+            //SoundHandler.PlaySound((int)Mod.ModuleBase, 0xE014);
+            var t = new Thread(() =>
+            {
+                ItemGameWrites.SetFreeze(freezeType);
+                SoundHandler.PlaySound((int)Mod.ModuleBase, 0xE014);
+                while (Interlocked.CompareExchange(ref remainingFreezeDuration, 0, 0) > 0) 
+                {
+                    Thread.Sleep(1000);
+                    Interlocked.Decrement(ref remainingFreezeDuration);
+                }
+                ItemGameWrites.SetFreeze(FreezeType.NoFreeze);
+                previousFreeze = FreezeType.NoFreeze;
+            });
+            t.Start();
+            
+            /*
             var timer = new System.Timers.Timer(duration * 1000);
             timer.Elapsed += (sender, e) =>
             {
@@ -121,6 +137,7 @@ public static class TrapHandler
             };
             timer.AutoReset = false;
             timer.Start();
+            */
         }
         catch (Exception e)
         {

@@ -57,7 +57,7 @@ public static class CheckpointSanityHandler
                         Console.WriteLine(log);
                         //Logger.Log(log);
 
-                        LevelSpawnUnlockHandler.UnlockSpawnData((Team)team!, (LevelId)level!, checkpointsinlevel.IndexOf(matchingcheckpoints[i]) + 1);
+                        LevelSpawnUnlockHandler.UnlockSpecificSpawnData((Team)team!, (LevelId)level!, checkpointsinlevel.IndexOf(matchingcheckpoints[i]) + 1);
 
 
                         if (team is Team.SuperHardMode)

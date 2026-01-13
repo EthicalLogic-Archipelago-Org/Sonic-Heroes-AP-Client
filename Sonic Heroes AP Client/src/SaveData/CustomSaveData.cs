@@ -2,6 +2,7 @@
 
 using Sonic_Heroes_AP_Client.Definitions;
 using Sonic_Heroes_AP_Client.MusicShuffle;
+using Sonic_Heroes_AP_Client.Sanity.BonusKeys;
 using Sonic_Heroes_AP_Client.Sanity.Checkpoints;
 using Sonic_Heroes_AP_Client.StageObj;
 
@@ -46,7 +47,13 @@ public class CustomSaveData
     /// <summary>
     /// A mapping of Team and LevelId to a List of bools referring to if that Bonus Key has been picked up by the Player. Has to be saved as Players can choose to not have KeySanity enabled.
     /// </summary>
-    public Dictionary<Team, Dictionary<LevelId, List<bool>>> BonusKeysPickedUp = Enum.GetValues<Team>().ToDictionary(x => x, x => Enum.GetValues<LevelId>().Where(id => (int)id < 16 && (int)id > 1).ToDictionary(y => y, y => Enumerable.Repeat(false, 3).ToList()));
+    public Dictionary<Team, Dictionary<LevelId, List<bool>>> BonusKeysPickedUp = Enum.GetValues<Team>().ToDictionary(x => x, x => Enum.GetValues<LevelId>().Where(id => (int)id < 16 && (int)id > 1).ToDictionary(y => y, y =>
+    {
+        var amount = BonusKeyData.AllKeyPositions.Count(key => key.Team == x && key.LevelId == y);
+        if (x is Team.Rose && y is  LevelId.CasinoPark)
+            amount--;
+        return Enumerable.Repeat(false, amount).ToList();
+    }));
 
 
     /// <summary>

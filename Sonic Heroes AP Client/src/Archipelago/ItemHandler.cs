@@ -1,5 +1,6 @@
 
 
+using System.Collections.Concurrent;
 using Archipelago.MultiClient.Net.Models;
 using Sonic_Heroes_AP_Client.Definitions;
 using Sonic_Heroes_AP_Client.GameState;
@@ -35,7 +36,34 @@ public enum FillerSHItem
 
 public static class ItemHandler
 {
-    private static readonly Queue<FillerSHItem> cachedItems = new();
+    private static readonly ConcurrentQueue<Tuple<int, ItemInfo>> receivedItems = new();
+    private static readonly ConcurrentQueue<FillerSHItem> cachedInGameItems = new();
+    
+    
+    public static void QueueItem(int index, ItemInfo item)
+    {
+        receivedItems.Enqueue(Tuple.Create(index, item));
+    }
+
+    public static void RunCheckReceivedItemsQueue()
+    {
+        try
+        {
+            while (true)
+            {
+                if (receivedItems.TryDequeue(out var itemTuple))
+                    HandleItem(itemTuple.Item1, itemTuple.Item2);
+                else
+                {
+                    Thread.Sleep(100);
+                }
+            }
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+        }
+    }
     
     public static void HandleItem(int index, ItemInfo item)
     {
@@ -63,7 +91,7 @@ public static class ItemHandler
         
         if (!GameStateHandler.InGame())
         {
-            cachedItems.Enqueue(itemId);
+            cachedInGameItems.Enqueue(itemId);
             return;
         }
         HandleInGameItem(itemId);
@@ -71,10 +99,10 @@ public static class ItemHandler
     
     public static void HandleCachedItems()
     {
-        while (cachedItems.Count > 0)
+        while (cachedInGameItems.Count > 0)
         {
-            var item = cachedItems.Dequeue();
-            HandleInGameItem(item);
+            if (cachedInGameItems.TryDequeue(out var item))
+                HandleInGameItem(item);
         }
     }
     

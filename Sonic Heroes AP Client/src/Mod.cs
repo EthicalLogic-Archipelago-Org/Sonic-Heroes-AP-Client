@@ -10,6 +10,7 @@ using Sonic_Heroes_AP_Client.Configuration;
 using Sonic_Heroes_AP_Client.GameState;
 using Sonic_Heroes_AP_Client.Hooks;
 using Sonic_Heroes_AP_Client.LevelSelect;
+using Sonic_Heroes_AP_Client.LevelSpawnPosition;
 using Sonic_Heroes_AP_Client.MusicShuffle;
 using Sonic_Heroes_AP_Client.Sanity.Checkpoints;
 using Sonic_Heroes_AP_Client.SaveData;
@@ -145,6 +146,9 @@ public class Mod: ModBase
         GameStateGameWrites.SetRingLoss(true);
         if (_hooks != null) 
             Mod.FunctionHooks.SetUpFunctionHooks(_hooks);
+        
+        LevelSelectManager.InitConnect();
+        LevelSpawnUnlockHandler.InitConnect();
     }
     
     public void OnModConfigChange(IUpdatableConfigurable x)

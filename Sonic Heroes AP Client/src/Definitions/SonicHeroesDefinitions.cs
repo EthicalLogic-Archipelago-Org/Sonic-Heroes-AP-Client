@@ -98,7 +98,7 @@ public enum StoriesAndSanities : ulong
     DarkKeySanity1Set = 1 << 9,
     DarkKeySanityBothActs = 1 << 10,
     DarkCheckpointSanity1Set = 1 << 11,
-    DarkCheckpointSanityBothActs = 1 << 11,
+    DarkCheckpointSanityBothActs = 1 << 12,
 
     RoseActA = 1 << 13,
     RoseActB = 1 << 14,

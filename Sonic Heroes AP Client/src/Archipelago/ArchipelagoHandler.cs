@@ -19,6 +19,7 @@ public class ArchipelagoHandler
     public SlotData SlotData;
     public ArchipelagoSession _session;
     private LoginSuccessful _loginSuccessful;
+    public bool IsSaveFileLoadedYet = false;
     
     private ConcurrentQueue<Int64> _locationsToCheck = new();
     
@@ -69,6 +70,7 @@ public class ArchipelagoHandler
         {
             Seed = _session.ConnectAsync()?.Result?.SeedName;
             LoggerWindow.Log(Seed + Slot);
+            IsSaveFileLoadedYet = true;
             if (Seed != null)
             {
                 Mod.SaveDataHandler!.LoadSaveData(Seed, Slot);
@@ -95,6 +97,7 @@ public class ArchipelagoHandler
             _loginSuccessful = (LoginSuccessful)result;
             SlotData = new SlotData(_loginSuccessful.SlotData);
             Mod.InitOnConnect();
+            new Thread(ItemHandler.RunCheckReceivedItemsQueue).Start();
             new Thread(RunCheckLocationsFromList).Start();
             //resync here
             return true;
@@ -105,6 +108,7 @@ public class ArchipelagoHandler
         errorMessage = failure.ErrorCodes.Aggregate(errorMessage, (current, error) => current + $"\n    {error}");
         LoggerWindow.Log(errorMessage);
         LoggerWindow.Log($"Attempting reconnect...");
+        IsSaveFileLoadedYet = false;
         return false;
     }
     
@@ -160,7 +164,7 @@ public class ArchipelagoHandler
             var itemIndex = helper.Index;
             var item = helper.DequeueItem();
             
-           ItemHandler.HandleItem(itemIndex, item);
+           ItemHandler.QueueItem(itemIndex, item);
         }
     }
     

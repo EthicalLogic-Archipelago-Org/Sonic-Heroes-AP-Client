@@ -263,6 +263,7 @@ public static class StageObjHandler
         }
     }
     
+    //TODO handle Stage Obj Stuff for Level Gates
     public static unsafe void HandleSonicStageObjs(LevelId level, Act act)
     {
         try
@@ -295,6 +296,8 @@ public static class StageObjHandler
                     }
                 }
             }
+            
+            
             
             
             switch (level)

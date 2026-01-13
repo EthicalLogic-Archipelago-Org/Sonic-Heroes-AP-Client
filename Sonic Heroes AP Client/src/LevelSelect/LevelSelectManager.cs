@@ -15,6 +15,10 @@ public class LevelSelectManager
     public StoriesAndSanities EnabledStoriesAndSanities;
     public GoalUnlockConditions GoalUnlockConditions;
     public FinalBoss FinalBoss;
+
+    public Act ActSelectedInLevelSelect;
+
+    public int BonusKeysNeededForBonusStage = 1;
     
     private bool _levelSelectAllLevelsAvailableWrite;
     public bool LevelSelectAllLevelsAvailableWrite
@@ -32,10 +36,33 @@ public class LevelSelectManager
     {
         GateData = [];
         LevelSelectAllLevelsAvailableWrite = Mod.IsDebug;
-
+        ActSelectedInLevelSelect = Act.Act1;
+        
         EnabledStoriesAndSanities = StoriesAndSanities.None;
         GoalUnlockConditions = GoalUnlockConditions.None;
         FinalBoss = FinalBoss.MetalMadness;
+    }
+
+    public void InitConnect()
+    {
+        if (Mod.ArchipelagoHandler.SlotData.EntireRunUnlockType is not EntireRunUnlockType.LegacyLevelGates) 
+            return;
+        
+        foreach (var team in Enum.GetValues<Team>().Where(x => (bool)Mod.LevelSelectManager.IsThisTeamEnabled(x)!))
+        {
+            foreach (var character in Enum.GetValues<FormationChar>())
+            {
+                Mod.SaveDataHandler.CustomSaveData.UnlockSaveData[team].CharsUnlocked[character] = true;
+            }
+
+            foreach (var region in Mod.SaveDataHandler.CustomSaveData.UnlockSaveData[team].AbilityUnlocks.Keys)
+            {
+                foreach (var ability in Mod.SaveDataHandler.CustomSaveData.UnlockSaveData[team].AbilityUnlocks[region].Keys)
+                {
+                    Mod.SaveDataHandler.CustomSaveData.UnlockSaveData[team].AbilityUnlocks[region][ability] = true;
+                }
+            }
+        }
     }
     
     

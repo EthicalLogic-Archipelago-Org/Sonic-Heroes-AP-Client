@@ -4,6 +4,8 @@ using System.Text;
 using Reloaded.Hooks.Definitions;
 using Reloaded.Hooks.Definitions.Enums;
 using Reloaded.Hooks.Definitions.X86;
+using Reloaded.Memory;
+using Reloaded.Memory.Interfaces;
 using Sonic_Heroes_AP_Client.Archipelago;
 using Sonic_Heroes_AP_Client.Definitions;
 using Sonic_Heroes_AP_Client.GameState;
@@ -51,6 +53,12 @@ public class FunctionHooks
     private static IReverseWrapper<BGMSetFileName> _reverseWrapOnBGMSetFileName;
     private static IReverseWrapper<BGMGetDVDRootPath> _reverseWrapOnBGMGetDVDRootPath;
     private static IReverseWrapper<TObjResultConstructStart> _reverseWrapOnTObjResultConstructStart;
+    private static IReverseWrapper<SetActInLevelSelectToZero> _reverseWrapOnGoSetActInLevelSelectToZero;
+    private static IReverseWrapper<ChangeActInLevelSelect> _reverseWrapOnChangeActInLevelSelect;
+    
+    
+    
+    
     
     public void SetUpFunctionHooks(IReloadedHooks hooks)
     {
@@ -445,6 +453,30 @@ public class FunctionHooks
             };
             _asmHooks.Add(hooks.CreateAsmHook(TObjResultConstructStart, (int)(Mod.ModuleBase + 0x36580), AsmHookBehaviour.ExecuteFirst).Activate());
             
+            
+            string[] SetActInLevelSelectToZero =
+            {
+                "use32",
+                "pushad",
+                "pushfd",
+                $"{hooks.Utilities.GetAbsoluteCallMnemonics(OnSetActInLevelSelectToZero, out _reverseWrapOnGoSetActInLevelSelectToZero)}",
+                "popfd",
+                "popad"
+            };
+            _asmHooks.Add(hooks.CreateAsmHook(SetActInLevelSelectToZero, (int)(Mod.ModuleBase + 0x4B1F1), AsmHookBehaviour.ExecuteAfter).Activate());
+            
+            
+            string[] ChangeActInLevelSelect =
+            {
+                "use32",
+                "pushad",
+                "pushfd",
+                $"{hooks.Utilities.GetAbsoluteCallMnemonics(OnChangeActInLevelSelect, out _reverseWrapOnChangeActInLevelSelect)}",
+                "popfd",
+                "popad"
+            };
+            _asmHooks.Add(hooks.CreateAsmHook(ChangeActInLevelSelect, (int)(Mod.ModuleBase + 0x4B46D), AsmHookBehaviour.ExecuteAfter).Activate());
+            
         }
         catch (Exception e)
         {
@@ -452,6 +484,47 @@ public class FunctionHooks
         }
     }
     
+    
+
+    
+        
+    [Function(new FunctionAttribute.Register[] { }, 
+        FunctionAttribute.Register.eax, FunctionAttribute.StackCleanup.Callee)]
+    public delegate int ChangeActInLevelSelect();
+    private static unsafe int OnChangeActInLevelSelect()
+    {
+        try
+        {
+            var levelSelectPtr = *(IntPtr*)(Mod.ModuleBase + 0x6777B4);
+            var actIndex = *(int*)(levelSelectPtr + 0x2BC);
+            Mod.LevelSelectManager.ActSelectedInLevelSelect = (Act)actIndex;
+            LevelSpawnUnlockHandler.SpawnPosIndex = 0;
+            //Console.WriteLine($"Setting Act Selected in Level Select to {Mod.LevelSelectManager.ActSelectedInLevelSelect}");
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+        }
+        return 1;
+    }
+    
+    
+    [Function(new FunctionAttribute.Register[] { }, 
+        FunctionAttribute.Register.eax, FunctionAttribute.StackCleanup.Callee)]
+    public delegate int SetActInLevelSelectToZero();
+    private static int OnSetActInLevelSelectToZero()
+    {
+        try
+        {
+            Mod.LevelSelectManager.ActSelectedInLevelSelect = Act.Act1;
+            //Console.WriteLine($"Setting Act Selected in Level Select to {Mod.LevelSelectManager.ActSelectedInLevelSelect}");
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+        }
+        return 1;
+    }
     
     [Function(new[] { FunctionAttribute.Register.ecx, FunctionAttribute.Register.edx, FunctionAttribute.Register.ebx, FunctionAttribute.Register.esi }, 
         FunctionAttribute.Register.eax, FunctionAttribute.StackCleanup.Callee)]

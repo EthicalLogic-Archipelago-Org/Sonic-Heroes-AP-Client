@@ -98,8 +98,6 @@ public static class GameStateGameWrites
             Console.WriteLine(ex);
         }
     }
-    
-    
     public static unsafe void SetCurrentAct(Act act)
     {
         try
@@ -161,7 +159,7 @@ public static class GameStateGameWrites
         //0x420D35      UI?
         //0x423B73      add lives
         //0x423B8D      add lives
-        //0x423EEF      add min (caps mins at 100)
+        //0x423EEF      add min (caps mins at 100) (not lives related)
         //0x44E6E5      no idea (prob not lives)
         //0x60A497      metal Sonic Create Team
     }

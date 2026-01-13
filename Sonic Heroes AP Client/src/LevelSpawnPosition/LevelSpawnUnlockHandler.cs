@@ -32,6 +32,54 @@ public static class LevelSpawnUnlockHandler
     {
         return false;
     }
+
+    public static void InitConnect()
+    {
+        try
+        {
+            if (!Mod.IsDebug)
+                return;
+            foreach (var team in Enum.GetValues<Team>())
+            {
+                UnlockAllSpawnDataForTeam(team);
+            }
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
+    }
+
+    public static void UnlockAllSpawnDataForTeam(Team team)
+    {
+        try
+        {
+            foreach (var level in Enum.GetValues<LevelId>().Where(id => ((int)id < 16 && (int)id > 1) || (int)id == 23 || (int)id == 24))
+            {
+                UnlockAllSpawnDataForTeamAndLevel(team, level);
+            }
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+        }
+    }
+
+
+    public static void UnlockAllSpawnDataForTeamAndLevel(Team team, LevelId level)
+    {
+        try
+        {
+            Mod.SaveDataHandler.CustomSaveData!.SpawnDataUnlocks[team]
+                .Select(pair => pair.Value).Select(_ => true);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+        }
+    }
+    
     
     public static unsafe void HandleInput(bool up)
     {
@@ -49,6 +97,10 @@ public static class LevelSpawnUnlockHandler
             var actIndex = *(int*)(actPtr + 0x2BC);
         
             var team = (Team)storyIndex;
+
+            if (team is Team.Sonic && (bool)Mod.LevelSelectManager.IsThisTeamEnabled(Team.SuperHardMode)! &&
+                Mod.LevelSelectManager.ActSelectedInLevelSelect is Act.Act2)
+                team = Team.SuperHardMode;
         
             //Console.WriteLine($"HandleInput Here: Team {team} Level {level}");
         
@@ -91,7 +143,7 @@ public static class LevelSpawnUnlockHandler
         }
     }
     
-    public static void UnlockSpawnData(Team team, LevelId level, int index, bool secret = false)
+    public static void UnlockSpecificSpawnData(Team team, LevelId level, int index, bool secret = false)
     {
         try
         {
@@ -118,20 +170,18 @@ public static class LevelSpawnUnlockHandler
         }
     }
     
+    //TODO get Chaotix and SuperHard Spawn Data working
     public static void BonusStageUnlockCallback(Team team, LevelId level, int keynum = 0, bool goal = false)
     {
+        //this is called from Keys when already have enough keys
+        //need to handle from goal
         try
         {
             if (keynum == 0 && !goal)
                 return;
-
-            if (team is Team.Chaotix or Team.SuperHardMode)
-                return;
-
-            //TODO count keys here to determine if have enough
+            
             if (keynum > 0)
             {
-                Mod.SaveDataHandler!.CustomSaveData!.BonusKeysPickedUp[team][level][keynum - 1] = true;
                 if (Mod.LevelSelectManager.GetIfLevelGoaled(team, level))
                 {
                     //unlocking bonus stage spawn here
@@ -143,17 +193,9 @@ public static class LevelSpawnUnlockHandler
 
             if (goal)
             {
-                //Mod.SaveDataHandler!.CustomSaveData!.LevelsGoaled[team][level] =  true;
-                
-                int keys = 0;
+                var keys = Mod.SaveDataHandler.CustomSaveData.BonusKeysPickedUp[team][level].Count(key => key);
 
-                foreach (var key in Mod.SaveDataHandler.CustomSaveData.BonusKeysPickedUp[team][level])
-                {
-                    if (key)
-                        keys++;
-                }
-
-                if (keys > 0)
+                if (keys >= Mod.LevelSelectManager.BonusKeysNeededForBonusStage || team is Team.SuperHardMode)
                 {
                     //unlocking bonus stage spawn here
                     Console.WriteLine($"Unlocking Bonus Stage Spawn for {team} {level}");
@@ -193,6 +235,7 @@ public static class LevelSpawnUnlockHandler
         }
     }
     
+    //TODO Handle Super Hard here (InGame Act is set to 3 from OnSetAct Hook)
     public static unsafe void GoToGameSpawnPosCallback()
     {
         try
@@ -214,6 +257,13 @@ public static class LevelSpawnUnlockHandler
             var actIndex = *(int*)(actPtr + 0x2BC);
         
             var team = (Team)storyIndex;
+
+            if (team is Team.Sonic && (bool)Mod.LevelSelectManager.IsThisTeamEnabled(Team.SuperHardMode)! &&
+                GameStateHandler.GetCurrentAct() == Act.Act3)
+            {
+                Console.WriteLine($"SuperHardMode in GoToGameSpawnPosCallback.");
+                team = Team.SuperHardMode;
+            }
 
             if (!GetAllSpawnDataForLevel(team, level).Any())
                 return;
@@ -287,7 +337,15 @@ public static class LevelSpawnUnlockHandler
     {
         try
         {
-            //TODO handling for SuperHard Mode if Act selected is 2
+            if (team is Team.Sonic or Team.SuperHardMode)
+            {
+                if (Mod.LevelSelectManager.ActSelectedInLevelSelect is Act.Act2 && (bool)Mod.LevelSelectManager.IsThisTeamEnabled(Team.SuperHardMode)!)
+                    team = Team.SuperHardMode;
+                else
+                    team = Team.Sonic;
+            }
+            
+            
             if (GetAllSpawnDataForLevel(team, level).Count <= SpawnPosIndex)
                 SpawnPosIndex = 0;
             

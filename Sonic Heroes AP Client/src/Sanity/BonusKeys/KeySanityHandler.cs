@@ -59,11 +59,12 @@ public static class KeySanityHandler
                 Console.WriteLine($"Got Team {team} {level} {act} Bonus Key #{i + 1}");
                 //Logger.Log($"");
 
-                Mod.SaveDataHandler!.CustomSaveData!.BonusKeysPickedUp[(Team)team!][(LevelId)level!][i] = true;
+                if (!(team is Team.Rose && level is LevelId.CasinoPark && i == 3))
+                    Mod.SaveDataHandler!.CustomSaveData!.BonusKeysPickedUp[(Team)team!][(LevelId)level!][i] = true;
 
                 var keysPickedUp = Mod.SaveDataHandler.CustomSaveData.BonusKeysPickedUp[(Team)team][(LevelId)level].Count(key => key);
 
-                if (keysPickedUp > 0)
+                if (keysPickedUp >= Mod.LevelSelectManager.BonusKeysNeededForBonusStage)
                 {
                     if (Mod.LevelSelectManager.GetIfLevelGoaled((Team)team, (LevelId)level))
                     {
