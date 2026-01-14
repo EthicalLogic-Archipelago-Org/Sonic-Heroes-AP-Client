@@ -55,8 +55,7 @@ public class FunctionHooks
     private static IReverseWrapper<TObjResultConstructStart> _reverseWrapOnTObjResultConstructStart;
     private static IReverseWrapper<SetActInLevelSelectToZero> _reverseWrapOnGoSetActInLevelSelectToZero;
     private static IReverseWrapper<ChangeActInLevelSelect> _reverseWrapOnChangeActInLevelSelect;
-    
-    
+    private static IReverseWrapper<ChangeModeToFlying> _reverseWrapOnChangeModeToFlying;
     
     
     
@@ -476,7 +475,22 @@ public class FunctionHooks
                 "popad"
             };
             _asmHooks.Add(hooks.CreateAsmHook(ChangeActInLevelSelect, (int)(Mod.ModuleBase + 0x4B46D), AsmHookBehaviour.ExecuteAfter).Activate());
+         
             
+            
+            
+            string[] ChangeModeToFlying =
+            {
+                "use32",
+                "pushad",
+                "pushfd",
+                "push eax",
+                $"{hooks.Utilities.GetAbsoluteCallMnemonics(OnChangeModeToFlying, out _reverseWrapOnChangeModeToFlying)}",
+                "pop eax",
+                "popfd",
+                "popad"
+            };
+            _asmHooks.Add(hooks.CreateAsmHook(ChangeModeToFlying, (int)(Mod.ModuleBase + 0x1C9C81), AsmHookBehaviour.ExecuteAfter).Activate());
         }
         catch (Exception e)
         {
@@ -484,8 +498,43 @@ public class FunctionHooks
         }
     }
     
-    
+    [Function(new FunctionAttribute.Register[] { FunctionAttribute.Register.eax },
+        FunctionAttribute.Register.eax, FunctionAttribute.StackCleanup.Callee)]
+    public delegate int ChangeModeToFlying(int flyingCharObjPtr);
+    private static int OnChangeModeToFlying(int eax)
+    {
+        try
+        {
+            //Console.WriteLine($"ChangeModeToFlying 0x{eax:x}");
+            if (!GameStateHandler.InGame(true))
+                return 1;
 
+            var team = GameStateHandler.GetCurrentStory();
+            var level = GameStateHandler.GetCurrentLevel();
+            
+            
+            //Console.WriteLine($"Team: {team}, Level: {level}");
+
+            if (!SonicHeroesDefinitions.LevelIdToRegion.TryGetValue((LevelId)level!, out var region))
+                return 1;
+
+            var canFly = AbilityCharacterManager.CanFly((Team)team!, region);
+            
+            if (!canFly)
+                Memory.Instance.SafeWrite((UIntPtr)(eax + 0x994), BitConverter.GetBytes(AbilityCharacterGameWrites.LockedFlightMeterValue));
+            //Console.WriteLine($"Region: {region} CanFly: {canFly}");
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+        }
+        return 0;
+    }
+
+    
+    
+    
+    
     
         
     [Function(new FunctionAttribute.Register[] { }, 

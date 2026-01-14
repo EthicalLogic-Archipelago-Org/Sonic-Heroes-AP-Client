@@ -169,8 +169,7 @@ public static class LevelSpawnUnlockHandler
             Console.WriteLine(e);
         }
     }
-    
-    //TODO get Chaotix and SuperHard Spawn Data working
+
     public static void BonusStageUnlockCallback(Team team, LevelId level, int keynum = 0, bool goal = false)
     {
         //this is called from Keys when already have enough keys

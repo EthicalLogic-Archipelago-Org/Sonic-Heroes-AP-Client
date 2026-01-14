@@ -9,6 +9,8 @@ namespace Sonic_Heroes_AP_Client.Sanity.AbilityAndCharacter;
 public static class AbilityCharacterGameWrites
 {
     private const byte LockedState = 0x27;
+
+    public const float LockedFlightMeterValue = 999f;
     
     /// <summary>
     /// Unlocks or Locks Character.
@@ -143,10 +145,12 @@ public static class AbilityCharacterGameWrites
         //var bytes = value ? new byte[] { 0x34 } : new byte[] { 0x35 };
         //Memory.Instance.SafeWrite(Mod.ModuleBase + 0x1C9C7F, bytes);
         //Memory.Instance.SafeWrite(Mod.ModuleBase + 0x1CA608, bytes);
-        var bytes = value ? new byte[] { 0x00, 0x00, 0x34, 0x43 } : new byte[] { 0x00, 0x00, 0x80, 0xBF };
-        Memory.Instance.ChangeProtection(Mod.ModuleBase + 0x389FE4, 0x4, MemoryProtection.ReadWriteExecute);
-        Memory.Instance.SafeWrite(Mod.ModuleBase + 0x389FE4, bytes);
-        Memory.Instance.ChangeProtection(Mod.ModuleBase + 0x389FE4, 0x4, MemoryProtection.Read);
+        //var bytes = value ? new byte[] { 0x00, 0x00, 0x34, 0x43 } : new byte[] { 0x00, 0x00, 0x80, 0xBF };
+        //Memory.Instance.ChangeProtection(Mod.ModuleBase + 0x389FE4, 0x4, MemoryProtection.ReadWriteExecute);
+        //Memory.Instance.SafeWrite(Mod.ModuleBase + 0x389FE4, bytes);
+        //Memory.Instance.ChangeProtection(Mod.ModuleBase + 0x389FE4, 0x4, MemoryProtection.Read);
+        
+        //Handled through Function Hook now
     }
     
     public static void SetThundershoot(bool value)

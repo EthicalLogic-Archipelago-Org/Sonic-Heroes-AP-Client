@@ -465,7 +465,7 @@ public static class StageObjHandler
             foreach (var cageAddr in foundAddrs[StageObjTypes.CageBox])
             {
                 var tempObj = (ObjSpawnData*) new IntPtr(cageAddr);
-                tempObj->RenderDistance = 0x00;
+                //tempObj->RenderDistance = 0x00;
             }
 
             foreach (var pair in Mod.SaveDataHandler.CustomSaveData.StageObjSpawnSaveData[Team.Dark])

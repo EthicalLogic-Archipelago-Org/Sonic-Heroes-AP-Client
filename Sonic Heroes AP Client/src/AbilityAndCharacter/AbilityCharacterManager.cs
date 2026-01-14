@@ -34,6 +34,20 @@ public static class AbilityCharacterManager
         var hasAbilities = HasAllAbilitiesForRegion(team, region);
         return hasChars && hasAbilities;
     }
+
+    public static bool CanFly(Team team, Region region)
+    {
+        try
+        {
+            return Mod.SaveDataHandler.CustomSaveData.UnlockSaveData[team].AbilityUnlocks[region][Ability.Flight] && Mod.SaveDataHandler.CustomSaveData.UnlockSaveData[team].AbilityUnlocks[region][Ability.Thundershoot];
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+        }
+        return false;
+    }
+    
     
     
     public static void UnlockAbilityForAllRegions(Team team, Ability ability)
@@ -195,7 +209,7 @@ public static class AbilityCharacterManager
         return true;
     }
     
-    //TODO handle SuperHard Mode when Team Sonic is passed in
+
     public static string GetLevelSelectUIStringForCharUnlocksForTeam(Team team)
     {
         var result = "";

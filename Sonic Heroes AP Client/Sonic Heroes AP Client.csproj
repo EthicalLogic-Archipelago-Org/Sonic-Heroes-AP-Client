@@ -63,7 +63,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Archipelago.MultiClient.Net" Version="6.6.0" />
+        <PackageReference Include="Archipelago.MultiClient.Net" Version="6.7.0" />
         <PackageReference Include="Reloaded.Assembler" Version="1.0.16" />
         <PackageReference Include="Reloaded.Imgui.Hook" Version="4.0.1" />
         <PackageReference Include="Reloaded.Imgui.Hook.Direct3D11" Version="1.0.2" />
