@@ -49,26 +49,26 @@ public static class MusicShuffleHandler
 
     public static void Shuffle(int seed)
     {
-        if (!Mod.Configuration!.HeroesMusicShuffleOptions.MusicShuffleHeroes 
-            && !Mod.Configuration.SA2MusicShuffleOptions.MusicShuffleSA2 
-            && !Mod.Configuration.SADXMusicShuffleOptions.MusicShuffleSADX
-            && !Mod.Configuration.CustomMusicShuffleOptions.MusicShuffleCustom)
+        if (!Mod.Configuration!.MusicShuffleHeroes 
+            && !Mod.Configuration.MusicShuffleSA2 
+            && !Mod.Configuration.MusicShuffleSADX
+            && !Mod.Configuration.MusicShuffleCustom)
             return;
         
         Map = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         var allSongs = new List<(string name, MusicType type)>();
         var heroesSongs = MusicShuffleData.HeroesSongs;
         
-        if (Mod.Configuration!.HeroesMusicShuffleOptions.MusicShuffleHeroes)
+        if (Mod.Configuration!.MusicShuffleHeroes)
             allSongs.AddRange(heroesSongs);
-        if (Mod.Configuration.SADXMusicShuffleOptions.MusicShuffleSADX)
+        if (Mod.Configuration.MusicShuffleSADX)
             allSongs.AddRange(MusicShuffleData.SADXSongs);
-        if (Mod.Configuration.SA2MusicShuffleOptions.MusicShuffleSA2)
+        if (Mod.Configuration.MusicShuffleSA2)
             allSongs.AddRange(MusicShuffleData.SA2Songs);
         
         try
         {
-            if (Mod.Configuration.CustomMusicShuffleOptions.MusicShuffleCustom)
+            if (Mod.Configuration.MusicShuffleCustom)
             {
                 if (Directory.Exists(MusicShuffleData.CustomFolder))
                 {
@@ -89,22 +89,22 @@ public static class MusicShuffleHandler
 
             foreach (var hero in heroesSongs)
             {
-                if (!Mod.Configuration.MusicShuffleOptions.MusicShuffleBossMusic && hero.type is MusicType.BossMusic)
+                if (!Mod.Configuration.MusicShuffleBossMusic && hero.type is MusicType.BossMusic)
                 {
                     heroesSongsMerged.Add((hero.name, MusicType.Music));
                     continue;
                 }
-                if (!Mod.Configuration.MusicShuffleOptions.MusicShuffleMenuMusic && hero.type is MusicType.MenuMusic)
+                if (!Mod.Configuration.MusicShuffleMenuMusic && hero.type is MusicType.MenuMusic)
                 {
                     heroesSongsMerged.Add((hero.name, MusicType.Music));
                     continue;
                 }
-                if (!Mod.Configuration.MusicShuffleOptions.MusicShuffleShortMusic && hero.type is MusicType.ShortMusic)
+                if (!Mod.Configuration.MusicShuffleShortMusic && hero.type is MusicType.ShortMusic)
                 {
                     heroesSongsMerged.Add((hero.name, MusicType.Music));
                     continue;
                 }
-                if (!Mod.Configuration.MusicShuffleOptions.MusicShuffleLongJingle && hero.type is MusicType.LongJingle)
+                if (!Mod.Configuration.MusicShuffleLongJingle && hero.type is MusicType.LongJingle)
                 {
                     heroesSongsMerged.Add((hero.name, MusicType.Jingle));
                     continue;
@@ -117,22 +117,22 @@ public static class MusicShuffleHandler
 
             foreach (var hero in allSongs)
             {
-                if (!Mod.Configuration.MusicShuffleOptions.MusicShuffleBossMusic && hero.type is MusicType.BossMusic)
+                if (!Mod.Configuration.MusicShuffleBossMusic && hero.type is MusicType.BossMusic)
                 {
                     allSongsMerged.Add((hero.name, MusicType.Music));
                     continue;
                 }
-                if (!Mod.Configuration.MusicShuffleOptions.MusicShuffleMenuMusic && hero.type is MusicType.MenuMusic)
+                if (!Mod.Configuration.MusicShuffleMenuMusic && hero.type is MusicType.MenuMusic)
                 {
                     allSongsMerged.Add((hero.name, MusicType.Music));
                     continue;
                 }
-                if (!Mod.Configuration.MusicShuffleOptions.MusicShuffleShortMusic && hero.type is MusicType.ShortMusic)
+                if (!Mod.Configuration.MusicShuffleShortMusic && hero.type is MusicType.ShortMusic)
                 {
                     allSongsMerged.Add((hero.name, MusicType.Music));
                     continue;
                 }
-                if (!Mod.Configuration.MusicShuffleOptions.MusicShuffleLongJingle && hero.type is MusicType.LongJingle)
+                if (!Mod.Configuration.MusicShuffleLongJingle && hero.type is MusicType.LongJingle)
                 {
                     allSongsMerged.Add((hero.name, MusicType.Jingle));
                     continue;

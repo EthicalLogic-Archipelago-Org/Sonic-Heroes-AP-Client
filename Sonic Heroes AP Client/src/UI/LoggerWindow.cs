@@ -107,7 +107,7 @@ public partial class LoggerWindow
     private DateTime _timeSinceLastUpdate;
     public unsafe void Draw(float outerWidth, float outerHeight, float uiScale)
     {
-        if (DateTime.Now.Subtract(_timeSinceLastUpdate).TotalMilliseconds >= Mod.Configuration.InGameLogOptions.LogMessageDelay)
+        if (DateTime.Now.Subtract(_timeSinceLastUpdate).TotalMilliseconds >= Mod.Configuration.LogMessageDelay)
         {
             UpdateVisibleMessages();
             _timeSinceLastUpdate = DateTime.Now;
@@ -268,8 +268,8 @@ public partial class LoggerWindow
     private void UpdateVisibleMessages()
     {
         var now = DateTime.Now.ToUnixTimeStamp();
-        VisibleMessages.RemoveAll(msg => ((now - msg.Timestamp) > Mod.Configuration.InGameLogOptions.LogMessageTime));
-        if (!CachedMessages.Any() || VisibleMessages.Count >= Mod.Configuration.InGameLogOptions.LogMessageCount)
+        VisibleMessages.RemoveAll(msg => ((now - msg.Timestamp) > Mod.Configuration.LogMessageTime));
+        if (!CachedMessages.Any() || VisibleMessages.Count >= Mod.Configuration.LogMessageCount)
             return;
         var message = CachedMessages.Dequeue();
         message.Timestamp = now;

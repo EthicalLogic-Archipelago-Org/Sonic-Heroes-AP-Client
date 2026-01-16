@@ -48,7 +48,15 @@ public static class DeathLinkHandler
     
     public static bool IsDeathLinkEnabled()
     {
-        return true;
+        try
+        {
+            return Mod.Configuration.DeathLink;
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+        }
+        return false;
     }
     
     public static void SendDeath()

@@ -1,6 +1,7 @@
 
 
 using System.Diagnostics;
+using System.Drawing;
 using Heroes.Controller.Hook.Interfaces;
 using Reloaded.Hooks.Definitions;
 using Reloaded.Imgui.Hook;
@@ -44,7 +45,7 @@ public class Mod: ModBase
     /// </summary>
     private static IReloadedHooks? _hooks;
     
-    private readonly ILogger _logger;
+    public static ILogger Logger;
     private readonly IMod _owner;
     public static IModConfig ModConfig;
     
@@ -92,7 +93,8 @@ public class Mod: ModBase
         {
             _modLoader = context.ModLoader;
             _hooks = context.Hooks;
-            _logger = context.Logger;
+            Logger = context.Logger;
+            //Logger.OnWriteLine += (sender, tuple) => { };
             _owner = context.Owner;
             ModConfig = context.ModConfig;
             Configuration = context.Configuration;
@@ -104,7 +106,7 @@ public class Mod: ModBase
             
             Controller = new Controller.Controller(_controllerHook, 0);
             
-            ArchipelagoHandler = new ArchipelagoHandler(Configuration.ConnectionOptions.Server, Configuration.ConnectionOptions.Port, Configuration.ConnectionOptions.Slot, Configuration.ConnectionOptions.Password);
+            ArchipelagoHandler = new ArchipelagoHandler(Configuration.Server, Configuration.Port, Configuration.Slot, Configuration.Password);
             context.Configuration.ConfigurationUpdated += OnModConfigChange;
             
             //Save Data After 
@@ -141,14 +143,24 @@ public class Mod: ModBase
     
     public static void InitOnConnect()
     {
-        LevelSelectGameWrites.ModifyInstructions();
-        CheckpointGameWrites.SetCheckPointPriorityWrite(true);
-        GameStateGameWrites.SetRingLoss(true);
-        if (_hooks != null) 
-            Mod.FunctionHooks.SetUpFunctionHooks(_hooks);
-        
-        LevelSelectManager.InitConnect();
-        LevelSpawnUnlockHandler.InitConnect();
+        try
+        {
+            LevelSelectGameWrites.ModifyInstructions();
+            CheckpointGameWrites.SetCheckPointPriorityWrite(true);
+            GameStateGameWrites.SetRingLoss(Configuration.RingLoss);
+            if (_hooks != null)
+            {
+                FunctionHooks.SetUpFunctionHooks(_hooks);
+                GameStateGameWrites.RemoveRingCapOnScatteredRingSpawn(true);
+            } 
+            //Logger.WriteLine($"[{ModConfig.ModId}] Initialized", Color.Blue);
+            LevelSelectManager.InitConnect();
+            LevelSpawnUnlockHandler.InitConnect();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+        }
     }
     
     public void OnModConfigChange(IUpdatableConfigurable x)
@@ -173,7 +185,7 @@ public class Mod: ModBase
     public override void ConfigurationUpdated(Config configuration)
     {
         Configuration = configuration;
-        _logger.WriteLine($"[{ModConfig.ModId}] Config Updated: Applying");
+        Logger.WriteLine($"[{ModConfig.ModId}] Config Updated: Applying");
     }
     #endregion
 

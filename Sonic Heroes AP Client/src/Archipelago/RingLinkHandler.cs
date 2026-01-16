@@ -18,7 +18,7 @@ public static class RingLinkHandler
     {
         try
         {
-            return Mod.Configuration!.TagOptions.RingLink;
+            return Mod.Configuration!.RingLink;
         }
         catch (Exception e)
         {
@@ -29,6 +29,14 @@ public static class RingLinkHandler
 
     public static bool IsRingLinkOverlord()
     {
+        try
+        {
+            return Mod.Configuration.RingLinkOverlord;
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+        }
         return false;
     }
     

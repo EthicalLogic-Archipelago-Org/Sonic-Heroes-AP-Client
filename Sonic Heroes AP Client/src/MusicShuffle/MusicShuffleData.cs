@@ -12,23 +12,23 @@ public static class MusicShuffleData
     /// <summary>
     /// The file path for the BGM folder for Sonic Heroes.
     /// </summary>
-    public static string HeroesBGMFolder => Mod.Configuration.HeroesMusicShuffleOptions.MusicShuffleHeroesBGMFolder.Replace("/", "\\");
+    public static string HeroesBGMFolder => Mod.Configuration.MusicShuffleHeroesBGMFolder.Replace("/", "\\");
 
 
     /// <summary>
     /// The file path for the ADX folder for Sonic Adventure 2.
     /// </summary>
-    public static string SA2ADXFolder => Mod.Configuration.SA2MusicShuffleOptions.MusicShuffleSA2ADXFolder.Replace("/", "\\");
+    public static string SA2ADXFolder => Mod.Configuration.MusicShuffleSA2ADXFolder.Replace("/", "\\");
     
     /// <summary>
     /// The file path for the WMA folder for Sonic Adventure DX.
     /// </summary>
-    public static string SADXWMAFolder => Mod.Configuration.SADXMusicShuffleOptions.MusicShuffleSADXWMAFolder.Replace("/", "\\");
+    public static string SADXWMAFolder => Mod.Configuration.MusicShuffleSADXWMAFolder.Replace("/", "\\");
     
     /// <summary>
     /// The file path for the Custom Music Folder.
     /// </summary>
-    public static string CustomFolder => Mod.Configuration.CustomMusicShuffleOptions.MusicShuffleCustomFolder.Replace("/", "\\");
+    public static string CustomFolder => Mod.Configuration.MusicShuffleCustomFolder.Replace("/", "\\");
     
     public static List<(string name, MusicType type)> HeroesSongs = new()
     {

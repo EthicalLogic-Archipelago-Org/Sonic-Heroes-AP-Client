@@ -25,59 +25,289 @@ public class Config : Configurable<Config>
 
         The `DefaultValue` attribute is used as part of the `Reset` button in Reloaded-Launcher.
     */
+    //[DisplayName("Test Option Here")]
+    //[Description("Test.")]
+    //[DefaultValue(true)]
+    //public bool TestOption { get; set; } = true;
     
-    [Category("Test")]
+    [Category("Connection")]
+    [DisplayName("Host IP")]
+    [Description("Host address of the Archipelago server")]
+    [DefaultValue("Archipelago.gg")]
+    public string Server { get; set; } = "Archipelago.gg";
+    
+    [Category("Connection")]
+    [DisplayName("Port")]
+    [Description("Port open for the Archipelago server")]
+    [DefaultValue("55555")]
+    public int Port { get; set; } = 55555;
+    
+    [Category("Connection")]
+    [DisplayName("Slot")]
+    [Description("Slot user name used to connect to the Archipelago server")]
+    [DefaultValue("Sonic")]
+    public string Slot { get; set; } = "Sonic";
+    
+    [Category("Connection")]
+    [DisplayName("Password")]
+    [Description("Password for the Archipelago server")]
+    [DefaultValue("")]
+    public string Password { get; set; } = "";
+    
+    
+    
+    [Category("Connection Tags")]
+    [DisplayName("Death Link")]
+    [Description("Set how death link will work in the Archipelago session")]
+    [DefaultValue(true)]
+    public bool DeathLink { get; set; } = true;
+
+    
+    [Category("Connection Tags")]
+    [DisplayName("Ring Link")]
+    [Description("Set how ring link will work in the Archipelago session")]
+    [DefaultValue(true)]
+    public bool RingLink { get; set; } = true;
+    
+    [Category("Connection Tags")]
+    [DisplayName("Ring Link Overlord")]
+    [Description("Should Ringlink be Enabled in Metal Overlord?")]
+    [DefaultValue(false)]
+    public bool RingLinkOverlord { get; set; } = false;
+    
+    
+    
+    [Category("Logger")]
+    [DisplayName("Log Message Time")]
+    [Description("Set how long each message will display for in seconds in the log")]
+    [DefaultValue(5)]
+    public int LogMessageTime { get; set; } = 5;
+
+    [Category("Logger")]
+    [DisplayName("Log Message Count")]
+    [Description("Set how many messages can be displayed in the log at once.")]
+    [DefaultValue(6)]
+    public int LogMessageCount { get; set; } = 6;
+    
+    [Category("Logger")]
+    [DisplayName("Log Message Delay")]
+    [Description("Set how long (in ms) between log messages appearing.")]
+    [DefaultValue(750)]
+    public int LogMessageDelay { get; set; } = 750;
+    
+    
+    
+    [Category("MusicShuffle")]
+    [DisplayName("Music Shuffle")]
+    [Description("Set music shuffle")]
+    [DefaultValue(false)]
+    public bool MusicShuffle { get; set; } = false;
+    
+    [Category("MusicShuffle")]
+    [DisplayName("Separate Boss Music")]
+    [Description("Shuffle Boss Music Separately from All Music (Requires Additional Folder for Custom)\nThere are 11 Boss Tracks.")]
+    [DefaultValue(true)]
+    public bool MusicShuffleBossMusic { get; set; } = false;
+    
+    [Category("MusicShuffle")]
+    [DisplayName("Separate Menu Music")]
+    [Description("Shuffle Menu Music Separately from All Music (Requires Additional Folder for Custom)\nThere are 4 Menu Tracks.")]
+    [DefaultValue(true)]
+    public bool MusicShuffleMenuMusic { get; set; } = false;
+    
+    [Category("MusicShuffle")]
+    [DisplayName("Separate Short Music")]
+    [Description("Shuffle Short Music Tracks (Like 2P Battle Stages) Separately from All Music (Requires Additional Folder for Custom)\nThere are 5 Short Tracks.")]
+    [DefaultValue(true)]
+    public bool MusicShuffleShortMusic { get; set; } = false;
+    
+    [Category("MusicShuffle")]
+    [DisplayName("Separate Long Jingles")]
+    [Description("Shuffle Long Jingles (Non-Looping) Separately from Jingles (Requires Additional Folder for Custom)\nThere are 12 Long Jingles.")]
+    [DefaultValue(true)]
+    public bool MusicShuffleLongJingle { get; set; } = false;
+    
+    [Category("MusicShuffle")]
+    [DisplayName("Heroes BGM Folder")]
+    [Description("The Location of The BGM Folder in dvdroot of Sonic Heroes (/dvdroot/bgm/)")]
+    [DefaultValue("")]
+    [FolderPickerParams(
+        initialFolderPath: Environment.SpecialFolder.Desktop,
+        userCanEditPathText: true,
+        title: "Heroes Music Folder",
+        okButtonLabel: "Choose Folder",
+        fileNameLabel: "Heroes Music",
+        multiSelect: false,
+        forceFileSystem: true)]
+    public string MusicShuffleHeroesBGMFolder { get; set; } = "";
+    
+    
+    
+    [Category("MusicShuffleHeroes")]
+    [DisplayName("Music Shuffle Heroes")]
+    [Description("Use Sonic Heroes music in shuffle")]
+    [DefaultValue(false)]
+    public bool MusicShuffleHeroes { get; set; } = false;
+    
+    
+    
+    [Category("MusicShuffleSA2")]
+    [DisplayName("Music Shuffle SA2")]
+    [Description("Use Sonic Adventure 2 music in shuffle (requires extra setup)")]
+    [DefaultValue(false)]
+    public bool MusicShuffleSA2 { get; set; } = false;
+    
+    
+    [Category("MusicShuffleSA2")]
+    [DisplayName("SA2 ADX Folder")]
+    [Description("The Location of The ADX Folder in gd_PC in SA2 (/resource/gd_PC/ADX/)")]
+    [DefaultValue("")]
+    [FolderPickerParams(
+        initialFolderPath: Environment.SpecialFolder.Desktop,
+        userCanEditPathText: true,
+        title: "SA2 Music Folder",
+        okButtonLabel: "Choose Folder",
+        fileNameLabel: "SA2 Music",
+        multiSelect: false,
+        forceFileSystem: true)]
+    public string MusicShuffleSA2ADXFolder { get; set; } = "";
+    
+    
+    [Category("MusicShuffleSADX")]
+    [DisplayName("Music Shuffle SADX")]
+    [Description("Use Sonic Adventure DX music in shuffle (requires extra setup)")]
+    [DefaultValue(false)]
+    public bool MusicShuffleSADX { get; set; } = false;
+    
+    
+    [Category("MusicShuffleSADX")]
+    [DisplayName("SADX WMA Folder")]
+    [Description("The Location of The WMA Folder (/SoundData/bgm/wma)")]
+    [DefaultValue("")]
+    [FolderPickerParams(
+        initialFolderPath: Environment.SpecialFolder.Desktop,
+        userCanEditPathText: true,
+        title: "SADX Music Folder",
+        okButtonLabel: "Choose Folder",
+        fileNameLabel: "SADX Music",
+        multiSelect: false,
+        forceFileSystem: true)]
+    public string MusicShuffleSADXWMAFolder { get; set; } = "";
+    
+    
+    [Category("MusicShuffleCustom")]
+    [DisplayName("Music Shuffle Custom")]
+    [Description("Use custom music in shuffle (requires extra setup)\nThere are 18 Music Tracks and 18 Jingles in addition to the other types as well.")]
+    [DefaultValue(false)]
+    public bool MusicShuffleCustom { get; set; } = false;
+    
+    
+    [Category("MusicShuffleCustom")]
+    [DisplayName("Music Shuffle Custom Folder")]
+    [Description("Set folder for custom music (requires extra setup)")]
+    [DefaultValue("")]
+    [FolderPickerParams(
+        initialFolderPath: Environment.SpecialFolder.Desktop,
+        userCanEditPathText: true,
+        title: "Custom Music Folder",
+        okButtonLabel: "Choose Folder",
+        fileNameLabel: "SHAPCustomMusic",
+        multiSelect: false,
+        forceFileSystem: true)]
+    public string MusicShuffleCustomFolder { get; set; } = "";
+    
+    
+    
+    //[Category("QOL")]
+    //[DisplayName("Ring Loss")]
+    //[Description("How Many Rings to Lose When Getting Hit?")]
+    //[DefaultValue(true)]
+    //public bool ModernRingLoss { get; set; } = true;
+
+    [Category("QOL")]
+    [DisplayName("Ring Loss")]
+    [Description("How Many Rings to Lose When Getting Hit? 19 will restore vanilla behavior (All rings lost).")]
+    [DefaultValue(30)]
+    [SliderControlParams(
+        minimum: 19.0,
+        maximum: 100.0,
+        smallChange: 1.0,
+        largeChange: 10.0,
+        tickFrequency: 10,
+        isSnapToTickEnabled: false,
+        tickPlacement: SliderControlTickPlacement.BottomRight,
+        showTextField: true,
+        isTextFieldEditable: true,
+        textValidationRegex: "\\d{1-3}")]
+    public int RingLoss { get; set; } = 30;
+    
+    [Category("QOL")]
+    [DisplayName("Scattered Ring Cap")]
+    [Description("How Many Max Rings to Spawn When Getting Hit? 20 is vanilla behavior. (Please be mindful of performance issues when raising)")]
+    [DefaultValue(20)]
+    [SliderControlParams(
+        minimum: 1.0,
+        maximum: 127.0,
+        smallChange: 1.0,
+        largeChange: 10.0,
+        tickFrequency: 10,
+        isSnapToTickEnabled: false,
+        tickPlacement: SliderControlTickPlacement.BottomRight,
+        showTextField: true,
+        isTextFieldEditable: true,
+        textValidationRegex: "\\d{1-3}")]
+    public int ScatteredRingsCap { get; set; } = 20;
+    
+    [Category("QOL")]
     [DisplayName("Play Item and Ring Link Sounds")]
     [Description("Plays sounds when receiving items or Ring Link packets. If Sounds are Crashing, disable them here.")]
     [DefaultValue(true)]
     public bool PlaySounds { get; set; } = true;
     
     
-    //[DisplayName("Test Option Here")]
-    //[Description("Test.")]
-    //[DefaultValue(true)]
-    //public bool TestOption { get; set; } = true;
+    
+    //[DisplayName("AP Connection Options")]
+    //[Description("AP Connection Options")]
+    //public ConnectionOptions ConnectionOptions { get; set; } = new ConnectionOptions();
     
     
-    [DisplayName("AP Connection Options")]
-    [Description("AP Connection Options")]
-    public ConnectionOptions ConnectionOptions { get; set; } = new ConnectionOptions();
+    //[DisplayName("Tag Options")]
+    //[Description("Tag Options")]
+    //public TagOptions TagOptions { get; set; } = new TagOptions();
     
     
-    [DisplayName("Tag Options")]
-    [Description("Tag Options")]
-    public TagOptions TagOptions { get; set; } = new TagOptions();
-    
-    
-    [DisplayName("In-Game Log Options")]
-    [Description("In-Game Log Options")]
-    public InGameLogOptions InGameLogOptions { get; set; } = new InGameLogOptions();
+    //[DisplayName("In-Game Log Options")]
+    //[Description("In-Game Log Options")]
+    //public InGameLogOptions InGameLogOptions { get; set; } = new InGameLogOptions();
 
 
-    [DisplayName("Music Shuffle Options")]
-    [Description("Music Shuffle Options")]
-    public MusicShuffleOptions MusicShuffleOptions { get; set; } = new MusicShuffleOptions();
+    //[DisplayName("Music Shuffle Options")]
+    //[Description("Music Shuffle Options")]
+    //public MusicShuffleOptions MusicShuffleOptions { get; set; } = new MusicShuffleOptions();
     
     
-    [DisplayName("Heroes Music Shuffle Options")]
-    [Description("Heroes Music Shuffle Options")]
-    public HeroesMusicShuffleOptions HeroesMusicShuffleOptions { get; set; } = new HeroesMusicShuffleOptions();
+    //[DisplayName("Heroes Music Shuffle Options")]
+    //[Description("Heroes Music Shuffle Options")]
+    //public HeroesMusicShuffleOptions HeroesMusicShuffleOptions { get; set; } = new HeroesMusicShuffleOptions();
     
     
-    [DisplayName("SA2 Music Shuffle Options")]
-    [Description("SA2 Music Shuffle Options")]
-    public SA2MusicShuffleOptions SA2MusicShuffleOptions { get; set; } = new SA2MusicShuffleOptions();
+    //[DisplayName("SA2 Music Shuffle Options")]
+    //[Description("SA2 Music Shuffle Options")]
+    //public SA2MusicShuffleOptions SA2MusicShuffleOptions { get; set; } = new SA2MusicShuffleOptions();
     
     
-    [DisplayName("SADX Music Shuffle Options")]
-    [Description("SADX Music Shuffle Options")]
-    public SADXMusicShuffleOptions SADXMusicShuffleOptions { get; set; } = new SADXMusicShuffleOptions();
+    //[DisplayName("SADX Music Shuffle Options")]
+    //[Description("SADX Music Shuffle Options")]
+    //public SADXMusicShuffleOptions SADXMusicShuffleOptions { get; set; } = new SADXMusicShuffleOptions();
     
     
-    [DisplayName("Custom Music Shuffle Options")]
-    [Description("Custom Music Shuffle Options")]
-    public CustomMusicShuffleOptions CustomMusicShuffleOptions { get; set; } = new CustomMusicShuffleOptions();
+    //[DisplayName("Custom Music Shuffle Options")]
+    //[Description("Custom Music Shuffle Options")]
+    //public CustomMusicShuffleOptions CustomMusicShuffleOptions { get; set; } = new CustomMusicShuffleOptions();
 }
+
+
+/*
 
 public class ConnectionOptions
 {
@@ -261,7 +491,7 @@ public class CustomMusicShuffleOptions
     public string MusicShuffleCustomFolder { get; set; } = "";
 }
 
-
+*/
 
 
 

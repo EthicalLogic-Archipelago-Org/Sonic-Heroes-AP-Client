@@ -1,5 +1,6 @@
 
 
+using System.Drawing;
 using System.Text;
 using Reloaded.Hooks.Definitions;
 using Reloaded.Hooks.Definitions.Enums;
@@ -56,6 +57,7 @@ public class FunctionHooks
     private static IReverseWrapper<SetActInLevelSelectToZero> _reverseWrapOnGoSetActInLevelSelectToZero;
     private static IReverseWrapper<ChangeActInLevelSelect> _reverseWrapOnChangeActInLevelSelect;
     private static IReverseWrapper<ChangeModeToFlying> _reverseWrapOnChangeModeToFlying;
+    private static IReverseWrapper<ScatteredRingConstructor> _reverseWrapOnScatteredRingConstructor;
     
     
     
@@ -478,7 +480,6 @@ public class FunctionHooks
          
             
             
-            
             string[] ChangeModeToFlying =
             {
                 "use32",
@@ -491,12 +492,57 @@ public class FunctionHooks
                 "popad"
             };
             _asmHooks.Add(hooks.CreateAsmHook(ChangeModeToFlying, (int)(Mod.ModuleBase + 0x1C9C81), AsmHookBehaviour.ExecuteAfter).Activate());
+            
+            
+            string[] ScatteredRingConstructor =
+            {
+                "use32",
+                "pushad",
+                "pushfd",
+                "push esp",
+                $"{hooks.Utilities.GetAbsoluteCallMnemonics(OnScatteredRingConstructor, out _reverseWrapOnScatteredRingConstructor)}",
+                "pop esp",
+                "popfd",
+                "popad"
+            };
+            _asmHooks.Add(hooks.CreateAsmHook(ScatteredRingConstructor, (int)(Mod.ModuleBase + 0x825F7), AsmHookBehaviour.ExecuteFirst).Activate());
         }
         catch (Exception e)
         {
             Console.WriteLine(e);
         }
     }
+    
+    
+    [Function(new FunctionAttribute.Register[] { FunctionAttribute.Register.esp }, 
+        FunctionAttribute.Register.eax, FunctionAttribute.StackCleanup.Callee)]
+    public delegate int ScatteredRingConstructor(int stackPtr);
+    private static unsafe int OnScatteredRingConstructor(int esp)
+    {
+        try
+        {
+            //0x3C is stack offset from pushing registers (to preserve them)
+            if (!GameStateHandler.InGame())
+                return 1;
+
+            //Mod.Logger.BackgroundColor = Color.DarkRed;
+            //Mod.Logger.WriteLine($"OnScatteredRing Hook ESP: 0x{esp:x}", Color.LightGreen);
+            
+            //var ringCount = GameStateGameWrites.GetRingCount();
+            var ringSpawnCount = *(int*)(esp + 0x3C + 0x24);
+            //Mod.Logger.WriteLine($"RingSpawnCount: {ringSpawnCount}, ScatteredRingsCap: {Mod.Configuration.ScatteredRingsCap}", Color.LightGreen);
+            if (ringSpawnCount > Mod.Configuration.ScatteredRingsCap)
+            {
+                Memory.Instance.SafeWrite((UIntPtr)(esp + 0x3C + 0x24), BitConverter.GetBytes(Mod.Configuration.ScatteredRingsCap));
+            }
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+        }
+        return 1;
+    }
+    
     
     [Function(new FunctionAttribute.Register[] { FunctionAttribute.Register.eax },
         FunctionAttribute.Register.eax, FunctionAttribute.StackCleanup.Callee)]
@@ -530,9 +576,6 @@ public class FunctionHooks
         }
         return 0;
     }
-
-    
-    
     
     
     
@@ -1161,7 +1204,7 @@ public class FunctionHooks
         }
         return 0;
         //Console.WriteLine($"OnBGMSetFileName: ECX (EAX): 0x{ecx:x} EDX: 0x{edx:x} ESI: 0x{esi:x}");
-        if (!Mod.Configuration!.MusicShuffleOptions.MusicShuffle)
+        if (!Mod.Configuration!.MusicShuffle)
             return 0;
         var length = ecx - esi;
         List<byte> originalName = [];
@@ -1190,7 +1233,7 @@ public class FunctionHooks
         try
         {
             //Console.WriteLine($"OnBGMGetDVDRootPath(esi): 0x{esi:x}");
-            if (!Mod.Configuration!.MusicShuffleOptions.MusicShuffle)
+            if (!Mod.Configuration!.MusicShuffle)
                 return 0;
             //Console.WriteLine($"OnBGMGetDVDRootPath(esi): Check Passed");
             MusicShuffleHandler.HandleBGMFilePathHook(esi);

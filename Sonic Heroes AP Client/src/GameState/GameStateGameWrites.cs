@@ -34,17 +34,39 @@ public static class GameStateGameWrites
             return *(int*)(Mod.ModuleBase + 0x5DD70C);
         }
     }
-    
-    
+
+
     /// <summary>
-    /// Writes over the Game Assembly to change the functionally of losing rings when getting hit.
+    /// Writes over the Game Assembly to change the functionality of spawning scattering rings when getting hit.
     /// </summary>
-    /// <param name="modern">True if modern ring loss (only lose 20 rings max when hit). False for classic (lose all rings when hit)</param>
-    public static void SetRingLoss(bool modern)
+    /// <param name="value">Should the cap (20) be disabled?</param>
+    public static void RemoveRingCapOnScatteredRingSpawn(bool value)
     {
-        var bytes = modern ? new byte[] { 0xB9, 0x14, 0x0, 0x0, 0x0, 0x90, 0x90 } 
-            : new byte[] { 0x8B, 0xC, 0x85, 0xC, 0xD7, 0x9D, 0x0 };
-        Memory.Instance.SafeWrite(Mod.ModuleBase + 0x1A446D, bytes);
+        var bytes = value ? Enumerable.Repeat((byte)0x90, 5).ToArray() : [0xBB, 0x14, 0x00, 0x00, 0x00];
+        Memory.Instance.SafeWrite(Mod.ModuleBase + 0x82769, bytes);
+    }
+    
+
+
+    /// <summary>
+    /// Writes over the Game Assembly to change the functionality of losing rings when getting hit.
+    /// </summary>
+    /// <param name="ringsLost">Number of rings to loss when getting hit. If negative, restore vanilla behavior (all rings)</param>
+    public static void SetRingLoss(int ringsLost)
+    {
+        byte[] classicRingLoss = [0x8B, 0xC, 0x85, 0xC, 0xD7, 0x9D, 0x0];
+        
+        byte[] startByte = [0xB9];
+        var numBytes = BitConverter.GetBytes(ringsLost);
+        byte[] endBytes = [0x90, 0x90];
+        if (ringsLost < 20)
+        {
+            Memory.Instance.SafeWrite(Mod.ModuleBase + 0x1A446D, classicRingLoss);
+            return;
+        }
+        var result = startByte.Concat(numBytes).Concat(endBytes).ToArray();
+        Memory.Instance.SafeWrite(Mod.ModuleBase + 0x1A446D, result);
+        //var bytes = modern ? new byte[] { 0xB9, 0x14, 0x0, 0x0, 0x0, 0x90, 0x90 } : new byte[] { 0x8B, 0xC, 0x85, 0xC, 0xD7, 0x9D, 0x0 };
     }
     
     

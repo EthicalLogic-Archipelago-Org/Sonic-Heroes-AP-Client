@@ -74,7 +74,7 @@ public class ArchipelagoHandler
             if (Seed != null)
             {
                 Mod.SaveDataHandler!.LoadSaveData(Seed, Slot);
-                if (Mod.Configuration!.MusicShuffleOptions.MusicShuffle)
+                if (Mod.Configuration!.MusicShuffle)
                     MusicShuffleHandler.Shuffle(int.Parse(Seed[..9]));
             }
                 
@@ -172,10 +172,10 @@ public class ArchipelagoHandler
     public void CheckTags()
     {
         List<string> tags = new List<string>();
-        var DeathLink = Mod.Configuration!.TagOptions.DeathLink;
+        var DeathLink = DeathLinkHandler.IsDeathLinkEnabled();
         if (DeathLink)
             tags.Add("DeathLink");
-        var RingLink = Mod.Configuration!.TagOptions.RingLink;
+        var RingLink = RingLinkHandler.IsRingLinkEnabled();
         if (RingLink)
             tags.Add("RingLink");
         Mod.ArchipelagoHandler.UpdateTags(tags);
