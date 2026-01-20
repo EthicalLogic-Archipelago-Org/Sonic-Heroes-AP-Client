@@ -42,7 +42,7 @@ public class CustomSaveData
     /// Is always length 7 regardless of how many bosses are actually generated.
     /// Will not save the completion of the Final Boss (hence why it is 1 smaller than GateBossUnlocked)
     /// </summary>
-    public bool[] GateBossComplete = new bool[7];
+    public bool[] GateBossComplete = new bool[8];
     
     /// <summary>
     /// A mapping of Team and LevelId to a List of bools referring to if that Bonus Key has been picked up by the Player. Has to be saved as Players can choose to not have KeySanity enabled.

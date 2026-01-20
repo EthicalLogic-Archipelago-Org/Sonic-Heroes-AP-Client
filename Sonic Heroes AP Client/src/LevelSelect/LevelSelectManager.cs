@@ -142,9 +142,11 @@ public class LevelSelectManager
             finalGate.BossLevel.IsUnlocked = hasCharacters && hasEmblemsForMetal && hasEmeralds && hasLevelCompletions && hasLevelCompletionsPerStory;
             
             Mod.SaveDataHandler.CustomSaveData.GateBossUnlocked[finalGate.Index] = finalGate.BossLevel.IsUnlocked;
+            
 
             foreach (var gate in GateData.Where(gate => Mod.SaveDataHandler.CustomSaveData.GateBossComplete[gate.Index]))
                 gate.Next().IsUnlocked = true;
+            
                 
             foreach (var gate in GateData
                          .Where(gate => gate.IsUnlocked && Mod.SaveDataHandler.CustomSaveData.Emblems >= gate.BossCost 
@@ -153,6 +155,7 @@ public class LevelSelectManager
                 gate.BossLevel.IsUnlocked = true;
                 Mod.SaveDataHandler.CustomSaveData.GateBossUnlocked[gate.Index] = true;
             }
+            
             Mod.ArchipelagoHandler!.Save();
             
             foreach (var gate in GateData)
