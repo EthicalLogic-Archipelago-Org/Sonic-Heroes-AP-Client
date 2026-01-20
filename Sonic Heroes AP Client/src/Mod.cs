@@ -30,7 +30,7 @@ public class Mod: ModBase
     /// Flag for debug prints and testing.
     /// Should NOT be enabled in prod.
     /// </summary>
-    public static bool IsDebug = true;
+    public static bool IsDebug = false;
     
     private readonly IModLoader _modLoader;
     
@@ -98,6 +98,7 @@ public class Mod: ModBase
             _owner = context.Owner;
             ModConfig = context.ModConfig;
             Configuration = context.Configuration;
+            CheckInvalidConfigValues();
             _controllerHook = _modLoader.GetController<IControllerHook>();
             
             SDK.Init(_hooks);
@@ -169,15 +170,29 @@ public class Mod: ModBase
         {
             if (ArchipelagoHandler.Seed == null)
                 return;
+            CheckInvalidConfigValues();
             //Console.WriteLine($"Mod Config Changed. Seed is: {Seed}");
             MusicShuffleHandler.Shuffle(int.Parse(ArchipelagoHandler.Seed[..9]));
             
             //Console.WriteLine($"Mod Config Changed. Deathlink is now: {Mod.Configuration.TagOptions.DeathLink}");
             ArchipelagoHandler.CheckTags();
+            GameStateGameWrites.SetRingLoss(Configuration.RingLoss);
         }
         catch (Exception e)
         {
             Console.WriteLine(e);
+        }
+    }
+
+    public void CheckInvalidConfigValues()
+    {
+        if (Configuration == null)
+            return;
+
+        if (Configuration.ScatteredRingsCap > Configuration.RingLoss && Configuration.RingLoss != 19)
+        {
+            Console.WriteLine($"Scattered Rings Cap: {Configuration.ScatteredRingsCap} is above Ring Loss: {Configuration.RingLoss}");
+            Configuration.ScatteredRingsCap = Configuration.RingLoss;
         }
     }
 

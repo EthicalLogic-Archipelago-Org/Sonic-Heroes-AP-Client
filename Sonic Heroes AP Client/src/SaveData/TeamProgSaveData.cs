@@ -11,6 +11,5 @@ public class TeamProgSaveData
     public Dictionary<FormationChar, bool> CharsUnlocked = Enum.GetValues<FormationChar>().ToDictionary(x => x, _ => false);
     
     public Dictionary<Region, Dictionary<Ability, bool>> AbilityUnlocks = 
-        Enum.GetValues<Region>().ToDictionary(region => region, _ => Enum.GetValues<Ability>().ToDictionary(ability => ability, _ => false));
-    
+        Enum.GetValues<Region>().ToDictionary(region => region, region => Enum.GetValues<Ability>().ToDictionary(ability => ability, _ => region > Region.Sky));
 }

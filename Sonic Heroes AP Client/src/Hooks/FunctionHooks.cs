@@ -524,11 +524,8 @@ public class FunctionHooks
             //0x3C is stack offset from pushing registers (to preserve them)
             if (!GameStateHandler.InGame())
                 return 1;
-
-            //Mod.Logger.BackgroundColor = Color.DarkRed;
             //Mod.Logger.WriteLine($"OnScatteredRing Hook ESP: 0x{esp:x}", Color.LightGreen);
             
-            //var ringCount = GameStateGameWrites.GetRingCount();
             var ringSpawnCount = *(int*)(esp + 0x3C + 0x24);
             //Mod.Logger.WriteLine($"RingSpawnCount: {ringSpawnCount}, ScatteredRingsCap: {Mod.Configuration.ScatteredRingsCap}", Color.LightGreen);
             if (ringSpawnCount > Mod.Configuration.ScatteredRingsCap)
