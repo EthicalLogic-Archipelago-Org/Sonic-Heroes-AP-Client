@@ -218,7 +218,7 @@ public static class LevelSpawnData
                         new LevelSpawnEntry(230, 1300, 2630, isdefault:true),
                         //new LevelSpawnEntry(200, 1300, 0, isdefault:true), <- after dash ramp at start
                         new LevelSpawnEntry(750, 810, -10302),
-                        new LevelSpawnEntry(480.06f, 175, -18730),
+                        new LevelSpawnEntry(-480.06f, 175, -18730),
                         new LevelSpawnEntry(2398.8208f, 75, -24800.24f),
                         new LevelSpawnEntry(2100.043f, 50, -31690.03f),
                         new LevelSpawnEntry(800, 1515, -36010),
