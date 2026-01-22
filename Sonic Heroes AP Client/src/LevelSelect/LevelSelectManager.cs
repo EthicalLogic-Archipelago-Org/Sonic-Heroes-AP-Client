@@ -64,6 +64,24 @@ public class LevelSelectManager
             }
         }
     }
+
+
+    public bool IsThisBossCompletedYet(LevelId level)
+    {
+        if (level is LevelId.MetalMadness or LevelId.MetalOverlord or LevelId.SeaGate)
+            return Mod.ArchipelagoHandler.IsLocationChecked(SonicHeroesDefinitions.MetalMadnessId);
+        
+        foreach (var team in Enum.GetValues<Team>().Where(x => (bool)IsThisTeamEnabled(x)!))
+        {
+            var tempTeam = team;
+            if (tempTeam == Team.SuperHardMode)
+                tempTeam = Team.Sonic;
+
+            if (Mod.ArchipelagoHandler.IsLocationChecked(0xA0 + ((int)level - 2) * 2 + 42 * (int)tempTeam))
+                return true;
+        }
+        return false;
+    }
     
     
     public unsafe void RecalculateOpenLevels(Team teamWithExtraLevelComplete = Team.Sonic, bool isCompletingNewLevel = false)
@@ -71,7 +89,34 @@ public class LevelSelectManager
         try
         {
             Mod.SaveDataHandler!.SaveData->EmblemCount = (byte)Mod.SaveDataHandler.CustomSaveData.Emblems;
-        
+            
+            //Gate Unlocking
+            //foreach (var gate in GateData.Where(gate => Mod.SaveDataHandler.CustomSaveData.GateBossComplete[gate.Index]))
+                //gate.Next().IsUnlocked = true;
+
+            foreach (var gate in GateData)
+            {
+                //var bossLevel = gate.BossLevel.LevelId;
+                //if (isBossExtraCompletion && bossLevel == bossWithExtraCompletion)
+                //{
+                    //gate.Next().IsUnlocked = true;
+                    //continue;
+                //}
+                if (IsThisBossCompletedYet(gate.BossLevel.LevelId))
+                    gate.Next().IsUnlocked = true;
+            }
+                
+            //GateBoss Unlocking (Not Final Boss)
+            foreach (var gate in GateData
+                         .Where(gate => gate.IsUnlocked && Mod.SaveDataHandler.CustomSaveData.Emblems >= gate.BossCost 
+                                                        && gate.BossLevel.LevelId != LevelId.MetalMadness))
+            {
+                gate.BossLevel.IsUnlocked = true;
+                Mod.SaveDataHandler.CustomSaveData.GateBossUnlocked[gate.Index] = true;
+            }
+            
+            
+            //Final Boss Here
             var finalGate = GateData.First(x => x.BossLevel.LevelId == LevelId.MetalMadness);
             
             var needCharacters = Mod.ArchipelagoHandler.SlotData.EntireRunUnlockType is EntireRunUnlockType.AbilityCharacterUnlocks;
@@ -139,22 +184,11 @@ public class LevelSelectManager
                 }
             }
             
-            finalGate.BossLevel.IsUnlocked = hasCharacters && hasEmblemsForMetal && hasEmeralds && hasLevelCompletions && hasLevelCompletionsPerStory;
+            finalGate.BossLevel.IsUnlocked = finalGate.IsUnlocked && hasCharacters && hasEmblemsForMetal && hasEmeralds && hasLevelCompletions && hasLevelCompletionsPerStory;
             
             Mod.SaveDataHandler.CustomSaveData.GateBossUnlocked[finalGate.Index] = finalGate.BossLevel.IsUnlocked;
             
-
-            foreach (var gate in GateData.Where(gate => Mod.SaveDataHandler.CustomSaveData.GateBossComplete[gate.Index]))
-                gate.Next().IsUnlocked = true;
             
-                
-            foreach (var gate in GateData
-                         .Where(gate => gate.IsUnlocked && Mod.SaveDataHandler.CustomSaveData.Emblems >= gate.BossCost 
-                                                        && gate.BossLevel.LevelId != LevelId.MetalMadness))
-            {
-                gate.BossLevel.IsUnlocked = true;
-                Mod.SaveDataHandler.CustomSaveData.GateBossUnlocked[gate.Index] = true;
-            }
             
             Mod.ArchipelagoHandler!.Save();
             

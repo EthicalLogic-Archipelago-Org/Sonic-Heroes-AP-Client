@@ -642,21 +642,26 @@ public class FunctionHooks
             //SeaGate is 25
             //maybe do special handling here
             
+            //this will never actually run btw (SeaGate uses different hook)
             if ((LevelId)levelIndex == LevelId.SeaGate && Mod.LevelSelectManager.FinalBoss is FinalBoss.SeaGate) 
             {
-                apHandler.CheckLocation(0x230E);
+                apHandler.CheckLocation(SonicHeroesDefinitions.MetalMadnessId);
                 LoggerWindow.Log("Victory!");
                 apHandler.Release();
+                return 1;
+            }
+
+            if ((LevelId)levelIndex == LevelId.MetalOverlord)
+            {
+                if (Mod.LevelSelectManager.FinalBoss is FinalBoss.MetalMadness or FinalBoss.MetalOverlord) 
+                {
+                    apHandler.CheckLocation(SonicHeroesDefinitions.MetalMadnessId);
+                    LoggerWindow.Log("Victory!");
+                    apHandler.Release();
+                }
                 return 1;
             }
             
-            if ((LevelId)levelIndex == LevelId.MetalOverlord && Mod.LevelSelectManager.FinalBoss is FinalBoss.MetalMadness or FinalBoss.MetalOverlord) 
-            {
-                apHandler.CheckLocation(0x230E);
-                LoggerWindow.Log("Victory!");
-                apHandler.Release();
-                return 1;
-            }
             
             if (rank <= slotData.RequiredRank) 
             {
@@ -689,6 +694,7 @@ public class FunctionHooks
                     if (Mod.LevelSelectManager.GateData[gateIndex].BossLevel.LevelId == (LevelId)levelIndex)
                     {
                         Mod.LevelSelectManager.GateData[gateIndex + 1].IsUnlocked = true;
+                        //if (!Mod.LevelSelectManager.IsThisBossCompletedYet((LevelId)levelIndex))
                         Mod.LevelSelectManager.RecalculateOpenLevels();
                         unsafe
                         {
@@ -1256,7 +1262,10 @@ public class FunctionHooks
             {
                 Console.WriteLine($"I think that you just finished Sea Gate.");
                 if (Mod.LevelSelectManager.FinalBoss is FinalBoss.SeaGate)
+                {
+                    Mod.ArchipelagoHandler.CheckLocation(SonicHeroesDefinitions.MetalMadnessId);
                     Mod.ArchipelagoHandler.Release();
+                }
             }
         }
         catch (Exception e)

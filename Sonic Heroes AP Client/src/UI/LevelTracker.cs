@@ -717,8 +717,7 @@ public class LevelTracker
             
             HandleKeySanityLayout(team, level);
             HandleCheckpointSanityLayout(team, level);
-            //spawn pos not done yet
-            //HandleSpawnPos(team, level);
+            HandleSpawnPos(team, level);
             HandleCharDisplayForTeam(team);
             if (!SonicHeroesDefinitions.LevelIdToRegion.TryGetValue(level, out var region))
                 return;
