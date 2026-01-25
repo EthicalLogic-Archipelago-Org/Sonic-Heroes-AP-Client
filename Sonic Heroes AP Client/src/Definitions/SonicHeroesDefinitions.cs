@@ -749,6 +749,7 @@ public enum StageObjTypes : ushort
     CasinoCourseDiceObject = 0x3380,
     CasinoCourseRouletteObject = 0x3381,
     CasinoCourseSlotObject = 0x3382,
+    UnknownBobsledObject = 0x3388,
 
     //Unknown
     CustomObjectTest = 0xC040,
