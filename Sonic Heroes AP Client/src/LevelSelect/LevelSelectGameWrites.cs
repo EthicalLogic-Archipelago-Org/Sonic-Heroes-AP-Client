@@ -25,7 +25,7 @@ public static class LevelSelectGameWrites
     }
     
     /// <summary>
-    /// Allows for all levels in Level Select to be entered regardledd of unlock status
+    /// Allows for all levels in Level Select to be entered regardless of unlock status
     /// </summary>
     /// <param name="value">True to enable, False to disable.</param>
     public static void SetLevelSelectAllLevelsAvailableWrite(bool value)

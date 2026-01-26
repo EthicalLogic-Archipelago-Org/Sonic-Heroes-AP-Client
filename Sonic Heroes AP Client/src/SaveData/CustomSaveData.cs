@@ -39,8 +39,8 @@ public class CustomSaveData
 
     /// <summary>
     /// An Array of bools saving if that specific boss has been completed.
-    /// Is always length 7 regardless of how many bosses are actually generated.
-    /// Will not save the completion of the Final Boss (hence why it is 1 smaller than GateBossUnlocked)
+    /// Is always length 8 regardless of how many bosses are actually generated.
+    /// Will not save the completion of the Final Boss
     /// </summary>
     public bool[] GateBossComplete = new bool[8];
     

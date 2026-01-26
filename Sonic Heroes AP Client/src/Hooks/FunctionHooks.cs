@@ -680,14 +680,23 @@ public class FunctionHooks
             }
             else
             {
-                if (!(bool)Mod.LevelSelectManager.IsThisTeamEnabled(team)!)
+                //check team enabled (not including Sonic Bosses)
+                if ((team is not Team.Sonic || levelIndex <= (int)LevelId.FinalFortress) 
+                    && !(bool)Mod.LevelSelectManager.IsThisTeamEnabled(team)!)
                     return 0;
                 
+                //check team enabled on Sonic Bosses (as SuperHard is an option)
+                if (team is Team.Sonic && levelIndex >= (int)LevelId.EggHawk &&
+                    !(bool)Mod.LevelSelectManager.IsThisTeamEnabled(team)! &&
+                    !(bool)Mod.LevelSelectManager.IsThisTeamEnabled(Team.SuperHardMode)!)
+                    return 0;
+                
+                //check if Act is enabled (if not Boss)
                 if (levelIndex < (int)LevelId.EggHawk && !Mod.LevelSelectManager.IsThisTeamActEnabled(team, (Act)isMission2))
                     return 0;
             }
             
-            if (levelIndex is >= (int)LevelId.EggHawk and <= (int)LevelId.SeaGate)
+            if (levelIndex is >= (int)LevelId.EggHawk and < (int)LevelId.MetalMadness)
             {
                 for (var gateIndex = 0; gateIndex < Mod.LevelSelectManager.GateData.Count - 1; gateIndex++)
                 {
