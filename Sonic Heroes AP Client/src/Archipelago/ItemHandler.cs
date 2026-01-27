@@ -367,7 +367,7 @@ public static class ItemHandler
     {
         try
         {
-            return Enum.GetValues<Region>().Cast<Region?>().FirstOrDefault(x =>
+            return Enum.GetValues<Region>().Cast<Region?>().LastOrDefault(x =>
                 itemName.Replace(" ", "").Contains($"{x.ToString()!}Region", StringComparison.InvariantCultureIgnoreCase));
         }
         catch (Exception e)

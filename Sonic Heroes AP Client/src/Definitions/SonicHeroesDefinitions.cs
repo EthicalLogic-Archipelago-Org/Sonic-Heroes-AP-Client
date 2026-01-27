@@ -202,6 +202,7 @@ public enum LevelId
 
 public enum Region
 {
+    //TODO make Boss and FinalBoss unique (for the .Contains() check)
     Ocean,
     HotPlant,
     Casino,
@@ -211,7 +212,7 @@ public enum Region
     Sky,
     SpecialStage,
     Boss,
-    FinalBoss
+    FinalBoss,
 }
 
 public enum Team
