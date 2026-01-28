@@ -43,6 +43,7 @@ public static class LevelSpawnUnlockHandler
             {
                 UnlockAllSpawnDataForTeam(team);
             }
+            Mod.ArchipelagoHandler.Save();
         }
         catch (Exception e)
         {
@@ -71,8 +72,8 @@ public static class LevelSpawnUnlockHandler
     {
         try
         {
-            Mod.SaveDataHandler.CustomSaveData!.SpawnDataUnlocks[team]
-                .Select(pair => pair.Value).Select(_ => true);
+            Mod.SaveDataHandler.CustomSaveData!.SpawnDataUnlocks[team][level] = Enumerable
+                .Repeat(true, Mod.SaveDataHandler.CustomSaveData!.SpawnDataUnlocks[team][level].Count).ToList();
         }
         catch (Exception e)
         {
@@ -234,7 +235,6 @@ public static class LevelSpawnUnlockHandler
         }
     }
     
-    //TODO Handle Super Hard here (InGame Act is set to 3 from OnSetAct Hook)
     public static unsafe void GoToGameSpawnPosCallback()
     {
         try
