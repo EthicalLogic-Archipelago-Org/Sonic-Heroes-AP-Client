@@ -13,7 +13,8 @@ public static class LevelSpawnData
                 {
                     LevelId.SeasideHill, 
                     [
-                        new LevelSpawnEntry(0, 20, 2960, mode: SpawnMode.Running, runningtime: 0x0172, isdefault: true),
+                        //new LevelSpawnEntry(0, 20, 2960, mode: SpawnMode.Running, runningtime: 0x0172, isdefault: true),
+                        new LevelSpawnEntry(0, 20, 2960, mode: SpawnMode.Running, runningtime: 0x00C8, isdefault: true),
                         new LevelSpawnEntry(1, 110, -4215),
                         new LevelSpawnEntry(-4509.383f, 180, -6922.28f),
                         new LevelSpawnEntry(-130.082f, 154.9283f, -16150.09f),

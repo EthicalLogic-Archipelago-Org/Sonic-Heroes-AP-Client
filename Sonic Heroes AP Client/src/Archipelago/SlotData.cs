@@ -6,6 +6,7 @@ using Sonic_Heroes_AP_Client.Definitions;
 using Sonic_Heroes_AP_Client.LevelSelect;
 using Sonic_Heroes_AP_Client.LevelUnlocking;
 using Sonic_Heroes_AP_Client.Sanity.AbilityAndCharacter;
+using Sonic_Heroes_AP_Client.UI;
 
 namespace Sonic_Heroes_AP_Client.Archipelago;
 
@@ -65,7 +66,7 @@ public class SlotData
                 while (true)
                 {
                     Console.WriteLine($"Your Mod and APWorld versions are incompatible. Your Mod version is: {Mod.ModConfig.ModVersion} and your APWorld version is: {apworldversion}");
-                    //Logger.Log($"Your Mod and APWorld versions are incompatible. Your Mod version is: {Mod.ModConfig.ModVersion} and your APWorld version is: {apworldversion}");
+                    LoggerWindow.Log($"Your Mod and APWorld versions are incompatible. Your Mod version is: {Mod.ModConfig.ModVersion} and your APWorld version is: {apworldversion}");
                     Thread.Sleep(3000);
                 }
             }

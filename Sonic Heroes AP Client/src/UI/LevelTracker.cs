@@ -123,7 +123,10 @@ public class LevelTracker
             
             //get level and team
             var team = GetTeamForLevelTracker();
-            var levelId = GetLevelForLevelTracker();
+            if (!GetLevelForLevelTracker(out var result))
+                return;
+
+            var levelId = (LevelId)result!;
 
             if (team is Team.SuperHardMode)
                 team = Team.Sonic;
@@ -219,24 +222,36 @@ public class LevelTracker
         return Team.Sonic;
     }
     
-    private unsafe LevelId GetLevelForLevelTracker()
+    private unsafe bool GetLevelForLevelTracker(out LevelId? level)
     { 
         try
         {
-            if (GameStateHandler.InGame(true)) 
-                return (LevelId)GameStateHandler.GetCurrentLevel()!;
+            if (GameStateHandler.InGame(true))
+            {
+                level = (LevelId)GameStateHandler.GetCurrentLevel()!;
+                return true;
+            }
             
             var levelSelectPtr = *(IntPtr*)(Mod.ModuleBase + 0x6777B4);
             var levelIndex = *(int*)(levelSelectPtr + 0x194);
-            return (LevelId)SonicHeroesDefinitions.LevelTrackerUILevelMapping[levelIndex];
+            if (SonicHeroesDefinitions.LevelTrackerUILevelMapping.TryGetValue(levelIndex, out var levelInt))
+            {
+                level = (LevelId)levelInt;
+                return true;
+            }
+            level = null;
+            return false;
         }
         catch (Exception e)
         {
             Console.WriteLine(e);
         }
-        return LevelId.SeaGate;
+
+        level = null;
+        return false;
     }
 
+    /*
     private unsafe Act GetActForLevelTracker()
     {
         try
@@ -247,8 +262,13 @@ public class LevelTracker
             }
             var levelSelectPtr = *(IntPtr*)(Mod.ModuleBase + 0x6777B4);
             var actIndex = *(int*)(levelSelectPtr + 0x2BC);
+            
+            if (!GetLevelForLevelTracker(out var result))
+                return Act.Act3;
 
-            if (GetLevelForLevelTracker() > LevelId.FinalFortress)
+            var levelId = (LevelId)result!;
+
+            if (levelId > LevelId.FinalFortress)
                 return Act.Act1;
             
             return (Act)actIndex;
@@ -259,6 +279,7 @@ public class LevelTracker
         }
         return Act.Act3;
     }
+    */
 
     private unsafe void WriteCenteredText(string text, Color color = default, bool largerText = false)
     {
