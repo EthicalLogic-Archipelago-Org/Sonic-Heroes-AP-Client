@@ -72,6 +72,7 @@ public static class TrapHandler
         try
         {
             Interlocked.Add(ref remainingStealthDuration, StealthTrapDuration);
+            SoundHandler.PlaySound((int)Mod.ModuleBase, 0xE00D);
             if (StealthTrapRunning)
                 return;
             StealthTrapRunning = true;
@@ -79,7 +80,6 @@ public static class TrapHandler
             var t = new Thread(() =>
             {
                 ItemGameWrites.SetStealth(1);
-                SoundHandler.PlaySound((int)Mod.ModuleBase, 0xE00D);
                 while (Interlocked.CompareExchange(ref remainingStealthDuration, 0, 0) > 0) {
                     Thread.Sleep(1000);
                     Interlocked.Decrement(ref remainingStealthDuration);
@@ -108,6 +108,7 @@ public static class TrapHandler
         try
         {
             Interlocked.Add(ref remainingFreezeDuration, duration);
+            SoundHandler.PlaySound((int)Mod.ModuleBase, 0xE014);
             if (previousFreeze == freezeType)
                 return;
             previousFreeze = freezeType;
@@ -115,7 +116,6 @@ public static class TrapHandler
             var t = new Thread(() =>
             {
                 ItemGameWrites.SetFreeze(freezeType);
-                SoundHandler.PlaySound((int)Mod.ModuleBase, 0xE014);
                 while (Interlocked.CompareExchange(ref remainingFreezeDuration, 0, 0) > 0) 
                 {
                     Thread.Sleep(1000);
