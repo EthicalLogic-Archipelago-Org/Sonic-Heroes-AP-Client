@@ -58,6 +58,8 @@ public class FunctionHooks
     private static IReverseWrapper<ChangeActInLevelSelect> _reverseWrapOnChangeActInLevelSelect;
     private static IReverseWrapper<ChangeModeToFlying> _reverseWrapOnChangeModeToFlying;
     private static IReverseWrapper<ScatteredRingConstructor> _reverseWrapOnScatteredRingConstructor;
+    private static IReverseWrapper<PickUpRing> _reverseWrapOnPickUpRing;
+    private static IReverseWrapper<EnemyDestroyMyself> _reverseWrapOnEnemyDestroyMyself;
     
     
     
@@ -506,12 +508,107 @@ public class FunctionHooks
                 "popad"
             };
             _asmHooks.Add(hooks.CreateAsmHook(ScatteredRingConstructor, (int)(Mod.ModuleBase + 0x825F7), AsmHookBehaviour.ExecuteFirst).Activate());
+            
+            string[] PickUpRing =
+            {
+                "use32",
+                "pushad",
+                "pushfd",
+                "mov ecx, esi",
+                "add ecx, 0xCA",
+                "movsx ecx, byte [ecx]",
+                "push ecx",
+                "push esi",
+                $"{hooks.Utilities.GetAbsoluteCallMnemonics(OnPickUpRing, out _reverseWrapOnPickUpRing)}",
+                "pop esi",
+                "pop ecx",
+                "popfd",
+                "popad"
+            };
+            _asmHooks.Add(hooks.CreateAsmHook(PickUpRing, (int)(Mod.ModuleBase + 0x83366), AsmHookBehaviour.ExecuteFirst).Activate());
+            
+            
+            string[] EnemyDestroyMyself =
+            {
+                "use32",
+                "pushad",
+                "pushfd",
+                "push esi",
+                $"{hooks.Utilities.GetAbsoluteCallMnemonics(OnEnemyDestroyMyself, out _reverseWrapOnEnemyDestroyMyself)}",
+                "pop esi",
+                "popfd",
+                "popad"
+            };
+            _asmHooks.Add(hooks.CreateAsmHook(EnemyDestroyMyself, (int)(Mod.ModuleBase + 0x1E4D22), AsmHookBehaviour.ExecuteFirst).Activate());
+            
+            
         }
         catch (Exception e)
         {
             Console.WriteLine(e);
         }
     }
+    
+    [Function(new FunctionAttribute.Register[] { FunctionAttribute.Register.esi }, FunctionAttribute.Register.eax, FunctionAttribute.StackCleanup.Callee)]
+    public delegate int EnemyDestroyMyself(int enemyPtr);
+    private static unsafe int OnEnemyDestroyMyself(int esi)
+    {
+        try
+        {
+            Console.WriteLine($"OnEnemyDestroyMyself");
+            var staticPtr = *(int*)(esi + 0x2C);
+            Console.WriteLine($"StaticPtr: 0x{staticPtr:x}");
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+        }
+        return 1;
+    }
+    
+    
+    [Function(new FunctionAttribute.Register[] { FunctionAttribute.Register.ecx, FunctionAttribute.Register.esi }, FunctionAttribute.Register.eax, FunctionAttribute.StackCleanup.Callee)]
+    public delegate int PickUpRing(int ringIndex, int ringSubstancePtr);
+    private static unsafe int OnPickUpRing(int ecx, int esi)
+    {
+        try
+        {
+            Console.WriteLine($"OnPickUpRing: Ring Index: {ecx}");
+            
+            var heapPtr = *(int*)(esi + 0xD8);
+            Console.WriteLine($"HeapPtr: 0x{heapPtr:x}");
+            
+            var ringGroupType = *(byte*)(heapPtr + 0x29);
+            Console.WriteLine($"RingGroupType: {ringGroupType}");
+            
+            var numRingsTotal = *(byte*)(heapPtr + 0x28);
+            Console.WriteLine($"NumRingsTotal: {numRingsTotal}");
+
+            if (ringGroupType == 4)
+            {
+                Console.WriteLine($"I think this is a scattered ring group.");
+                return 1;
+            }
+            
+            //var linkedListStartPtr = *(int*)(heapPtr + 0x4C);
+            //esi points to current entry
+            //list is list of TObjRingSubstance
+            //Console.WriteLine($"LinkedListStartPtr: 0x{linkedListStartPtr:x}");
+            
+            var staticPtr = *(int*)(heapPtr + 0x54);
+            Console.WriteLine($"StaticPtr: 0x{staticPtr:x}");
+            
+            var staticRingCount =  *(byte*)(*(int*)(staticPtr + 0x2C) + 0x2);
+            Console.WriteLine($"StaticRingCount: {staticRingCount}");
+            
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+        }
+        return 1;
+    }
+    
     
     
     [Function(new FunctionAttribute.Register[] { FunctionAttribute.Register.esp }, 
@@ -521,7 +618,7 @@ public class FunctionHooks
     {
         try
         {
-            //0x3C is stack offset from pushing registers (to preserve them)
+            //0x24 is stack offset from pushing registers (to preserve them)
             if (!GameStateHandler.InGame())
                 return 1;
             //Mod.Logger.WriteLine($"OnScatteredRing Hook ESP: 0x{esp:x}", Color.LightGreen);
