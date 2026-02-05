@@ -167,7 +167,7 @@ public static class MusicShuffleData
         (Path.Combine(SADXWMAFolder, "fishmiss.adx"), MusicType.Ignored),
         (Path.Combine(SADXWMAFolder, "hammer.adx"), MusicType.ShortMusic),
         (Path.Combine(SADXWMAFolder, "highway1.adx"), MusicType.Music),
-        (Path.Combine(SADXWMAFolder, "highway2.adx"), MusicType.ShortMusic),
+        (Path.Combine(SADXWMAFolder, "highway2.adx"), MusicType.LongJingle),
         (Path.Combine(SADXWMAFolder, "highway3.adx"), MusicType.Music),
         (Path.Combine(SADXWMAFolder, "hurryup.adx"), MusicType.Jingle),
         (Path.Combine(SADXWMAFolder, "icecap1.adx"), MusicType.Music),
