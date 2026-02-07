@@ -22,7 +22,7 @@ public static class MusicShuffleHandler
     {
         try
         {
-            byte[] filePath = new byte[256];
+            var filePath = new byte[256];
             Marshal.Copy(filePathAddr, filePath, 0, filePath.Length);
             
             var oldFileFullPath = Encoding.ASCII.GetString(filePath, 0, filePath.Length).Trim('\0');

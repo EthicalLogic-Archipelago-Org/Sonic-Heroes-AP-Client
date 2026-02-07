@@ -297,6 +297,7 @@ public enum PlayableCharacter
 
 public enum Ability
 {
+    Jump,
     HomingAttack,
     Tornado,
     RocketAccel,
@@ -747,9 +748,10 @@ public enum StageObjTypes : ushort
     //MultiplayerBobsled
     UnbrokenBobCountObject = 0x3300,
     SeasideBobsledCourseBobsledDummyObject = 0x3301,
-    CasinoCourseDiceObject = 0x3380,
-    CasinoCourseRouletteObject = 0x3381,
-    CasinoCourseSlotObject = 0x3382,
+    CasinoCourseChipObject = 0x3380,
+    CasinoCourseDiceObject = 0x3381,
+    CasinoCourseRouletteObject = 0x3382,
+    CasinoCourseSlotObject = 0x3383,
     UnknownBobsledObject = 0x3388,
 
     //Unknown

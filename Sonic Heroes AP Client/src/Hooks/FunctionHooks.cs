@@ -450,7 +450,7 @@ public class FunctionHooks
                 "use32",
                 "pushad",
                 "pushfd",
-                $"{hooks.Utilities.GetAbsoluteCallMnemonics(OnTObjResultConstructStart, out _reverseWrapOnSetTeamInitialPosition)}",
+                $"{hooks.Utilities.GetAbsoluteCallMnemonics(OnTObjResultConstructStart, out _reverseWrapOnTObjResultConstructStart)}",
                 "popfd",
                 "popad"
             };
@@ -542,12 +542,17 @@ public class FunctionHooks
             _asmHooks.Add(hooks.CreateAsmHook(EnemyDestroyMyself, (int)(Mod.ModuleBase + 0x1E4D22), AsmHookBehaviour.ExecuteFirst).Activate());
             
             
+            
+            
         }
         catch (Exception e)
         {
             Console.WriteLine(e);
         }
     }
+    
+    
+    
     
     [Function(new FunctionAttribute.Register[] { FunctionAttribute.Register.esi }, FunctionAttribute.Register.eax, FunctionAttribute.StackCleanup.Callee)]
     public delegate int EnemyDestroyMyself(int enemyPtr);
@@ -802,10 +807,6 @@ public class FunctionHooks
                         Mod.LevelSelectManager.GateData[gateIndex + 1].IsUnlocked = true;
                         //if (!Mod.LevelSelectManager.IsThisBossCompletedYet((LevelId)levelIndex))
                         Mod.LevelSelectManager.RecalculateOpenLevels();
-                        unsafe
-                        {
-                            Mod.SaveDataHandler!.CustomSaveData.GateBossComplete[gateIndex] = true;
-                        }
                     }
                     Mod.ArchipelagoHandler?.Save();
                     locationId = 0xA0 + (levelIndex - 2) * 2;

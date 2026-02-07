@@ -56,7 +56,13 @@ public static class AbilityCharacterGameWrites
             Console.WriteLine(e);
         }
     }
-    
+
+    public static void SetJumpAbility(bool value)
+    {
+        var bytes = value ? new byte[] { 0x74 } : new byte[] { 0xEB };
+        Memory.Instance.SafeWrite(Mod.ModuleBase + 0x191590, bytes);
+    }
+
     public static void SetAmyHammerHover(bool value)
     {
         var bytes = value ? new byte[] { 0x74 } : new byte[] { 0xEB };

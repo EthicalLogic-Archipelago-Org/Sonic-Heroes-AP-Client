@@ -29,7 +29,7 @@ public static class AbilityCharacterManager
     
     public static bool CanTeamBlast(Team team, Region region)
     {
-        bool hasChars = Mod.SaveDataHandler!.CustomSaveData!.UnlockSaveData[team].CharsUnlocked[FormationChar.Speed] && Mod.SaveDataHandler!.CustomSaveData!.UnlockSaveData[team].CharsUnlocked[FormationChar.Flying] && Mod.SaveDataHandler!.CustomSaveData!.UnlockSaveData[team].CharsUnlocked[FormationChar.Power];
+        var hasChars = Mod.SaveDataHandler!.CustomSaveData!.UnlockSaveData[team].CharsUnlocked[FormationChar.Speed] && Mod.SaveDataHandler!.CustomSaveData!.UnlockSaveData[team].CharsUnlocked[FormationChar.Flying] && Mod.SaveDataHandler!.CustomSaveData!.UnlockSaveData[team].CharsUnlocked[FormationChar.Power];
         
         var hasAbilities = HasAllAbilitiesForRegion(team, region);
         return hasChars && hasAbilities;
@@ -50,26 +50,48 @@ public static class AbilityCharacterManager
     
     
     
-    public static void UnlockAbilityForAllRegions(Team team, Ability ability)
+    public static void UnlockAllAbilitiesForAllRegionsForTeam(Team team)
     {
-        UnlockAbilityForRegion(team, Region.Ocean, ability);
-        UnlockAbilityForRegion(team, Region.HotPlant, ability);
-        UnlockAbilityForRegion(team, Region.Casino, ability);
-        UnlockAbilityForRegion(team, Region.Train, ability);
-        UnlockAbilityForRegion(team, Region.BigPlant, ability);
-        UnlockAbilityForRegion(team, Region.Ghost, ability);
-        UnlockAbilityForRegion(team, Region.Sky, ability);
-        //UnlockAbilityForRegion(team, Region.SpecialStage, ability);
-        //UnlockAbilityForRegion(team, Region.Boss, ability);
-        //UnlockAbilityForRegion(team, Region.FinalBoss, ability);
+        try
+        {
+            foreach (var region in Enum.GetValues<Region>())
+            {
+                UnlockAllAbilitiesForRegion(team, region);
+            }
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+        }
+    }
+
+    public static void UnlockAllAbilitiesForRegion(Team team, Region region)
+    {
+        try
+        {
+            foreach (var pair in Mod.SaveDataHandler.CustomSaveData.UnlockSaveData[team].AbilityUnlocks[region])
+            {
+                UnlockAbilityForRegion(team, region, pair.Key);
+            }
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+        }
     }
     
     
     public static void UnlockAbilityForRegion(Team team, Region region, Ability ability)
     {
-        
-        Mod.SaveDataHandler!.CustomSaveData!.UnlockSaveData[(Team)team!].AbilityUnlocks[region][ability] = !Mod.SaveDataHandler!.CustomSaveData!.UnlockSaveData[team].AbilityUnlocks[region][ability];
-        PollUpdates();
+        try
+        {
+            Mod.SaveDataHandler!.CustomSaveData!.UnlockSaveData[(Team)team!].AbilityUnlocks[region][ability] = true;
+            PollUpdates();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+        }
     }
     
     
@@ -85,6 +107,7 @@ public static class AbilityCharacterManager
         try
         {
             //Console.WriteLine($"HandleAbilityUnlockCheck Team: {team} Region: {region} ForceUnlock: {forceunlock}");
+            AbilityCharacterGameWrites.SetJumpAbility(forceunlock || Mod.SaveDataHandler.CustomSaveData.UnlockSaveData[team].AbilityUnlocks[region][Ability.Jump]);
             AbilityCharacterGameWrites.SetHomingAttack(forceunlock || Mod.SaveDataHandler.CustomSaveData.UnlockSaveData[team].AbilityUnlocks[region][Ability.HomingAttack]);
             AbilityCharacterGameWrites.SetTornado(forceunlock || Mod.SaveDataHandler.CustomSaveData.UnlockSaveData[team].AbilityUnlocks[region][Ability.Tornado]);
             AbilityCharacterGameWrites.SetRocketAccel(forceunlock || Mod.SaveDataHandler.CustomSaveData.UnlockSaveData[team].AbilityUnlocks[region][Ability.RocketAccel]);
@@ -95,7 +118,7 @@ public static class AbilityCharacterManager
             AbilityCharacterGameWrites.SetInvisibilty(forceunlock || Mod.SaveDataHandler.CustomSaveData.UnlockSaveData[team].AbilityUnlocks[region][Ability.Invisibility]);
             AbilityCharacterGameWrites.SetShuriken(forceunlock || Mod.SaveDataHandler.CustomSaveData.UnlockSaveData[team].AbilityUnlocks[region][Ability.Shuriken]);
             AbilityCharacterGameWrites.SetThundershoot(forceunlock || Mod.SaveDataHandler.CustomSaveData.UnlockSaveData[team].AbilityUnlocks[region][Ability.Thundershoot]);
-            AbilityCharacterGameWrites.SetFlying(forceunlock || (Mod.SaveDataHandler.CustomSaveData.UnlockSaveData[team].AbilityUnlocks[region][Ability.Flight] && Mod.SaveDataHandler.CustomSaveData.UnlockSaveData[team].AbilityUnlocks[region][Ability.Thundershoot]));
+            //AbilityCharacterGameWrites.SetFlying(forceunlock || (Mod.SaveDataHandler.CustomSaveData.UnlockSaveData[team].AbilityUnlocks[region][Ability.Flight] && Mod.SaveDataHandler.CustomSaveData.UnlockSaveData[team].AbilityUnlocks[region][Ability.Thundershoot]));
             AbilityCharacterGameWrites.SetDummyRings(forceunlock || Mod.SaveDataHandler.CustomSaveData.UnlockSaveData[team].AbilityUnlocks[region][Ability.DummyRings]);
             AbilityCharacterGameWrites.SetCheeseCannon(forceunlock || Mod.SaveDataHandler.CustomSaveData.UnlockSaveData[team].AbilityUnlocks[region][Ability.CheeseCannon]);
             AbilityCharacterGameWrites.SetFlowerSting(forceunlock || Mod.SaveDataHandler.CustomSaveData.UnlockSaveData[team].AbilityUnlocks[region][Ability.FlowerSting]);

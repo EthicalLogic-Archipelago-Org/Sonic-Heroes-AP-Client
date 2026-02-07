@@ -125,39 +125,43 @@ public class SaveDataHandler
     
     public unsafe void WriteLevelUnlockToRedirectSaveData(LevelId level, bool isBoss, Team? story, bool value)
     {
-        if (Mod.ArchipelagoHandler.SlotData == null)
-            return;
-
-        var rank = value ? Rank.ERank : Rank.NoRank;
-        
-        if (level == LevelId.MetalMadness)
+        try
         {
-            //Logger.Log($"Setting boss: {level} to {rank}");
-            RedirectData->MetalMadness.Rank = rank;
-            return;
+            var rank = value ? Rank.ERank : Rank.NoRank;
+        
+            if (level == LevelId.MetalMadness)
+            {
+                //Logger.Log($"Setting boss: {level} to {rank}");
+                RedirectData->MetalMadness.Rank = rank;
+                return;
+            }
+            if (isBoss)
+            { 
+                //Logger.Log($"Setting boss: {level} to {rank}");
+                if (Mod.LevelSelectManager.EnabledStoriesAndSanities.HasFlag(StoriesAndSanities.SonicActA) || Mod.LevelSelectManager.EnabledStoriesAndSanities.HasFlag(StoriesAndSanities.SonicActB) || Mod.LevelSelectManager.EnabledStoriesAndSanities.HasFlag(StoriesAndSanities.SuperHardMode))
+                    RedirectData->Bosses[(int)level - 16].SonicBoss.Rank = rank;
+                if (Mod.LevelSelectManager.EnabledStoriesAndSanities.HasFlag(StoriesAndSanities.DarkActA) || Mod.LevelSelectManager.EnabledStoriesAndSanities.HasFlag(StoriesAndSanities.DarkActB))
+                    RedirectData->Bosses[(int)level - 16].DarkBoss.Rank = rank;
+                if (Mod.LevelSelectManager.EnabledStoriesAndSanities.HasFlag(StoriesAndSanities.RoseActA) || Mod.LevelSelectManager.EnabledStoriesAndSanities.HasFlag(StoriesAndSanities.RoseActB))
+                    RedirectData->Bosses[(int)level - 16].RoseBoss.Rank = rank;
+                if (Mod.LevelSelectManager.EnabledStoriesAndSanities.HasFlag(StoriesAndSanities.ChaotixActA) || Mod.LevelSelectManager.EnabledStoriesAndSanities.HasFlag(StoriesAndSanities.ChaotixActB))
+                    RedirectData->Bosses[(int)level - 16].ChaotixBoss.Rank = rank;
+                return;
+            }
+            //Logger.Log($"Setting {story}'s {level} to {rank}");
+            if (story == Team.Sonic)
+                RedirectData->Levels[(int)level - 2].Sonic.Mission1.Rank = rank;
+            if (story == Team.Dark)
+                RedirectData->Levels[(int)level - 2].Dark.Mission1.Rank = rank;
+            if (story == Team.Rose)
+                RedirectData->Levels[(int)level - 2].Rose.Mission1.Rank = rank;
+            if (story == Team.Chaotix)
+                RedirectData->Levels[(int)level - 2].Chaotix.Mission1.Rank = rank;
         }
-        if (isBoss)
-        { 
-            //Logger.Log($"Setting boss: {level} to {rank}");
-            if (Mod.LevelSelectManager.EnabledStoriesAndSanities.HasFlag(StoriesAndSanities.SonicActA) || Mod.LevelSelectManager.EnabledStoriesAndSanities.HasFlag(StoriesAndSanities.SonicActB) || Mod.LevelSelectManager.EnabledStoriesAndSanities.HasFlag(StoriesAndSanities.SuperHardMode))
-                RedirectData->Bosses[(int)level - 16].SonicBoss.Rank = rank;
-            if (Mod.LevelSelectManager.EnabledStoriesAndSanities.HasFlag(StoriesAndSanities.DarkActA) || Mod.LevelSelectManager.EnabledStoriesAndSanities.HasFlag(StoriesAndSanities.DarkActB))
-                RedirectData->Bosses[(int)level - 16].DarkBoss.Rank = rank;
-            if (Mod.LevelSelectManager.EnabledStoriesAndSanities.HasFlag(StoriesAndSanities.RoseActA) || Mod.LevelSelectManager.EnabledStoriesAndSanities.HasFlag(StoriesAndSanities.RoseActB))
-                RedirectData->Bosses[(int)level - 16].RoseBoss.Rank = rank;
-            if (Mod.LevelSelectManager.EnabledStoriesAndSanities.HasFlag(StoriesAndSanities.ChaotixActA) || Mod.LevelSelectManager.EnabledStoriesAndSanities.HasFlag(StoriesAndSanities.ChaotixActB))
-                RedirectData->Bosses[(int)level - 16].ChaotixBoss.Rank = rank;
-            return;
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
         }
-        //Logger.Log($"Setting {story}'s {level} to {rank}");
-        if (story == Team.Sonic)
-            RedirectData->Levels[(int)level - 2].Sonic.Mission1.Rank = rank;
-        if (story == Team.Dark)
-            RedirectData->Levels[(int)level - 2].Dark.Mission1.Rank = rank;
-        if (story == Team.Rose)
-            RedirectData->Levels[(int)level - 2].Rose.Mission1.Rank = rank;
-        if (story == Team.Chaotix)
-            RedirectData->Levels[(int)level - 2].Chaotix.Mission1.Rank = rank;
     }
     
 }

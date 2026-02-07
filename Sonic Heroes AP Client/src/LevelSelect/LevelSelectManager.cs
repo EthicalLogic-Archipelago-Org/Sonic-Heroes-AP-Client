@@ -94,16 +94,9 @@ public class LevelSelectManager
             //foreach (var gate in GateData.Where(gate => Mod.SaveDataHandler.CustomSaveData.GateBossComplete[gate.Index]))
                 //gate.Next().IsUnlocked = true;
 
-            foreach (var gate in GateData)
+            foreach (var gate in GateData.Where(gate => IsThisBossCompletedYet(gate.BossLevel.LevelId)))
             {
-                //var bossLevel = gate.BossLevel.LevelId;
-                //if (isBossExtraCompletion && bossLevel == bossWithExtraCompletion)
-                //{
-                    //gate.Next().IsUnlocked = true;
-                    //continue;
-                //}
-                if (IsThisBossCompletedYet(gate.BossLevel.LevelId))
-                    gate.Next().IsUnlocked = true;
+                gate.Next().IsUnlocked = true;
             }
                 
             //GateBoss Unlocking (Not Final Boss)
@@ -112,7 +105,6 @@ public class LevelSelectManager
                                                         && gate.BossLevel.LevelId != LevelId.MetalMadness))
             {
                 gate.BossLevel.IsUnlocked = true;
-                Mod.SaveDataHandler.CustomSaveData.GateBossUnlocked[gate.Index] = true;
             }
             
             
@@ -148,7 +140,7 @@ public class LevelSelectManager
 
                 if (needLevelCompletionsPerStory)
                 {
-                    levelCompletionsForTeam = team == teamWithExtraLevelComplete ? 1 : 0;
+                    levelCompletionsForTeam = isCompletingNewLevel && team == teamWithExtraLevelComplete ? 1 : 0;
                     
                     if (levelCompletionsForTeam + Mod.LevelSelectManager.GetCompletedLevelsForTeam(team) <
                         Mod.ArchipelagoHandler.SlotData.GoalLevelCompletionsPerStory)
@@ -185,8 +177,6 @@ public class LevelSelectManager
             }
             
             finalGate.BossLevel.IsUnlocked = finalGate.IsUnlocked && hasCharacters && hasEmblemsForMetal && hasEmeralds && hasLevelCompletions && hasLevelCompletionsPerStory;
-            
-            Mod.SaveDataHandler.CustomSaveData.GateBossUnlocked[finalGate.Index] = finalGate.BossLevel.IsUnlocked;
             
             
             

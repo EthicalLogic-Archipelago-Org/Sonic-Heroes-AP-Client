@@ -31,18 +31,6 @@ public class CustomSaveData
     /// </summary>
     public Dictionary<Emerald, bool> Emeralds = Enum.GetValues<Emerald>().ToDictionary(x => x, x => false);
     
-    /// <summary>
-    /// An Array of bools saving if that specific boss has been unlocked.
-    /// Is always length 8 regardless of how many bosses are actually generated.
-    /// </summary>
-    public bool[] GateBossUnlocked = new bool[8];
-
-    /// <summary>
-    /// An Array of bools saving if that specific boss has been completed.
-    /// Is always length 8 regardless of how many bosses are actually generated.
-    /// Will not save the completion of the Final Boss
-    /// </summary>
-    public bool[] GateBossComplete = new bool[8];
     
     /// <summary>
     /// A mapping of Team and LevelId to a List of bools referring to if that Bonus Key has been picked up by the Player. Has to be saved as Players can choose to not have KeySanity enabled.

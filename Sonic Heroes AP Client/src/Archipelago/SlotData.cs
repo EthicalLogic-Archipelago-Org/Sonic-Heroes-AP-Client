@@ -102,10 +102,8 @@ public class SlotData
                     AbilityCharacterManager.SetCharUnlock(team, FormationChar.Speed, true);
                     AbilityCharacterManager.SetCharUnlock(team, FormationChar.Power, true);
                     AbilityCharacterManager.SetCharUnlock(team, FormationChar.Flying, true);
-                    foreach (var region in Enum.GetValues<Region>())
-                    {
-                        AbilityCharacterManager.HandleAbilityUnlockCheck(team, region, true);
-                    }
+                    AbilityCharacterManager.UnlockAllAbilitiesForAllRegionsForTeam(team);
+                    AbilityCharacterManager.HandleAbilityUnlockCheck(team, Region.Ocean, true);
                 }
             }
             
