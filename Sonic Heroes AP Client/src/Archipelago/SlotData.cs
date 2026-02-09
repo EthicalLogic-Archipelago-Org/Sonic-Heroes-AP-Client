@@ -1,11 +1,11 @@
 
 using Archipelago.MultiClient.Net.BounceFeatures.DeathLink;
 using Newtonsoft.Json.Linq;
+using Sonic_Heroes_AP_Client.AbilityAndCharacter;
 using Sonic_Heroes_AP_Client.Configuration;
 using Sonic_Heroes_AP_Client.Definitions;
 using Sonic_Heroes_AP_Client.LevelSelect;
 using Sonic_Heroes_AP_Client.LevelUnlocking;
-using Sonic_Heroes_AP_Client.Sanity.AbilityAndCharacter;
 using Sonic_Heroes_AP_Client.UI;
 
 namespace Sonic_Heroes_AP_Client.Archipelago;
@@ -57,11 +57,8 @@ public class SlotData
             {
                 apworldversion = slotDict["APWorldVersion"].ToString();
             }
-            
-            var slotVersion = apworldversion.Split(".");
-            var modVersion = Mod.ModConfig.ModVersion.Split(".");
-            
-            if (modVersion[0] != slotVersion[0] || modVersion[1] != slotVersion[1])
+
+            if (!Mod.CheckCurrentModVersionWithValue(apworldversion!))
             {
                 while (true)
                 {
@@ -94,26 +91,11 @@ public class SlotData
             
             EntireRunUnlockType = (EntireRunUnlockType)(int)(long)slotDict["UnlockType"];
             
-            if (EntireRunUnlockType is EntireRunUnlockType.LegacyLevelGates)
-            {
-                //Unlock All Characters and Abilities
-                foreach (var team in Enum.GetValues<Team>().Where(x => (bool)Mod.LevelSelectManager.IsThisTeamEnabled(x)!))
-                {
-                    AbilityCharacterManager.SetCharUnlock(team, FormationChar.Speed, true);
-                    AbilityCharacterManager.SetCharUnlock(team, FormationChar.Power, true);
-                    AbilityCharacterManager.SetCharUnlock(team, FormationChar.Flying, true);
-                    AbilityCharacterManager.UnlockAllAbilitiesForAllRegionsForTeam(team);
-                    AbilityCharacterManager.HandleAbilityUnlockCheck(team, Region.Ocean, true);
-                }
-            }
-            
-            
             Mod.LevelSelectManager.FinalBoss = (FinalBoss)(int)(long)slotDict["FinalBoss"];
             
             GoalLevelCompletions = (int)(long)slotDict["GoalLevelCompletions"];
             GoalLevelCompletionsPerStory = (int)(long)slotDict["GoalLevelCompletionsPerStory"];
             RequiredRank = (Rank)(int)(long)slotDict["RequiredRank"];
-
 
             foreach (var str in ((JArray)slotDict["IncludedLevelsAndSanities"]).ToObject<string[]>().ToList())
             {

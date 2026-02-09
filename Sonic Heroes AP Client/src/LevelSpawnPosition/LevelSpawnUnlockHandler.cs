@@ -1,7 +1,6 @@
 
 using Sonic_Heroes_AP_Client.Definitions;
 using Sonic_Heroes_AP_Client.GameState;
-using Sonic_Heroes_AP_Client.Sanity.AbilityAndCharacter;
 
 namespace Sonic_Heroes_AP_Client.LevelSpawnPosition;
 

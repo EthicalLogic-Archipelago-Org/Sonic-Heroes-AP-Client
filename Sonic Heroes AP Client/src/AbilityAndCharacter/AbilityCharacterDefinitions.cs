@@ -1,7 +1,7 @@
 
 using Sonic_Heroes_AP_Client.Definitions;
 
-namespace Sonic_Heroes_AP_Client.Sanity.AbilityAndCharacter;
+namespace Sonic_Heroes_AP_Client.AbilityAndCharacter;
 
 public class AbilityCharacterDefinitions
 {

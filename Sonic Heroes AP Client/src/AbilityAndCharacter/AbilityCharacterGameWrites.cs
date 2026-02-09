@@ -1,10 +1,8 @@
-
 using Reloaded.Memory;
-using Reloaded.Memory.Enums;
 using Reloaded.Memory.Interfaces;
 using Sonic_Heroes_AP_Client.Definitions;
 
-namespace Sonic_Heroes_AP_Client.Sanity.AbilityAndCharacter;
+namespace Sonic_Heroes_AP_Client.AbilityAndCharacter;
 
 public static class AbilityCharacterGameWrites
 {

@@ -14,6 +14,11 @@ namespace Sonic_Heroes_AP_Client.SaveData;
 /// </summary>
 public class CustomSaveData
 {
+
+    /// <summary>
+    /// The ModVersion when this save file was last saved.
+    /// </summary>
+    public string ModVersion = "0.0.0";
     
     /// <summary>
     /// The Index of the last received and handled Item.

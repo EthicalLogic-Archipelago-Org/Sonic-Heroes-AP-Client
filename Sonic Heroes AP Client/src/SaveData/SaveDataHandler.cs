@@ -4,7 +4,6 @@ using Newtonsoft.Json;
 using Reloaded.Memory;
 using Reloaded.Memory.Interfaces;
 using Sonic_Heroes_AP_Client.Definitions;
-using Sonic_Heroes_AP_Client.Sanity.AbilityAndCharacter;
 
 namespace Sonic_Heroes_AP_Client.SaveData;
 
@@ -34,7 +33,7 @@ public class SaveDataHandler
     private int[] redirectEmblemCount = new int[1];
     
     
-    public unsafe bool LoadSaveData(string seed, string slot)
+    public unsafe void LoadSaveData(string seed, string slot)
     {
         var filePath = $"./Saves/{seed}{slot}.json";
         if (!Directory.Exists("./Saves"))
@@ -46,17 +45,28 @@ public class SaveDataHandler
                 var data = JsonConvert.DeserializeObject<CustomSaveData>(File.ReadAllText(filePath));
                 CustomSaveData = data ?? throw new Exception("AHHHHHHHHHHHHH");
                 //Logger.Log("Save loaded successfully!");
+
+                if (!Mod.CheckCurrentModVersionWithValue(CustomSaveData.ModVersion))
+                {
+                    Console.WriteLine($"Creating a new save. Current Mod Version: {Mod.ModConfig.ModVersion} Save File Mod Version: {CustomSaveData.ModVersion}");
+                    CustomSaveData = new CustomSaveData();
+                    SaveGame(seed, slot);
+                }
+                
                 redirectEmblemCount[0] = CustomSaveData.Emblems;
             }
-            catch (Exception ex)
+            catch (Exception e)
             {
-                //Logger.Log($"Error: Unable to read save. {ex.Message}");
-                return false;
+                Console.WriteLine(e);
+                Console.WriteLine($"Creating a new save as loading the previous one failed");
+                CustomSaveData = new CustomSaveData();
+                SaveGame(seed, slot);
             }
         }
         else
         {
             //Logger.Log("Creating a new save file.");
+            Console.WriteLine($"Creating save");
             CustomSaveData = new CustomSaveData();
             SaveGame(seed, slot);
             //Logger.Log("Save file created");
@@ -92,7 +102,6 @@ public class SaveDataHandler
         {
             Console.WriteLine(e);
         }
-        return true;
     }
     
     

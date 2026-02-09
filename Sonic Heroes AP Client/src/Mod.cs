@@ -6,6 +6,7 @@ using Heroes.Controller.Hook.Interfaces;
 using Reloaded.Hooks.Definitions;
 using Reloaded.Imgui.Hook;
 using Reloaded.Mod.Interfaces;
+using Sonic_Heroes_AP_Client.AbilityAndCharacter;
 using Sonic_Heroes_AP_Client.Archipelago;
 using Sonic_Heroes_AP_Client.Configuration;
 using Sonic_Heroes_AP_Client.GameState;
@@ -146,6 +147,7 @@ public class Mod: ModBase
     {
         try
         {
+            AbilityCharacterManager.InitConnect();
             LevelSelectGameWrites.ModifyInstructions();
             CheckpointGameWrites.SetCheckPointPriorityWrite(true);
             GameStateGameWrites.SetRingLoss(Configuration.RingLoss);
@@ -162,6 +164,22 @@ public class Mod: ModBase
         {
             Console.WriteLine(e);
         }
+    }
+
+    public static bool CheckCurrentModVersionWithValue(string version)
+    {
+        try
+        {
+            var modVersion = ModConfig.ModVersion.Split(".");
+            var otherVersion = version.Split(".");
+            
+            return modVersion[0] == otherVersion[0] && modVersion[1] == otherVersion[1];
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+        }
+        return false;
     }
     
     public void OnModConfigChange(IUpdatableConfigurable x)

@@ -1,6 +1,6 @@
+using Sonic_Heroes_AP_Client.AbilityAndCharacter;
 using Sonic_Heroes_AP_Client.Definitions;
 using Sonic_Heroes_AP_Client.LevelUnlocking;
-using Sonic_Heroes_AP_Client.Sanity.AbilityAndCharacter;
 
 namespace Sonic_Heroes_AP_Client.LevelSelect;
 

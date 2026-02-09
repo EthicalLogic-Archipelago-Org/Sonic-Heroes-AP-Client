@@ -2,9 +2,9 @@
 
 using System.Collections.Concurrent;
 using Archipelago.MultiClient.Net.Models;
+using Sonic_Heroes_AP_Client.AbilityAndCharacter;
 using Sonic_Heroes_AP_Client.Definitions;
 using Sonic_Heroes_AP_Client.GameState;
-using Sonic_Heroes_AP_Client.Sanity.AbilityAndCharacter;
 using Sonic_Heroes_AP_Client.Sound;
 using Sonic_Heroes_AP_Client.StageObj;
 
@@ -178,7 +178,7 @@ public static class ItemHandler
                     if (!SonicHeroesDefinitions.LevelIdToRegion.TryGetValue((LevelId)level!, out Region region))
                         break;
 
-                    if (AbilityCharacterManager.CanTeamBlast((Team)team!, region))
+                    if (!AbilityCharacterManager.CanTeamBlast((Team)team!, region))
                     {
                         GameStateGameWrites.SetRingCount(GameStateGameWrites.GetRingCount() + 10);
                         if (Mod.Configuration!.PlaySounds)
@@ -188,7 +188,6 @@ public static class ItemHandler
                     GameStateGameWrites.SetRingCount(GameStateGameWrites.GetRingCount() + 1);
                     if (Mod.Configuration!.PlaySounds)
                         SoundHandler.PlaySound((int)Mod.ModuleBase, 0x1004);
-                    break;
                 }
                 catch (Exception e)
                 {
@@ -301,7 +300,7 @@ public static class ItemHandler
                 return;
             }
             
-            Ability? ability = Enum.GetValues<Ability>().Cast<Ability?>().FirstOrDefault(x =>
+            Ability? ability = Enum.GetValues<Ability>().Cast<Ability?>().LastOrDefault(x =>
                 itemName.Replace(" ", "").Contains($"{x.ToString()!}", StringComparison.InvariantCultureIgnoreCase));
             if (ability == null)
                 return;
@@ -334,7 +333,7 @@ public static class ItemHandler
                 handled = true;
                 return;
             }
-            StageObjTypes? stageObj = StageObjData.StageObjsToMessWith.Cast<StageObjTypes?>().FirstOrDefault(x =>itemName.Replace(" ", "").Contains($"{x.ToString()!}", StringComparison.InvariantCultureIgnoreCase));
+            StageObjTypes? stageObj = StageObjData.StageObjsToMessWith.Cast<StageObjTypes?>().LastOrDefault(x =>itemName.Replace(" ", "").Contains($"{x.ToString()!}", StringComparison.InvariantCultureIgnoreCase));
             if (stageObj == null)
                 return;
             team = CheckTeamItemName(itemName, ref handled);

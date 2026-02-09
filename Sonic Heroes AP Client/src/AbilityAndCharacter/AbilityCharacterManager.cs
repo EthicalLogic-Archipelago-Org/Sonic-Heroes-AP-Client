@@ -1,14 +1,55 @@
-
 using Sonic_Heroes_AP_Client.Archipelago;
 using Sonic_Heroes_AP_Client.Definitions;
 using Sonic_Heroes_AP_Client.GameState;
+using Sonic_Heroes_AP_Client.LevelSelect;
 using Sonic_Heroes_AP_Client.StageObj;
 
-namespace Sonic_Heroes_AP_Client.Sanity.AbilityAndCharacter;
+namespace Sonic_Heroes_AP_Client.AbilityAndCharacter;
 
 public static class AbilityCharacterManager
 {
     public static Dictionary<Team, Dictionary<FormationChar, bool>> ShouldOverrideState = Enum.GetValues<Team>().ToDictionary(x => x, _ => Enum.GetValues<FormationChar>().ToDictionary(y => y, _ => false));
+
+
+    public static void InitConnect()
+    {
+        try
+        {
+            //Unlock Jump for enabled teams
+            foreach (var team in Enum.GetValues<Team>().Where(x => (bool)Mod.LevelSelectManager.IsThisTeamEnabled(x)!))
+            {
+                UnlockAbilityForAllRegions(team, Ability.Jump);
+                foreach (var region in Enum.GetValues<Region>().Where(reg => reg > Region.Sky))
+                {
+                    UnlockAllAbilitiesForRegion(team, region);
+                }
+            }
+
+            //Unlock speed char for all other teams (to avoid dealth loop)
+            foreach (var team in Enum.GetValues<Team>().Where(x => x is not Team.Sonic))
+            {
+                SetCharUnlock(team, FormationChar.Speed, true);
+            }
+            
+            
+            if (Mod.ArchipelagoHandler.SlotData.EntireRunUnlockType is EntireRunUnlockType.LegacyLevelGates)
+            {
+                //Unlock All Characters and Abilities
+                foreach (var team in Enum.GetValues<Team>().Where(x => (bool)Mod.LevelSelectManager.IsThisTeamEnabled(x)!))
+                {
+                    SetCharUnlock(team, FormationChar.Speed, true);
+                    SetCharUnlock(team, FormationChar.Power, true);
+                    SetCharUnlock(team, FormationChar.Flying, true);
+                    UnlockAllAbilitiesForAllRegionsForTeam(team);
+                    HandleAbilityUnlockCheck(team, Region.Ocean, true);
+                }
+            }
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+        }
+    }
     
     
     public static List<Ability> GetAbilitiesForTeam(Team team)
@@ -80,12 +121,27 @@ public static class AbilityCharacterManager
         }
     }
     
+    public static void UnlockAbilityForAllRegions(Team team, Ability ability)
+    {
+        try
+        {
+            foreach (var region in Enum.GetValues<Region>())
+            {
+                UnlockAbilityForRegion(team, region, ability);
+            }
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+        }
+    }
+    
     
     public static void UnlockAbilityForRegion(Team team, Region region, Ability ability)
     {
         try
         {
-            Mod.SaveDataHandler!.CustomSaveData!.UnlockSaveData[(Team)team!].AbilityUnlocks[region][ability] = true;
+            Mod.SaveDataHandler!.CustomSaveData!.UnlockSaveData[team].AbilityUnlocks[region][ability] = true;
             PollUpdates();
         }
         catch (Exception e)
@@ -439,35 +495,12 @@ public static class AbilityCharacterManager
 
             bool forceTeamBlastEnable = false;
             
-
-            if (team is not Team.Sonic || region > Region.Sky)
-            {
-                //UnlockAll();
-                speedChar = true;
-                flyingChar = true;
-                powerChar = true;
-
-                AbilityCharacterGameWrites.SetCharLevel(FormationChar.Speed, 3);
-                AbilityCharacterGameWrites.SetCharLevel(FormationChar.Flying, 3);
-                AbilityCharacterGameWrites.SetCharLevel(FormationChar.Power, 3);
-                
-                ShouldOverrideState[team][FormationChar.Speed] = true;
-                ShouldOverrideState[team][FormationChar.Flying] = true;
-                ShouldOverrideState[team][FormationChar.Power] = true;
-                
-                forceTeamBlastEnable = true;
-                
-                HandleAbilityUnlockCheck(team, region, true);
-                
-            }
-            else
-            {
-                AbilityCharacterGameWrites.SetCharLevel(FormationChar.Speed, (byte)GetLevelUpForChar(team, region, FormationChar.Speed));
-                AbilityCharacterGameWrites.SetCharLevel(FormationChar.Flying, (byte)GetLevelUpForChar(team, region, FormationChar.Flying));
-                AbilityCharacterGameWrites.SetCharLevel(FormationChar.Power, (byte)GetLevelUpForChar(team, region, FormationChar.Power));
-                
-                HandleAbilityUnlockCheck(team, region);
-            }
+            AbilityCharacterGameWrites.SetCharLevel(FormationChar.Speed, (byte)GetLevelUpForChar(team, region, FormationChar.Speed));
+            AbilityCharacterGameWrites.SetCharLevel(FormationChar.Flying, (byte)GetLevelUpForChar(team, region, FormationChar.Flying));
+            AbilityCharacterGameWrites.SetCharLevel(FormationChar.Power, (byte)GetLevelUpForChar(team, region, FormationChar.Power));
+            
+            HandleAbilityUnlockCheck(team, region);
+            
             
             AbilityCharacterGameWrites.SetCharState(FormationChar.Speed, speedChar, ShouldOverrideState[team][FormationChar.Speed]);
             AbilityCharacterGameWrites.SetCharState(FormationChar.Flying, flyingChar, ShouldOverrideState[team][FormationChar.Flying]);

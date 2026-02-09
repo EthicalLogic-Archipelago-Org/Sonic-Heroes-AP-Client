@@ -70,14 +70,7 @@ public class ArchipelagoHandler
         {
             Seed = _session.ConnectAsync()?.Result?.SeedName;
             LoggerWindow.Log(Seed + Slot);
-            IsSaveFileLoadedYet = true;
-            if (Seed != null)
-            {
-                Mod.SaveDataHandler!.LoadSaveData(Seed, Slot);
-                if (Mod.Configuration!.MusicShuffle)
-                    MusicShuffleHandler.Shuffle(int.Parse(Seed[..9]));
-            }
-                
+            
             
             result = _session.LoginAsync(
                 game: GameName, 
@@ -92,23 +85,35 @@ public class ArchipelagoHandler
         {
             result = new LoginFailure(e.GetBaseException().Message);
         }
-        if (result.Successful)
+
+        try
         {
-            _loginSuccessful = (LoginSuccessful)result;
-            SlotData = new SlotData(_loginSuccessful.SlotData);
-            Mod.InitOnConnect();
-            new Thread(ItemHandler.RunCheckReceivedItemsQueue).Start();
-            new Thread(RunCheckLocationsFromList).Start();
-            //resync here
-            return true;
+            if (result.Successful)
+            {
+                Mod.SaveDataHandler!.LoadSaveData(Seed!, Slot);
+                IsSaveFileLoadedYet = true;
+                if (Mod.Configuration!.MusicShuffle)
+                    MusicShuffleHandler.Shuffle(int.Parse(Seed![..9]));
+                _loginSuccessful = (LoginSuccessful)result;
+                SlotData = new SlotData(_loginSuccessful.SlotData);
+                Mod.InitOnConnect();
+                new Thread(ItemHandler.RunCheckReceivedItemsQueue).Start();
+                new Thread(RunCheckLocationsFromList).Start();
+                //resync here
+                return true;
+            }
+            var failure = (LoginFailure)result;
+            var errorMessage = $"Failed to Connect to {Server}:{Port} as {Slot}:";
+            errorMessage = failure.Errors.Aggregate(errorMessage, (current, error) => current + $"\n    {error}");
+            errorMessage = failure.ErrorCodes.Aggregate(errorMessage, (current, error) => current + $"\n    {error}");
+            LoggerWindow.Log(errorMessage);
+            LoggerWindow.Log($"Attempting reconnect...");
+            IsSaveFileLoadedYet = false;
         }
-        var failure = (LoginFailure)result;
-        var errorMessage = $"Failed to Connect to {Server}:{Port} as {Slot}:";
-        errorMessage = failure.Errors.Aggregate(errorMessage, (current, error) => current + $"\n    {error}");
-        errorMessage = failure.ErrorCodes.Aggregate(errorMessage, (current, error) => current + $"\n    {error}");
-        LoggerWindow.Log(errorMessage);
-        LoggerWindow.Log($"Attempting reconnect...");
-        IsSaveFileLoadedYet = false;
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+        }
         return false;
     }
     
