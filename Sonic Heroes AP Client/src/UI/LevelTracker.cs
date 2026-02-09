@@ -1119,8 +1119,13 @@ public class LevelTracker
                 return;
             var text = "";
             List<Ability> teamAbilities = AbilityCharacterManager.GetAbilitiesForTeam(team);
+            List<Ability> handledAbilities = [];
             foreach (var ability in teamAbilities)
             {
+                if (handledAbilities.Contains(ability))
+                    continue;
+                handledAbilities.Add(ability);
+                
                 text = ability.ToString();
                 Color textColor =
                     Mod.SaveDataHandler.CustomSaveData.UnlockSaveData[team].AbilityUnlocks[region][ability]

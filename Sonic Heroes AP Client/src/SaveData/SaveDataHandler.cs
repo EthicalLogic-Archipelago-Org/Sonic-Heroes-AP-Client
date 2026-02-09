@@ -116,6 +116,8 @@ public class SaveDataHandler
         try
         {
             var filePath = $"./Saves/{seed}{slot}.json";
+
+            CustomSaveData.ModVersion = Mod.ModConfig.ModVersion;
         
             Console.WriteLine("Saved Here");
             var json = JsonConvert.SerializeObject(CustomSaveData, Formatting.Indented);

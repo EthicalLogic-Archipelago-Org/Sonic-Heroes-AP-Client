@@ -13,6 +13,7 @@ public class AbilityCharacterDefinitions
                 {
                     FormationChar.Speed, new List<Ability>()
                     {
+                        Ability.Jump,
                         Ability.HomingAttack,
                         Ability.Tornado,
                         Ability.RocketAccel,
@@ -27,6 +28,7 @@ public class AbilityCharacterDefinitions
                 {
                     FormationChar.Flying, new List<Ability>()
                     {
+                        Ability.Jump,
                         Ability.Thundershoot,
                         Ability.Flight,
                         Ability.DummyRings,
@@ -37,6 +39,7 @@ public class AbilityCharacterDefinitions
                 {
                     FormationChar.Power, new List<Ability>()
                     {
+                        Ability.Jump,
                         //Ability.PowerAttack,
                         Ability.ComboFinisher,
                         Ability.Glide,
@@ -53,6 +56,7 @@ public class AbilityCharacterDefinitions
                 {
                     FormationChar.Speed, new List<Ability>()
                     {
+                        Ability.Jump,
                         Ability.HomingAttack,
                         Ability.Tornado,
                         Ability.RocketAccel,
@@ -67,6 +71,7 @@ public class AbilityCharacterDefinitions
                 {
                     FormationChar.Flying, new List<Ability>()
                     {
+                        Ability.Jump,
                         Ability.Thundershoot,
                         Ability.Flight,
                         Ability.DummyRings,
@@ -77,6 +82,7 @@ public class AbilityCharacterDefinitions
                 {
                     FormationChar.Power, new List<Ability>()
                     {
+                        Ability.Jump,
                         //Ability.PowerAttack,
                         Ability.ComboFinisher,
                         Ability.Glide,
@@ -93,6 +99,7 @@ public class AbilityCharacterDefinitions
                 {
                     FormationChar.Speed, new List<Ability>()
                     {
+                        Ability.Jump,
                         Ability.HomingAttack,
                         Ability.Tornado,
                         Ability.RocketAccel,
@@ -107,6 +114,7 @@ public class AbilityCharacterDefinitions
                 {
                     FormationChar.Flying, new List<Ability>()
                     {
+                        Ability.Jump,
                         Ability.Thundershoot,
                         Ability.Flight,
                         //Ability.DummyRings,
@@ -117,6 +125,7 @@ public class AbilityCharacterDefinitions
                 {
                     FormationChar.Power, new List<Ability>()
                     {
+                        Ability.Jump,
                         //Ability.PowerAttack,
                         Ability.ComboFinisher,
                         Ability.Glide,
@@ -133,6 +142,7 @@ public class AbilityCharacterDefinitions
                 {
                     FormationChar.Speed, new List<Ability>()
                     {
+                        Ability.Jump,
                         Ability.HomingAttack,
                         Ability.Tornado,
                         Ability.RocketAccel,
@@ -147,6 +157,7 @@ public class AbilityCharacterDefinitions
                 {
                     FormationChar.Flying, new List<Ability>()
                     {
+                        Ability.Jump,
                         Ability.Thundershoot,
                         Ability.Flight,
                         //Ability.DummyRings,
@@ -157,6 +168,7 @@ public class AbilityCharacterDefinitions
                 {
                     FormationChar.Power, new List<Ability>()
                     {
+                        Ability.Jump,
                         //Ability.PowerAttack,
                         Ability.ComboFinisher,
                         Ability.Glide,
@@ -173,6 +185,7 @@ public class AbilityCharacterDefinitions
                 {
                     FormationChar.Speed, new List<Ability>()
                     {
+                        Ability.Jump,
                         Ability.HomingAttack,
                         Ability.Tornado,
                         Ability.RocketAccel,
@@ -187,6 +200,7 @@ public class AbilityCharacterDefinitions
                 {
                     FormationChar.Flying, new List<Ability>()
                     {
+                        Ability.Jump,
                         Ability.Thundershoot,
                         Ability.Flight,
                         Ability.DummyRings,
@@ -197,6 +211,7 @@ public class AbilityCharacterDefinitions
                 {
                     FormationChar.Power, new List<Ability>()
                     {
+                        Ability.Jump,
                         //Ability.PowerAttack,
                         Ability.ComboFinisher,
                         Ability.Glide,

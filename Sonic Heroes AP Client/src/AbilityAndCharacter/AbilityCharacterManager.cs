@@ -1,7 +1,6 @@
 using Sonic_Heroes_AP_Client.Archipelago;
 using Sonic_Heroes_AP_Client.Definitions;
 using Sonic_Heroes_AP_Client.GameState;
-using Sonic_Heroes_AP_Client.LevelSelect;
 using Sonic_Heroes_AP_Client.StageObj;
 
 namespace Sonic_Heroes_AP_Client.AbilityAndCharacter;
@@ -55,7 +54,17 @@ public static class AbilityCharacterManager
     public static List<Ability> GetAbilitiesForTeam(Team team)
     {
         List<Ability> result = [];
-        result.AddRange(Enum.GetValues<FormationChar>().SelectMany(formationChar => AbilityCharacterDefinitions.AbilityListForTeamAndChar[team][formationChar]));
+        try
+        {
+            foreach (var formationChar in Enum.GetValues<FormationChar>())
+            {
+                result.AddRange(GetAbilitiesForTeamAndChar(team, formationChar));
+            }
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+        }
         return result;
     }
 
