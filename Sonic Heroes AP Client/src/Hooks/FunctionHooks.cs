@@ -689,7 +689,9 @@ public class FunctionHooks
             var levelSelectPtr = *(IntPtr*)(Mod.ModuleBase + 0x6777B4);
             var actIndex = *(int*)(levelSelectPtr + 0x2BC);
             Mod.LevelSelectManager.ActSelectedInLevelSelect = (Act)actIndex;
-            LevelSpawnUnlockHandler.SpawnPosIndex = 0;
+            
+            LevelSpawnUnlockHandler.SelectActFromLevelSelectCallback();
+            //LevelSpawnUnlockHandler.SpawnPosIndex = 0;
             //Console.WriteLine($"Setting Act Selected in Level Select to {Mod.LevelSelectManager.ActSelectedInLevelSelect}");
         }
         catch (Exception e)
@@ -708,6 +710,7 @@ public class FunctionHooks
         try
         {
             Mod.LevelSelectManager.ActSelectedInLevelSelect = Act.Act1;
+            LevelSpawnUnlockHandler.SelectActFromLevelSelectCallback();
             //Console.WriteLine($"Setting Act Selected in Level Select to {Mod.LevelSelectManager.ActSelectedInLevelSelect}");
         }
         catch (Exception e)
@@ -1096,7 +1099,7 @@ public class FunctionHooks
         {
             //CURRENT LEVEL IS NOT VALID HERE
             //STAGE OBJS ARE NOT LOADED IN MEMORY YET
-            LevelSpawnUnlockHandler.OnSetActSpawnPosCallback();
+            LevelSpawnUnlockHandler.SpawnPosCallbackChangeLevel();
         }
         catch (Exception e)
         {
@@ -1129,9 +1132,7 @@ public class FunctionHooks
         try
         {
             //Console.WriteLine("GoSelectActFromSelectLevel");
-            LevelSpawnUnlockHandler.SpawnPosIndex = 0;
-            //Mod.LevelSpawnData!.PrintUnlockedSpawnData();
-            LevelSpawnUnlockHandler.ShouldCheckForInput = true;
+            LevelSpawnUnlockHandler.SelectActFromLevelSelectCallback();
         }
         catch (Exception e)
         {

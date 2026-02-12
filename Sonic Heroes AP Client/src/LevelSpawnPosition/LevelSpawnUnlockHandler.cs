@@ -1,6 +1,7 @@
 
 using Sonic_Heroes_AP_Client.Definitions;
 using Sonic_Heroes_AP_Client.GameState;
+using Sonic_Heroes_AP_Client.LevelSelect;
 
 namespace Sonic_Heroes_AP_Client.LevelSpawnPosition;
 
@@ -36,6 +37,11 @@ public static class LevelSpawnUnlockHandler
     {
         try
         {
+            foreach (var team in Enum.GetValues<Team>().Where(t => (bool)Mod.LevelSelectManager.IsThisTeamEnabled(t)!))
+            {
+                //starting spawn pos here
+                UnlockSpawnPosForAllLevelsForTeam(team, 0);
+            }
             if (!Mod.IsDebug)
                 return;
             foreach (var team in Enum.GetValues<Team>())
@@ -79,6 +85,38 @@ public static class LevelSpawnUnlockHandler
             Console.WriteLine(e);
         }
     }
+
+    public static void UnlockSpawnPosForAllLevelsForTeam(Team team, int index)
+    {
+        try
+        {
+            foreach (var pair in Mod.SaveDataHandler.CustomSaveData!.SpawnDataUnlocks[team].Where(pair => index < pair.Value.Count - 1 && index > 0))
+            {
+                pair.Value[index] = true;
+            }
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+        }
+    }
+
+    public static void UnlockSpawnPosForTeamAndLevel(Team team, LevelId level, int index)
+    {
+        try
+        {
+            if (index > Mod.SaveDataHandler.CustomSaveData!.SpawnDataUnlocks[team][level].Count - 1 || index < 0)
+            {
+                Console.WriteLine($"Index {index} Team {team} Level {level} is out of range in UnlockSpawnPosForTeamAndLevel");
+                return;
+            }
+            Mod.SaveDataHandler.CustomSaveData!.SpawnDataUnlocks[team][level][index] = true;
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+        }
+    }
     
     
     public static unsafe void HandleInput(bool up)
@@ -93,9 +131,6 @@ public static class LevelSpawnUnlockHandler
             var level = (LevelId)SonicHeroesDefinitions.LevelTrackerUILevelMapping[levelIndex];
             var storyIndex = *(int*)(levelSelectPtr + 0x194 + 0x8C);
         
-            var actPtr = *(IntPtr*)(Mod.ModuleBase + 0x6777B4);
-            var actIndex = *(int*)(actPtr + 0x2BC);
-        
             var team = (Team)storyIndex;
 
             if (team is Team.Sonic && (bool)Mod.LevelSelectManager.IsThisTeamEnabled(Team.SuperHardMode)! &&
@@ -107,9 +142,16 @@ public static class LevelSpawnUnlockHandler
             var entries = GetUnlockedSpawnData(team, level);
             var allentries = GetAllSpawnDataForLevel(team, level);
 
-            if (!entries.Any() || entries.Count < 2)
+            
+            if (!entries.Any())
             {
                 SpawnPosIndex = 0;
+                return;
+            }
+
+            if (entries.Count < 2)
+            {
+                SpawnPosIndex = allentries.IndexOf(entries.First());
                 return;
             }
 
@@ -209,8 +251,47 @@ public static class LevelSpawnUnlockHandler
             Console.WriteLine(e);
         }
     }
+    
+    public static unsafe void SelectActFromLevelSelectCallback()
+    {
+        try
+        {
+            var levelSelectPtr = *(IntPtr*)(Mod.ModuleBase + 0x6777B4);
+            var levelIndex = *(int*)(levelSelectPtr + 0x194);
+            if (levelIndex is < 0 or > 21)
+            {
+                Console.WriteLine($"Level {levelIndex} is out of range.");
+                return;
+            }
+            var level = (LevelId)SonicHeroesDefinitions.LevelTrackerUILevelMapping[levelIndex];
+            var storyIndex = *(int*)(levelSelectPtr + 0x194 + 0x8C);
+            
+            var team = (Team)storyIndex;
+            
+            if (Mod.LevelSelectManager.ActSelectedInLevelSelect is Act.Act2 && team is Team.Sonic)
+                team = Team.SuperHardMode;
+            
+            var unlockedSpawn = GetUnlockedSpawnData(team, level);
+            var allSpawnForLevel = GetAllSpawnDataForLevel(team, level);
+            
+            
+            if (!unlockedSpawn.Any())
+            {
+                //Console.WriteLine($"No Unlocked Spawn for Team {team} Level {level} Defaulting to Start");
+                SpawnPosIndex = 0;
+                return;
+            }
+            SpawnPosIndex = allSpawnForLevel.IndexOf(unlockedSpawn.First());
+            //Console.WriteLine($"Team {team} Level {level} SpawnPosIndex {SpawnPosIndex}");
+            ShouldCheckForInput = true;
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+        }
+    }
 
-    public static unsafe void OnSetActSpawnPosCallback()
+    public static unsafe void SpawnPosCallbackChangeLevel()
     {
         try
         {
@@ -319,7 +400,7 @@ public static class LevelSpawnUnlockHandler
 
             if (ShouldIncludeSecret(team, level))
             {
-                return LevelSpawnData.AllSpawnData[team][level].Where((x, index) => Mod.SaveDataHandler!.CustomSaveData!.SpawnDataUnlocks[team][level][index] ).ToList();
+                return LevelSpawnData.AllSpawnData[team][level].Where((x, index) => Mod.SaveDataHandler!.CustomSaveData!.SpawnDataUnlocks[team][level][index]).ToList();
             }
         
             return LevelSpawnData.AllSpawnData[team][level].Where((x, index) => !x.Secret && Mod.SaveDataHandler!.CustomSaveData!.SpawnDataUnlocks[team][level][index] ).ToList();
@@ -339,17 +420,17 @@ public static class LevelSpawnUnlockHandler
             {
                 if (Mod.LevelSelectManager.ActSelectedInLevelSelect is Act.Act2 && (bool)Mod.LevelSelectManager.IsThisTeamEnabled(Team.SuperHardMode)!)
                     team = Team.SuperHardMode;
-                else
-                    team = Team.Sonic;
             }
             
-            
-            if (GetAllSpawnDataForLevel(team, level).Count <= SpawnPosIndex)
+            if (SpawnPosIndex > GetAllSpawnDataForLevel(team, level).Count - 1 || SpawnPosIndex < 0)
+            {
+                Console.WriteLine($"GetLevelSelectUiText Team {team} Level {level} Index {SpawnPosIndex} out of range");
                 SpawnPosIndex = 0;
+            }
             
             var unlockedSpawnEntries = GetUnlockedSpawnData(team, level);
             
-            if (unlockedSpawnEntries.Count <= 1) 
+            if (unlockedSpawnEntries.Count < 1) 
                 return "Start of Level";
             
             

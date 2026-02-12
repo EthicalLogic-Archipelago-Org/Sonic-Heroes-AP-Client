@@ -75,7 +75,7 @@ public class CustomSaveData
                 var output = Enumerable.Repeat(false, amount + 1).ToList();
                 
                 //default spawn
-                output[0] = true;
+                //output[0] = true;
                 return output;
             }
         )

@@ -274,7 +274,7 @@ public static class StageObjHandler
             objsToFind.Add(StageObjTypes.LaserFence);
             
             //if (!objsToFind.Contains(StageObjTypes.CageBox))
-            objsToFind.Add(StageObjTypes.CageBox);
+            //objsToFind.Add(StageObjTypes.CageBox);
             
             
             var foundAddrs = GetAddrsOfObjInTable(objsToFind);
