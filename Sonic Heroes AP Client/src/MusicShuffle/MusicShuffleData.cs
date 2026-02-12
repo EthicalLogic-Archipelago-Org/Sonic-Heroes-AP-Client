@@ -25,6 +25,12 @@ public static class MusicShuffleData
     /// </summary>
     public static string SADXWMAFolder => Mod.Configuration.MusicShuffleSADXWMAFolder.Replace("/", "\\");
     
+    
+    /// <summary>
+    /// The file path for the music folder for Shadow the Hedgehog.
+    /// </summary>
+    public static string ShadowMusicFolder => Mod.Configuration.MusicShuffleShadowFolder.Replace("/", "\\");
+    
     /// <summary>
     /// The file path for the Custom Music Folder.
     /// </summary>
@@ -389,4 +395,74 @@ public static class MusicShuffleData
         (Path.Combine(SA2ADXFolder, "w_jungl.adx"), MusicType.Music)
     };
     
+    public static List<(string name, MusicType type)> ShadowSongs = new()
+    {
+        (Path.Combine(ShadowMusicFolder, "sng_Battle2.adx"), MusicType.Jingle),                 //2p battlemode player 2 intro
+        (Path.Combine(ShadowMusicFolder, "sng_Battle1.adx"), MusicType.Jingle),                 //2p battlemode player 1 intro
+        (Path.Combine(ShadowMusicFolder, "sng_E1001.adx"), MusicType.MenuMusic),
+        (Path.Combine(ShadowMusicFolder, "sng_E4101.adx"), MusicType.Ignored),
+        (Path.Combine(ShadowMusicFolder, "sng_E4201.adx"), MusicType.LongJingle),
+        (Path.Combine(ShadowMusicFolder, "sng_E5024.adx"), MusicType.Ignored),
+        (Path.Combine(ShadowMusicFolder, "sng_E5204.adx"), MusicType.Ignored),
+        (Path.Combine(ShadowMusicFolder, "sng_E8003.adx"), MusicType.Ignored),
+        (Path.Combine(ShadowMusicFolder, "sng_E8201.adx"), MusicType.Ignored),
+        (Path.Combine(ShadowMusicFolder, "sng_EV_music1.adx"), MusicType.Ignored),              //round clear
+        (Path.Combine(ShadowMusicFolder, "sng_EV_music2.adx"), MusicType.Ignored),
+        (Path.Combine(ShadowMusicFolder, "sng_EV_music3.adx"), MusicType.Ignored),
+        (Path.Combine(ShadowMusicFolder, "sng_EVxxxx_E.adx"), MusicType.Ignored),               //cutscene audio for cutscenes
+        (Path.Combine(ShadowMusicFolder, "sng_jin_awakedark.adx"), MusicType.ShortMusic),
+        (Path.Combine(ShadowMusicFolder, "sng_jin_awakehero.adx"), MusicType.ShortMusic),
+        (Path.Combine(ShadowMusicFolder, "sng_jin_cblast_e.adx"), MusicType.Ignored),
+        (Path.Combine(ShadowMusicFolder, "sng_jin_ccslow.adx"), MusicType.ShortMusic),
+        (Path.Combine(ShadowMusicFolder, "sng_jin_ccslow_E.adx"), MusicType.Ignored),
+        (Path.Combine(ShadowMusicFolder, "sng_jin_cctrl.adx"), MusicType.ShortMusic),
+        (Path.Combine(ShadowMusicFolder, "sng_jin_cctrl_e.adx"), MusicType.Ignored),
+        (Path.Combine(ShadowMusicFolder, "sng_jin_invincible.adx"), MusicType.Jingle),
+        (Path.Combine(ShadowMusicFolder, "sng_jin_roundclear.adx"), MusicType.Jingle),
+        (Path.Combine(ShadowMusicFolder, "sng_stg0100.adx"), MusicType.Music),
+        (Path.Combine(ShadowMusicFolder, "sng_stg0200.adx"), MusicType.Music),
+        (Path.Combine(ShadowMusicFolder, "sng_stg0201.adx"), MusicType.Music),
+        (Path.Combine(ShadowMusicFolder, "sng_stg0202.adx"), MusicType.Music),
+        (Path.Combine(ShadowMusicFolder, "sng_stg0210.adx"), MusicType.BossMusic),
+        (Path.Combine(ShadowMusicFolder, "sng_stg0300.adx"), MusicType.Music),
+        (Path.Combine(ShadowMusicFolder, "sng_stg0301.adx"), MusicType.Music),
+        (Path.Combine(ShadowMusicFolder, "sng_stg0302.adx"), MusicType.Music),
+        (Path.Combine(ShadowMusicFolder, "sng_stg0310.adx"), MusicType.BossMusic),
+        (Path.Combine(ShadowMusicFolder, "sng_stg0400.adx"), MusicType.Music),
+        (Path.Combine(ShadowMusicFolder, "sng_stg0401.adx"), MusicType.Music),
+        (Path.Combine(ShadowMusicFolder, "sng_stg0402.adx"), MusicType.Music),
+        (Path.Combine(ShadowMusicFolder, "sng_stg0403.adx"), MusicType.Music),
+        (Path.Combine(ShadowMusicFolder, "sng_stg0404.adx"), MusicType.Music),
+        (Path.Combine(ShadowMusicFolder, "sng_stg0410.adx"), MusicType.BossMusic),
+        (Path.Combine(ShadowMusicFolder, "sng_stg0500.adx"), MusicType.Music),
+        (Path.Combine(ShadowMusicFolder, "sng_stg0501.adx"), MusicType.Music),
+        (Path.Combine(ShadowMusicFolder, "sng_stg0502.adx"), MusicType.Music),
+        (Path.Combine(ShadowMusicFolder, "sng_stg0503.adx"), MusicType.Music),
+        (Path.Combine(ShadowMusicFolder, "sng_stg0504.adx"), MusicType.Music),
+        (Path.Combine(ShadowMusicFolder, "sng_stg0510.adx"), MusicType.BossMusic),
+        (Path.Combine(ShadowMusicFolder, "sng_stg0600.adx"), MusicType.Music),
+        (Path.Combine(ShadowMusicFolder, "sng_stg0601.adx"), MusicType.Music),
+        (Path.Combine(ShadowMusicFolder, "sng_stg0602.adx"), MusicType.Music),
+        (Path.Combine(ShadowMusicFolder, "sng_stg0603.adx"), MusicType.Music),
+        (Path.Combine(ShadowMusicFolder, "sng_stg0604.adx"), MusicType.Music),
+        (Path.Combine(ShadowMusicFolder, "sng_stg0610.adx"), MusicType.BossMusic),
+        (Path.Combine(ShadowMusicFolder, "sng_stg0611.adx"), MusicType.BossMusic),
+        (Path.Combine(ShadowMusicFolder, "sng_stg0612.adx"), MusicType.BossMusic),
+        (Path.Combine(ShadowMusicFolder, "sng_stg0700.adx"), MusicType.Music),
+        (Path.Combine(ShadowMusicFolder, "sng_stg0710.adx"), MusicType.Music),
+        (Path.Combine(ShadowMusicFolder, "sng_stg0710b.adx"), MusicType.BossMusic),
+        (Path.Combine(ShadowMusicFolder, "sng_stg0800.adx"), MusicType.Music),
+        (Path.Combine(ShadowMusicFolder, "sng_sys01.adx"), MusicType.MenuMusic),
+        (Path.Combine(ShadowMusicFolder, "sng_sys02.adx"), MusicType.MenuMusic),
+        (Path.Combine(ShadowMusicFolder, "sng_sys03.adx"), MusicType.MenuMusic),
+        (Path.Combine(ShadowMusicFolder, "sng_sys04.adx"), MusicType.MenuMusic),
+        (Path.Combine(ShadowMusicFolder, "sng_sys05.adx"), MusicType.MenuMusic),
+        (Path.Combine(ShadowMusicFolder, "sng_vox01.adx"), MusicType.LongJingle),
+        (Path.Combine(ShadowMusicFolder, "sng_vox02.adx"), MusicType.LongJingle),
+        (Path.Combine(ShadowMusicFolder, "sng_vox03.adx"), MusicType.LongJingle),
+        (Path.Combine(ShadowMusicFolder, "sng_vox04.adx"), MusicType.LongJingle),
+        (Path.Combine(ShadowMusicFolder, "sng_vox05.adx"), MusicType.LongJingle),
+        (Path.Combine(ShadowMusicFolder, "sng_vox06.adx"), MusicType.LongJingle),
+    };
+
 }

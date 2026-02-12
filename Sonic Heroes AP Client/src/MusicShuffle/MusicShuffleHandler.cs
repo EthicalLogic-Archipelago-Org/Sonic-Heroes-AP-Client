@@ -52,6 +52,7 @@ public static class MusicShuffleHandler
         if (!Mod.Configuration!.MusicShuffleHeroes 
             && !Mod.Configuration.MusicShuffleSA2 
             && !Mod.Configuration.MusicShuffleSADX
+            && !Mod.Configuration.MusicShuffleShadow
             && !Mod.Configuration.MusicShuffleCustom)
             return;
         
@@ -65,6 +66,8 @@ public static class MusicShuffleHandler
             allSongs.AddRange(MusicShuffleData.SADXSongs);
         if (Mod.Configuration.MusicShuffleSA2)
             allSongs.AddRange(MusicShuffleData.SA2Songs);
+        if (Mod.Configuration.MusicShuffleShadow)
+            allSongs.AddRange(MusicShuffleData.ShadowSongs);
         
         try
         {

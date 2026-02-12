@@ -195,6 +195,28 @@ public class Config : Configurable<Config>
     public string MusicShuffleSADXWMAFolder { get; set; } = "";
     
     
+    [Category("MusicShuffleShadow")]
+    [DisplayName("Music Shuffle Shadow")]
+    [Description("Use Shadow the Hedgehog music in shuffle (requires extra setup)")]
+    [DefaultValue(false)]
+    public bool MusicShuffleShadow { get; set; } = false;
+    
+    
+    [Category("MusicShuffleShadow")]
+    [DisplayName("Shadow Music Folder")]
+    [Description("The Location of The Music Folder for Shadow The Hedgehog")]
+    [DefaultValue("")]
+    [FolderPickerParams(
+        initialFolderPath: Environment.SpecialFolder.Desktop,
+        userCanEditPathText: true,
+        title: "Shadow Music Folder",
+        okButtonLabel: "Choose Folder",
+        fileNameLabel: "Shadow Music",
+        multiSelect: false,
+        forceFileSystem: true)]
+    public string MusicShuffleShadowFolder { get; set; } = "";
+    
+    
     [Category("MusicShuffleCustom")]
     [DisplayName("Music Shuffle Custom")]
     [Description("Use custom music in shuffle (requires extra setup)\nThere are 18 Music Tracks and 18 Jingles in addition to the other types as well.")]

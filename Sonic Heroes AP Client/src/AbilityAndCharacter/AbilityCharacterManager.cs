@@ -14,7 +14,7 @@ public static class AbilityCharacterManager
     {
         try
         {
-            //Unlock Jump for enabled teams
+            //Unlock Jump for enabled teams (and all abilities for regions > sky)
             foreach (var team in Enum.GetValues<Team>().Where(x => (bool)Mod.LevelSelectManager.IsThisTeamEnabled(x)!))
             {
                 UnlockAbilityForAllRegions(team, Ability.Jump);
@@ -24,7 +24,7 @@ public static class AbilityCharacterManager
                 }
             }
 
-            //Unlock speed char for all other teams (to avoid dealth loop)
+            //Unlock speed char for all other teams (to avoid death loop)
             foreach (var team in Enum.GetValues<Team>().Where(x => x is not Team.Sonic))
             {
                 SetCharUnlock(team, FormationChar.Speed, true);
@@ -51,14 +51,14 @@ public static class AbilityCharacterManager
     }
     
     
-    public static List<Ability> GetAbilitiesForTeam(Team team)
+    public static List<Ability> GetAbilitiesForTeam(Team team, bool shouldIncludeJump = false)
     {
         List<Ability> result = [];
         try
         {
             foreach (var formationChar in Enum.GetValues<FormationChar>())
             {
-                result.AddRange(GetAbilitiesForTeamAndChar(team, formationChar));
+                result.AddRange(GetAbilitiesForTeamAndChar(team, formationChar, shouldIncludeJump));
             }
         }
         catch (Exception e)
@@ -69,10 +69,13 @@ public static class AbilityCharacterManager
     }
 
     
-    public static List<Ability> GetAbilitiesForTeamAndChar(Team team, FormationChar formationChar)
+    public static List<Ability> GetAbilitiesForTeamAndChar(Team team, FormationChar formationChar, bool shouldIncludeJump = false)
     {
         List<Ability> result = [];
         result.AddRange(AbilityCharacterDefinitions.AbilityListForTeamAndChar[team][formationChar]);
+        if (!shouldIncludeJump)
+            result.Remove(Ability.Jump);
+        
         return result;
     }
 
@@ -265,7 +268,7 @@ public static class AbilityCharacterManager
     {
         var abilitiesNeeded = 0;
         var abilitiesHave = 0;
-        List<Ability> abilities = GetAbilitiesForTeam(team);
+        List<Ability> abilities = GetAbilitiesForTeam(team, true);
 
         foreach (var ability in abilities)
         {

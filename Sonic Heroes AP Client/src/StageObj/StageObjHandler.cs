@@ -141,7 +141,7 @@ public static class StageObjHandler
             if (team != teamInGame)
                 return;
             
-            var foundAddrs = GetAddrsOfObjInTable(StageObjData.StageObjsWithSpecialHandling);
+            var foundAddrs = GetAddrsOfObjInTable(StageObjData.StageObjsWithSpecialHandlingWhenReceivingCharItem);
             
             if (formationChar is FormationChar.Speed && team is Team.Sonic)
             {

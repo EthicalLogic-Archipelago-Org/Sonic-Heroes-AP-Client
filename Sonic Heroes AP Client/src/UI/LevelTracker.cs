@@ -108,6 +108,15 @@ public class LevelTracker
     private float _windowHeight;
     private float _windowPosX;
     private float _windowPosY;
+
+    //TODO make colorblind option (can read mod config here)
+    private Color _unlockedColor = Color.FromArgb(0xFF, 0x40, 0xFF, 0x40);
+    private Color _hiddenColor = Color.Red;
+    private Color _lockedColor = Color.FromArgb(0xFF, 0xFF, 0xA0, 0x40);
+    private Color _needsAnotherItemColor = Color.FromArgb(0xFF, 0x40, 0xFF, 0xFF);
+    
+    private Color _needsMultipleItemsColor = Color.FromArgb(0xFF, 0xFF, 0x40, 0xFF);
+    private Color _somethingWentWrongColor = Color.IndianRed;
     
     public unsafe void Draw(float outerWidth, float outerHeight, float uiScale)
     {
@@ -280,8 +289,16 @@ public class LevelTracker
         return Act.Act3;
     }
     */
-
-    private unsafe void WriteCenteredText(string text, Color color = default, bool largerText = false)
+    
+    
+    /// <summary>
+    /// Writes Text to the Level Select UI
+    /// </summary>
+    /// <param name="text">text to write</param>
+    /// <param name="color">color (defaults to regular)</param>
+    /// <param name="largerText">should the text be larger (defaults to False)</param>
+    /// <param name="column">which column (1-3) (defaults to 2 which is center of screen)</param>
+    private unsafe void WriteCenteredText(string text, Color color = default, bool largerText = false, int column = 2)
     {
         try
         {
@@ -291,14 +308,32 @@ public class LevelTracker
                 ImGui.SetWindowFontScale(_uiScale + 0.3f);
             var textsize = new ImVec2.__Internal();
             ImGui.__Internal.CalcTextSize((IntPtr)(&textsize), text, null,false,-1.0f);
-            ImGui.SetCursorPosX(_windowWidth / 2 - textsize.x / 2);
+            switch (column)
+            {
+                case 1:
+                    ImGui.SetCursorPosX(_col1Centre - textsize.x / 2);
+                    break;
+                case 2:
+                    ImGui.SetCursorPosX(_windowWidth / 2 - textsize.x / 2);
+                    break;
+                case 3:
+                    ImGui.SetCursorPosX(_col2Centre - textsize.x / 2);
+                    break;
+                default:
+                    ImGui.SetCursorPosX(_windowWidth / 2 - textsize.x / 2);
+                    break;
+            }
+            
+            //ImGui.SetCursorPosX(_windowWidth / 2 - textsize.x / 2);
+            
+            
             if (color == Color.Empty)
             {
                 ImGui.Text(text);
             }
             else
             {
-                ImGui.TextColored(GetImVec4FromVec4(GetVec4FromColor(color)), text);
+                ImGui.TextColored(GetImVec4FromColor(color), text);
             }
         }
         catch (Exception e)
@@ -485,7 +520,7 @@ public class LevelTracker
             
             var gate = Mod.LevelSelectManager.FindGateForLevel(level, team);
             //var superHardGate = Mod.LevelSelectManager.FindGateForLevel(level, Team.SuperHardMode);
-            if (gate == null)
+            if (gate == null && !Mod.IsDebug)
                 return;
             
             var act1CompleteId = 0xA0 + (int)team * 42 + ((int)level - 2) * 2 + 0;
@@ -538,7 +573,7 @@ public class LevelTracker
             HandleCharDisplayForTeam(team);
             if (!SonicHeroesDefinitions.LevelIdToRegion.TryGetValue(level, out var region))
                 return;
-            HandleAbilityDisplayForRegion(team, region);
+            HandleAbilityDisplayForRegion(team, region,(bool)Mod.LevelSelectManager.IsThisTeamEnabled(Team.SuperHardMode)!);
             
             //ObjSanity
             //there is none
@@ -559,7 +594,7 @@ public class LevelTracker
             var cursorPos = new ImVec2();
             
             var gate = Mod.LevelSelectManager.FindGateForLevel(level, team);
-            if (gate == null)
+            if (gate == null && !Mod.IsDebug)
                 return;
             
             var act1CompleteId = 0xA0 + (int)team * 42 + ((int)level - 2) * 2 + 0;
@@ -630,7 +665,7 @@ public class LevelTracker
             var text = $"";
             
             var gate = Mod.LevelSelectManager.FindGateForLevel(level, team);
-            if (gate == null)
+            if (gate == null && !Mod.IsDebug)
                 return;
             
             var act1CompleteId = 0xA0 + (int)team * 42 + ((int)level - 2) * 2 + 0;
@@ -701,7 +736,7 @@ public class LevelTracker
             var cursorPos = new ImVec2();
             
             var gate = Mod.LevelSelectManager.FindGateForLevel(level, team);
-            if (gate == null)
+            if (gate == null && !Mod.IsDebug)
                 return;
             
             var act1CompleteId = 0xA0 + (int)team * 42 + ((int)level - 2) * 2 + 0;
@@ -1111,55 +1146,127 @@ public class LevelTracker
     }
     
     
-    private void HandleAbilityDisplayForRegion(Team team, Region region)
+    private void HandleAbilityDisplayForRegion(Team team, Region region, bool shouldHandleSuperHard = false)
     {
         try
         {
             if (Mod.ArchipelagoHandler.SlotData.EntireRunUnlockType is EntireRunUnlockType.LegacyLevelGates)
                 return;
             var text = "";
-            List<Ability> teamAbilities = AbilityCharacterManager.GetAbilitiesForTeam(team);
+            List<Ability> teamAbilities = AbilityCharacterManager.GetAbilitiesForTeam(team, true);
             List<Ability> handledAbilities = [];
+            List<Ability> superHardAbilities = AbilityCharacterManager.GetAbilitiesForTeam(Team.SuperHardMode, true);
+            List<Ability> handledSuperHardAbilities = [];
+
             foreach (var ability in teamAbilities)
             {
                 if (handledAbilities.Contains(ability))
                     continue;
                 handledAbilities.Add(ability);
-                
+            }
+
+            if (shouldHandleSuperHard)
+            {
+                foreach (var ability in superHardAbilities)
+                {
+                    if (handledSuperHardAbilities.Contains(ability))
+                        continue;
+                    handledSuperHardAbilities.Add(ability);
+                }
+            }
+            
+            var numAbilites = Math.Max(handledAbilities.Count,  handledSuperHardAbilities.Count);
+            
+            for (int i = 0; i < numAbilites; i++)
+            {
+                var ability = handledAbilities[i];
                 text = ability.ToString();
-                Color textColor =
-                    Mod.SaveDataHandler.CustomSaveData.UnlockSaveData[team].AbilityUnlocks[region][ability]
-                        ? Color.Green
-                        : Color.Red;
+                Color textColor = getColorForAbilityForTeamAndRegion(ability, team, region);
 
-                if (ability is Ability.Flight && textColor == Color.Green &&
-                    !Mod.SaveDataHandler.CustomSaveData.UnlockSaveData[team].AbilityUnlocks[region][
-                        Ability.Thundershoot])
+                if (team is not Team.Sonic || !shouldHandleSuperHard)
                 {
-                    textColor = Color.Orange;
+                    WriteCenteredText(text, textColor);
                 }
-
-                if (ability is Ability.TriangleJump && textColor == Color.Green &&
-                    !Mod.SaveDataHandler.CustomSaveData.UnlockSaveData[team].AbilityUnlocks[region][
-                        Ability.HomingAttack])
+                else
                 {
-                    textColor = Color.Orange;
+                    WriteCenteredText(text, textColor, column: 1);
+                    ImGui.__Internal.SameLine(0, 0);
+                    ability = handledSuperHardAbilities[i];
+                    text = ability.ToString();
+                    textColor = getColorForAbilityForTeamAndRegion(ability, Team.SuperHardMode, region);
+                    WriteCenteredText(text, textColor, column: 3);
                 }
-
-                if (ability is Ability.RocketAccel && textColor == Color.Green &&
-                    !(Mod.SaveDataHandler.CustomSaveData.UnlockSaveData[team].CharsUnlocked[FormationChar.Power] ||
-                      Mod.SaveDataHandler.CustomSaveData.UnlockSaveData[team].CharsUnlocked[FormationChar.Flying]))
-                {
-                    //need second character for rocket accel
-                    textColor = Color.Orange;
-                }
-                WriteCenteredText(text, textColor);
+                
             }
         }
         catch (Exception e)
         {
             Console.WriteLine(e);
         }
+    }
+
+
+    private Color getColorForAbilityForTeamAndRegion(Ability ability, Team team, Region region)
+    {
+        try
+        {
+            if (Mod.SaveDataHandler.CustomSaveData!.UnlockSaveData[team].AbilityUnlocks[region][ability])
+            {
+                switch (ability)
+                {
+                    //Triangle Jump needs both Jump and Homing Attack (have neither)
+                    case Ability.TriangleJump when !Mod.SaveDataHandler.CustomSaveData.UnlockSaveData[team].AbilityUnlocks[region][Ability.Jump] && !Mod.SaveDataHandler.CustomSaveData.UnlockSaveData[team].AbilityUnlocks[region][Ability.HomingAttack]:
+                    //Invis needs Jump and Tornado (have neither)
+                    case Ability.Invisibility when !Mod.SaveDataHandler.CustomSaveData.UnlockSaveData[team].AbilityUnlocks[region][Ability.Jump] && !Mod.SaveDataHandler.CustomSaveData.UnlockSaveData[team].AbilityUnlocks[region][Ability.Tornado]:
+                    //Ultimate Fire Dunk needs both Jump and Fire Dunk (have neither)
+                    case Ability.UltimateFireDunk when !Mod.SaveDataHandler.CustomSaveData.UnlockSaveData[team].AbilityUnlocks[region][Ability.Jump] && !Mod.SaveDataHandler.CustomSaveData.UnlockSaveData[team].AbilityUnlocks[region][Ability.FireDunk]:
+                        return _needsMultipleItemsColor;
+                    
+                    
+                    //Homing Attack needs Jump
+                    case Ability.HomingAttack when !Mod.SaveDataHandler.CustomSaveData.UnlockSaveData[team].AbilityUnlocks[region][Ability.Jump]:
+                    //Tornado needs Jump
+                    case Ability.Tornado when !Mod.SaveDataHandler.CustomSaveData.UnlockSaveData[team].AbilityUnlocks[region][Ability.Jump]:
+                    //Rocket Accel needs second character
+                    case Ability.RocketAccel when !(Mod.SaveDataHandler.CustomSaveData.UnlockSaveData[team].CharsUnlocked[FormationChar.Power] || Mod.SaveDataHandler.CustomSaveData.UnlockSaveData[team].CharsUnlocked[FormationChar.Flying]):
+                    //Light Attack Needs Jump
+                    case Ability.LightAttack when !Mod.SaveDataHandler.CustomSaveData.UnlockSaveData[team].AbilityUnlocks[region][Ability.Jump]:
+                    //Amy Hammer Hover needs Jump
+                    case Ability.AmyHammerHover when !Mod.SaveDataHandler.CustomSaveData.UnlockSaveData[team].AbilityUnlocks[region][Ability.Jump]:
+                    //Flight needs Thundershoot
+                    case Ability.Flight when !Mod.SaveDataHandler.CustomSaveData.UnlockSaveData[team].AbilityUnlocks[region][Ability.Thundershoot]:
+                    //Triangle Jump needs both Jump and Homing Attack (have one but not both)
+                    case Ability.TriangleJump when !Mod.SaveDataHandler.CustomSaveData.UnlockSaveData[team].AbilityUnlocks[region][Ability.Jump] || !Mod.SaveDataHandler.CustomSaveData.UnlockSaveData[team].AbilityUnlocks[region][Ability.HomingAttack]:
+                    //Combo Needs Power Attack
+                    case Ability.ComboFinisher when !Mod.SaveDataHandler.CustomSaveData.UnlockSaveData[team].AbilityUnlocks[region][Ability.PowerAttack]:
+                    //Fire Dunk Needs Jump
+                    case Ability.FireDunk when !Mod.SaveDataHandler.CustomSaveData.UnlockSaveData[team].AbilityUnlocks[region][Ability.Jump]:
+                    //Ultimate Fire Dunk needs both Jump and Fire Dunk (have one but not both)
+                    case Ability.UltimateFireDunk when !Mod.SaveDataHandler.CustomSaveData.UnlockSaveData[team].AbilityUnlocks[region][Ability.Jump] || !Mod.SaveDataHandler.CustomSaveData.UnlockSaveData[team].AbilityUnlocks[region][Ability.FireDunk]:
+                    //Belly Flop Needs Jump
+                    case Ability.BellyFlop when !Mod.SaveDataHandler.CustomSaveData.UnlockSaveData[team].AbilityUnlocks[region][Ability.Jump]:
+                        return _needsAnotherItemColor;
+
+                    case Ability.Jump:
+                    case Ability.LightDash:
+                    case Ability.Shuriken:
+                    case Ability.Thundershoot:
+                    case Ability.DummyRings:
+                    case Ability.CheeseCannon:
+                    case Ability.FlowerSting:
+                    case Ability.PowerAttack:
+                    case Ability.Glide:
+                    default:
+                        return _unlockedColor;
+                }
+            }
+            return _lockedColor;
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+        }
+        return _somethingWentWrongColor;
     }
     
     
@@ -1173,19 +1280,15 @@ public class LevelTracker
     }
     
     
-    private ImVec4 GetImVec4FromVec4(Vector4 color)
+    private ImVec4 GetImVec4FromColor(Color color)
     {
         ImVec4 result = new ImVec4();
-        result.W = color.W;
-        result.X = color.X;
-        result.Y = color.Y;
-        result.Z = color.Z;
+        result.W = color.A / 255f; //Alpha
+        result.X = color.R / 255f;
+        result.Y = color.G / 255f;
+        result.Z = color.B / 255f;
+        
+        //Console.WriteLine($"Result: ({result.W}, {result.X}, {result.Y}, {result.Z}) Color: {color}");
         return result;
     }
-
-    private Vector4 GetVec4FromColor(Color color)
-    {
-        return new Vector4(color.R, color.G, color.B, color.A);
-    }
-    
 }

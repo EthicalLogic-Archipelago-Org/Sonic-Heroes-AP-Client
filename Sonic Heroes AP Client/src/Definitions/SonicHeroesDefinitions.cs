@@ -438,7 +438,7 @@ public enum StageObjTypes : ushort
     PowerPlantShutter = 0x0410,
     LiquidLava = 0x0412, //energy up
     PowerPlantElevatorCap = 0x0413, //Egg Cap Elev
-    PowerPlantGlassBallCollisionObject = 0x0414,
+    PowerPlantCollisionGlassBallObject = 0x0414,
     EnergyRoadUpwardEffect = 0x0415,
     PowerPlantElevatorSupportColumn = 0x0416, //pipe elev
     PowerPlantGlassBall = 0x0480,

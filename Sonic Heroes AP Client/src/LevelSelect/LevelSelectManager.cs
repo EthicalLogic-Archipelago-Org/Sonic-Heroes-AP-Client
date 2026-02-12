@@ -45,23 +45,9 @@ public class LevelSelectManager
 
     public void InitConnect()
     {
-        if (Mod.ArchipelagoHandler.SlotData.EntireRunUnlockType is not EntireRunUnlockType.LegacyLevelGates) 
-            return;
-        
-        foreach (var team in Enum.GetValues<Team>().Where(x => (bool)Mod.LevelSelectManager.IsThisTeamEnabled(x)!))
+        if (Mod.IsDebug)
         {
-            foreach (var character in Enum.GetValues<FormationChar>())
-            {
-                Mod.SaveDataHandler.CustomSaveData.UnlockSaveData[team].CharsUnlocked[character] = true;
-            }
-
-            foreach (var region in Mod.SaveDataHandler.CustomSaveData.UnlockSaveData[team].AbilityUnlocks.Keys)
-            {
-                foreach (var ability in Mod.SaveDataHandler.CustomSaveData.UnlockSaveData[team].AbilityUnlocks[region].Keys)
-                {
-                    Mod.SaveDataHandler.CustomSaveData.UnlockSaveData[team].AbilityUnlocks[region][ability] = true;
-                }
-            }
+            //EnabledStoriesAndSanities |= StoriesAndSanities.SuperHardMode;
         }
     }
 
