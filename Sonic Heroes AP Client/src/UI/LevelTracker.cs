@@ -1,14 +1,12 @@
 
 
+
 using System.Drawing;
-using System.Numerics;
 using DearImguiSharp;
 using Sonic_Heroes_AP_Client.AbilityAndCharacter;
 using Sonic_Heroes_AP_Client.Definitions;
 using Sonic_Heroes_AP_Client.GameState;
-using Sonic_Heroes_AP_Client.LevelSelect;
 using Sonic_Heroes_AP_Client.LevelSpawnPosition;
-using Sonic_Heroes_AP_Client.LevelUnlocking;
 using Sonic_Heroes_AP_Client.Sanity.BonusKeys;
 using Sonic_Heroes_AP_Client.Sanity.Checkpoints;
 using Region = Sonic_Heroes_AP_Client.Definitions.Region;

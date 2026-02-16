@@ -45,14 +45,15 @@ public static class StageObjHandler
                     UnlockStageObjItemCallback(stageObjTypes, t, region, forceunlock);
                 }
             }
-        
-            else if (region is null)
-            {
-                foreach (var r in Enum.GetValues<Region>())
-                {
-                    UnlockStageObjItemCallback(stageObjTypes, team, r);
-                }
-            }
+            // TODO If Region becomes important for Stage Objs, Uncomment below 
+            
+            // else if (region is null)
+            // {
+            //     foreach (var r in Enum.GetValues<Region>())
+            //     {
+            //         UnlockStageObjItemCallback(stageObjTypes, team, r);
+            //     }
+            // }
             else
             {
                 var currState = Mod.SaveDataHandler!.CustomSaveData!.StageObjSpawnSaveData[(Team)team][(StageObjTypes)stageObjTypes];

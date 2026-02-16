@@ -68,7 +68,10 @@ public static class ItemHandler
     public static void HandleItem(int index, ItemInfo item)
     {
         if (index < Mod.SaveDataHandler!.CustomSaveData.LastItemIndex)
+        {
+            //Console.WriteLine($"Item #{index}: {item.ItemName} dropped due to index being lower than Save Data index: {Mod.SaveDataHandler.CustomSaveData.LastItemIndex}");
             return;
+        }
         
         
         Mod.SaveDataHandler!.CustomSaveData!.LastItemIndex++;
