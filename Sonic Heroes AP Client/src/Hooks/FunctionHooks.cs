@@ -63,6 +63,9 @@ public class FunctionHooks
     private static IReverseWrapper<E2000Killed> _reverseWrapOnE2000Killed;
     private static IReverseWrapper<EggHammerKilled> _reverseWrapOnEggHammerKilled;
     private static IReverseWrapper<PowerAttackGiveSFAMeter> _reverseWrapOnPowerAttackGiveSFAMeter;
+    private static IReverseWrapper<ItemBoxPickUp> _reverseWrapOnItemBoxPickUp;
+    private static IReverseWrapper<ItemBaloonPickUp> _reverseWrapOnItemBaloonPickUp;
+    private static IReverseWrapper<HintRingActivated> _reverseWrapOnHintRingActivated;
     
     
     
@@ -582,7 +585,48 @@ public class FunctionHooks
             };
             _asmHooks.Add(hooks.CreateAsmHook(PowerAttackGiveSFAMeter, (int)(Mod.ModuleBase + 0x1AF426), AsmHookBehaviour.ExecuteAfter).Activate());
             
+            string[] ItemBoxPickUp =
+            {
+                "use32",
+                "pushad",
+                "pushfd",
+                "push edi",
+                $"{hooks.Utilities.GetAbsoluteCallMnemonics(OnItemBoxPickUp, out _reverseWrapOnItemBoxPickUp)}",
+                "pop edi",
+                "popfd",
+                "popad"
+            };
+            _asmHooks.Add(hooks.CreateAsmHook(ItemBoxPickUp, (int)(Mod.ModuleBase + 0x7969A), AsmHookBehaviour.ExecuteFirst).Activate());
             
+            
+            
+            string[] ItemBaloonPickUp =
+            {
+                "use32",
+                "pushad",
+                "pushfd",
+                "mov edx,ebp",
+                "push edx",
+                $"{hooks.Utilities.GetAbsoluteCallMnemonics(OnItemBaloonPickUp, out _reverseWrapOnItemBaloonPickUp)}",
+                "pop edx",
+                "popfd",
+                "popad"
+            };
+            _asmHooks.Add(hooks.CreateAsmHook(ItemBaloonPickUp, (int)(Mod.ModuleBase + 0x7852A), AsmHookBehaviour.ExecuteFirst).Activate());
+            
+            
+            string[] HintRingActivated =
+            {
+                "use32",
+                "pushad",
+                "pushfd",
+                "push edi",
+                $"{hooks.Utilities.GetAbsoluteCallMnemonics(OnHintRingActivated, out _reverseWrapOnHintRingActivated)}",
+                "pop edi",
+                "popfd",
+                "popad"
+            };
+            _asmHooks.Add(hooks.CreateAsmHook(HintRingActivated, (int)(Mod.ModuleBase + 0x76345), AsmHookBehaviour.ExecuteFirst).Activate());
             
             
         }
@@ -590,6 +634,62 @@ public class FunctionHooks
         {
             Console.WriteLine(e);
         }
+    }
+    
+    
+    
+    [Function(new FunctionAttribute.Register[] { FunctionAttribute.Register.edi }, FunctionAttribute.Register.eax, FunctionAttribute.StackCleanup.Callee)]
+    public delegate int HintRingActivated(int hintRingPtr);
+    private static unsafe int OnHintRingActivated(int edi)
+    {
+        try
+        {
+            Console.WriteLine($"HintRing Activated");
+            var staticPtr = *(int*)(edi + 0x2C);
+            Console.WriteLine($"StaticPtr: 0x{staticPtr:x}");
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+        }
+        return 1;
+    }
+    
+    
+    
+    [Function(new FunctionAttribute.Register[] { FunctionAttribute.Register.edx }, FunctionAttribute.Register.eax, FunctionAttribute.StackCleanup.Callee)]
+    public delegate int ItemBaloonPickUp(int itemBaloonPtr);
+    private static unsafe int OnItemBaloonPickUp(int edx)
+    {
+        try
+        {
+            Console.WriteLine($"ItemBalloon Collected");
+            var staticPtr = *(int*)(edx + 0x2C);
+            Console.WriteLine($"StaticPtr: 0x{staticPtr:x}");
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+        }
+        return 1;
+    }
+    
+    
+    [Function(new FunctionAttribute.Register[] { FunctionAttribute.Register.edi }, FunctionAttribute.Register.eax, FunctionAttribute.StackCleanup.Callee)]
+    public delegate int ItemBoxPickUp(int itemBoxPtr);
+    private static unsafe int OnItemBoxPickUp(int edi)
+    {
+        try
+        {
+            Console.WriteLine($"ItemBox Collected");
+            var staticPtr = *(int*)(edi + 0x2C);
+            Console.WriteLine($"StaticPtr: 0x{staticPtr:x}");
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+        }
+        return 1;
     }
     
     
