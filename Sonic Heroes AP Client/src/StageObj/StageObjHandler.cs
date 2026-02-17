@@ -59,11 +59,11 @@ public static class StageObjHandler
                 var currState = Mod.SaveDataHandler!.CustomSaveData!.StageObjSpawnSaveData[(Team)team][(StageObjTypes)stageObjTypes];
                 if (forceunlock)
                     currState = false;
-                Console.WriteLine($"StageObjItemReceived. Obj: {(StageObjTypes)stageObjTypes} Team: {(Team)team} Region: {(Region)region} currState: {currState} newState: {!currState} forceunlock: {forceunlock}");
+                Console.WriteLine($"StageObjItemReceived. Obj: {(StageObjTypes)stageObjTypes} Team: {(Team)team} Region: {region ?? Region.SpecialStage} currState: {currState} newState: {!currState} forceunlock: {forceunlock}");
                 if (!Mod.IsDebug)
                     currState = false;
                 Mod.SaveDataHandler!.CustomSaveData!.StageObjSpawnSaveData[(Team)team][(StageObjTypes)stageObjTypes] = !currState;
-                StageObjsPollUpdates((StageObjTypes)stageObjTypes, (Team)team, (Region)region, !currState);
+                StageObjsPollUpdates((StageObjTypes)stageObjTypes, (Team)team, region, !currState);
             }
         }
         catch (Exception e)
@@ -73,7 +73,7 @@ public static class StageObjHandler
     }
     
     
-    public static unsafe void StageObjsPollUpdates(StageObjTypes stageObjTypes, Team team, Region region, bool unlock)
+    public static unsafe void StageObjsPollUpdates(StageObjTypes stageObjTypes, Team team, Region? region, bool unlock)
     {
         try
         {

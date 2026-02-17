@@ -60,6 +60,8 @@ public class FunctionHooks
     private static IReverseWrapper<ScatteredRingConstructor> _reverseWrapOnScatteredRingConstructor;
     private static IReverseWrapper<PickUpRing> _reverseWrapOnPickUpRing;
     private static IReverseWrapper<EnemyDestroyMyself> _reverseWrapOnEnemyDestroyMyself;
+    private static IReverseWrapper<E2000Killed> _reverseWrapOnE2000Killed;
+    private static IReverseWrapper<EggHammerKilled> _reverseWrapOnEggHammerKilled;
     private static IReverseWrapper<PowerAttackGiveSFAMeter> _reverseWrapOnPowerAttackGiveSFAMeter;
     
     
@@ -543,6 +545,32 @@ public class FunctionHooks
             _asmHooks.Add(hooks.CreateAsmHook(EnemyDestroyMyself, (int)(Mod.ModuleBase + 0x1E4D22), AsmHookBehaviour.ExecuteFirst).Activate());
             
             
+            string[] E2000Killed =
+            {
+                "use32",
+                "pushad",
+                "pushfd",
+                "push esi",
+                $"{hooks.Utilities.GetAbsoluteCallMnemonics(OnE2000Killed, out _reverseWrapOnE2000Killed)}",
+                "pop esi",
+                "popfd",
+                "popad"
+            };
+            _asmHooks.Add(hooks.CreateAsmHook(E2000Killed, (int)(Mod.ModuleBase + 0x1F2630), AsmHookBehaviour.ExecuteFirst).Activate());
+            
+            string[] EggHammerKilled =
+            {
+                "use32",
+                "pushad",
+                "pushfd",
+                "push esi",
+                $"{hooks.Utilities.GetAbsoluteCallMnemonics(OnEggHammerKilled, out _reverseWrapOnEggHammerKilled)}",
+                "pop esi",
+                "popfd",
+                "popad"
+            };
+            _asmHooks.Add(hooks.CreateAsmHook(EggHammerKilled, (int)(Mod.ModuleBase + 0x206430), AsmHookBehaviour.ExecuteFirst).Activate());
+            
             string[] PowerAttackGiveSFAMeter =
             {
                 "use32",
@@ -596,9 +624,40 @@ public class FunctionHooks
     }
     
     
+    [Function(new FunctionAttribute.Register[] { FunctionAttribute.Register.esi }, FunctionAttribute.Register.eax, FunctionAttribute.StackCleanup.Callee)]
+    public delegate int EggHammerKilled(int enemyPtr);
+    private static unsafe int OnEggHammerKilled(int esi)
+    {
+        try
+        {
+            Console.WriteLine($"Egg Hammer Killed");
+            var staticPtr = *(int*)(esi + 0x2C);
+            Console.WriteLine($"StaticPtr: 0x{staticPtr:x}");
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+        }
+        return 1;
+    }
     
     
-    
+    [Function(new FunctionAttribute.Register[] { FunctionAttribute.Register.esi }, FunctionAttribute.Register.eax, FunctionAttribute.StackCleanup.Callee)]
+    public delegate int E2000Killed(int enemyPtr);
+    private static unsafe int OnE2000Killed(int esi)
+    {
+        try
+        {
+            Console.WriteLine($"E2000 Killed");
+            var staticPtr = *(int*)(esi + 0x2C);
+            Console.WriteLine($"StaticPtr: 0x{staticPtr:x}");
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+        }
+        return 1;
+    }
     
     
     [Function(new FunctionAttribute.Register[] { FunctionAttribute.Register.esi }, FunctionAttribute.Register.eax, FunctionAttribute.StackCleanup.Callee)]
