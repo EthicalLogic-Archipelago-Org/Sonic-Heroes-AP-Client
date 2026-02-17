@@ -40,7 +40,7 @@ public class AbilityCharacterDefinitions
                     FormationChar.Power, new List<Ability>()
                     {
                         Ability.Jump,
-                        //Ability.PowerAttack,
+                        Ability.PowerAttack,
                         Ability.ComboFinisher,
                         Ability.Glide,
                         Ability.FireDunk,
@@ -83,7 +83,7 @@ public class AbilityCharacterDefinitions
                     FormationChar.Power, new List<Ability>()
                     {
                         Ability.Jump,
-                        //Ability.PowerAttack,
+                        Ability.PowerAttack,
                         Ability.ComboFinisher,
                         Ability.Glide,
                         Ability.FireDunk,
@@ -126,7 +126,7 @@ public class AbilityCharacterDefinitions
                     FormationChar.Power, new List<Ability>()
                     {
                         Ability.Jump,
-                        //Ability.PowerAttack,
+                        Ability.PowerAttack,
                         Ability.ComboFinisher,
                         Ability.Glide,
                         Ability.FireDunk,
@@ -169,7 +169,7 @@ public class AbilityCharacterDefinitions
                     FormationChar.Power, new List<Ability>()
                     {
                         Ability.Jump,
-                        //Ability.PowerAttack,
+                        Ability.PowerAttack,
                         Ability.ComboFinisher,
                         Ability.Glide,
                         Ability.FireDunk,
@@ -212,7 +212,7 @@ public class AbilityCharacterDefinitions
                     FormationChar.Power, new List<Ability>()
                     {
                         Ability.Jump,
-                        //Ability.PowerAttack,
+                        Ability.PowerAttack,
                         Ability.ComboFinisher,
                         Ability.Glide,
                         Ability.FireDunk,

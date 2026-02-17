@@ -60,6 +60,7 @@ public class FunctionHooks
     private static IReverseWrapper<ScatteredRingConstructor> _reverseWrapOnScatteredRingConstructor;
     private static IReverseWrapper<PickUpRing> _reverseWrapOnPickUpRing;
     private static IReverseWrapper<EnemyDestroyMyself> _reverseWrapOnEnemyDestroyMyself;
+    private static IReverseWrapper<PowerAttackGiveSFAMeter> _reverseWrapOnPowerAttackGiveSFAMeter;
     
     
     
@@ -542,6 +543,18 @@ public class FunctionHooks
             _asmHooks.Add(hooks.CreateAsmHook(EnemyDestroyMyself, (int)(Mod.ModuleBase + 0x1E4D22), AsmHookBehaviour.ExecuteFirst).Activate());
             
             
+            string[] PowerAttackGiveSFAMeter =
+            {
+                "use32",
+                "pushad",
+                "pushfd",
+                $"{hooks.Utilities.GetAbsoluteCallMnemonics(OnPowerAttackGiveSFAMeter, out _reverseWrapOnPowerAttackGiveSFAMeter)}",
+                "popfd",
+                "popad"
+            };
+            _asmHooks.Add(hooks.CreateAsmHook(PowerAttackGiveSFAMeter, (int)(Mod.ModuleBase + 0x1AF426), AsmHookBehaviour.ExecuteAfter).Activate());
+            
+            
             
             
         }
@@ -550,6 +563,40 @@ public class FunctionHooks
             Console.WriteLine(e);
         }
     }
+    
+    
+    [Function(new FunctionAttribute.Register[] { }, FunctionAttribute.Register.eax, FunctionAttribute.StackCleanup.Callee)]
+    public delegate int PowerAttackGiveSFAMeter();
+    private static unsafe int OnPowerAttackGiveSFAMeter()
+    {
+        try
+        {
+            if (!GameStateHandler.InGame())
+                return 0;
+
+            var team = (Team)GameStateHandler.GetCurrentStory()!;
+            var level = (LevelId)GameStateHandler.GetCurrentLevel()!;
+
+            if (!SonicHeroesDefinitions.LevelIdToRegion.TryGetValue(level, out var region))
+                return 0;
+            
+            if (Mod.SaveDataHandler.CustomSaveData!.UnlockSaveData[team].AbilityUnlocks[region][Ability.PowerAttack])
+                //do nothing if have power attack
+                return 0;
+
+            var teamBlastPtr = (float*)(Mod.ModuleBase + 0x5DD72C);
+
+            (*teamBlastPtr) -= 1.0f;
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+        }
+        return 0;
+    }
+    
+    
+    
     
     
     

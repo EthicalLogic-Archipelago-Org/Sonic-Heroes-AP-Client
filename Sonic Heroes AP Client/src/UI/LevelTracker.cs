@@ -182,7 +182,7 @@ public class LevelTracker
             _outerWidth = outerWidth;
             _uiScale = uiScale;
             _windowWidth = 0.35f * _outerWidth;
-            _windowHeight = 0.55f * _outerHeight;
+            _windowHeight = 0.60f * _outerHeight;
             _windowPosX = _outerWidth - _windowWidth;
             _windowPosY = 0.0f;
             var trackerPos = new ImVec2.__Internal { x = _windowPosX, y = _windowPosY };

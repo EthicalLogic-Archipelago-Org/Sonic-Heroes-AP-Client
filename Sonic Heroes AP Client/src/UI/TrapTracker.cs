@@ -53,8 +53,9 @@ public class TrapTracker
         _drawList = ImGui.__Internal.GetWindowDrawList();
         _circRadius = 8 * uiScale;
         
-        var disabledColor = 0x80FFFFFF;
-        var enabledColor = 0xFF8080FF;
+        var disabledColor = 0x80FFFFFF;     //<- gray
+        //var enabledColor = 0xFF8080FF;    //<- red
+        var enabledColor = 0xFF40A0FF;      //<- orange (this is ABGR for some reason)
 
         ImGui.__Internal.CalcTextSize((IntPtr) (&textSize), $"STEALTH", null, false, -1.0f);
         ImGui.SetCursorPosX(_windowPosX + _windowWidth / 2 - textSize.x / 2);

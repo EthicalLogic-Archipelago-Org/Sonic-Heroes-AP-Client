@@ -110,6 +110,10 @@ public static class AbilityCharacterGameWrites
 
     public static void SetPowerAttack(bool value)
     {
+        //function hook used for team blast meter
+        
+        var bytes = value ? new byte[] { 0x57, 0xE8, 0x96, 0x17, 0x00, 0x00 } : new byte[] { 0x90, 0x90, 0x90, 0x90, 0x90, 0x90 };
+        Memory.Instance.SafeWrite(Mod.ModuleBase + 0x1BEB74, bytes);
     }
     
     public static void SetFireDunk(bool value)
