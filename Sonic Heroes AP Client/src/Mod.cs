@@ -147,18 +147,19 @@ public class Mod: ModBase
     {
         try
         {
-            AbilityCharacterManager.InitConnect();
-            LevelSelectGameWrites.ModifyInstructions();
-            CheckpointGameWrites.SetCheckPointPriorityWrite(true);
-            GameStateGameWrites.SetRingLoss(Configuration.RingLoss);
             if (_hooks != null)
             {
                 FunctionHooks.SetUpFunctionHooks(_hooks);
                 GameStateGameWrites.RemoveRingCapOnScatteredRingSpawn(true);
             } 
-            //Logger.WriteLine($"[{ModConfig.ModId}] Initialized", Color.Blue);
+            //GameStateGameWrites.Change999RingsCap(true);
+            AbilityCharacterManager.InitConnect();
             LevelSelectManager.InitConnect();
             LevelSpawnUnlockHandler.InitConnect();
+            LevelSelectGameWrites.ModifyInstructions();
+            CheckpointGameWrites.SetCheckPointPriorityWrite(true);
+            GameStateGameWrites.SetRingLoss(Configuration.RingLoss);
+            //Logger.WriteLine($"[{ModConfig.ModId}] Initialized", Color.Blue);
         }
         catch (Exception e)
         {

@@ -18,6 +18,7 @@ public static class AbilityCharacterManager
             foreach (var team in Enum.GetValues<Team>().Where(x => (bool)Mod.LevelSelectManager.IsThisTeamEnabled(x)!))
             {
                 UnlockAbilityForAllRegions(team, Ability.Jump);
+                UnlockAbilityForAllRegions(team, Ability.PowerAttack);
                 foreach (var region in Enum.GetValues<Region>().Where(reg => reg > Region.Sky))
                 {
                     UnlockAllAbilitiesForRegion(team, region);

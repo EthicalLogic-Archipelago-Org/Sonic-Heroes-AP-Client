@@ -661,6 +661,7 @@ public class FunctionHooks
     public delegate int ItemBaloonPickUp(int itemBaloonPtr);
     private static unsafe int OnItemBaloonPickUp(int edx)
     {
+        //Balloon has 1 L because that is how the game stores it
         try
         {
             Console.WriteLine($"ItemBalloon Collected");
