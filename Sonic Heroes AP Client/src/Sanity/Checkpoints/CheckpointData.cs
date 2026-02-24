@@ -779,7 +779,7 @@ public static class CheckpointData
         new(Team.Chaotix, LevelId.EggFleet, 2),
         //-4930.0000 600.0000 -6460.0000
         new(Team.Chaotix, LevelId.EggFleet, 3),
-        //-8870.0020 -8870.0020 -19693.0000
+        //-8870.0020 2926.8 -19693.0000
         
         new(Team.Chaotix, LevelId.FinalFortress, 1),
         //2250.01 6270 44050.02

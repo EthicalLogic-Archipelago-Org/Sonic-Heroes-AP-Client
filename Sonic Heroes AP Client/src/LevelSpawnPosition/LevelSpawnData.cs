@@ -681,7 +681,7 @@ public static class LevelSpawnData
                         new LevelSpawnEntry(0, -99.40f, -3550),
                         new LevelSpawnEntry(-2849, 800, -4340),
                         new LevelSpawnEntry(-4930, 600, -6460),
-                        new LevelSpawnEntry(-8870.002f, -8870.002f, -19693),
+                        new LevelSpawnEntry(-8870.002f, 2926.8f, -19693),
                         new LevelSpawnEntry(-9999, -9999, -9999, bonusstage: true),
                     ]
                 },
