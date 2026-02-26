@@ -1033,7 +1033,7 @@ public class FunctionHooks
                 return 1;
             }
 
-            //Console.WriteLine($"Checking Mission Completion Location Here: Id = {(0x93930000 + locationId):X}");
+            //Console.WriteLine($"Checking Mission Completion Location Here: Id = {(SonicHeroesDefinitions.AllIdsOffset + locationId):X}");
             //Mod.SaveDataHandler.CustomSaveData.LevelsGoaled[story][(LevelId)levelIndex] = true;
             LevelSpawnUnlockHandler.BonusStageUnlockCallback(team, (LevelId)levelIndex, goal: true);
 

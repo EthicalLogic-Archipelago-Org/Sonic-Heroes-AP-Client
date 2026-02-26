@@ -766,6 +766,8 @@ public enum StageObjTypes : ushort
 
 public static class SonicHeroesDefinitions
 {
+    public const long AllIdsStartOffset = 0x93930000;
+    
     public const int MetalMadnessId = 0x230E;
 
     public const int EmeraldStartId = 0x148;

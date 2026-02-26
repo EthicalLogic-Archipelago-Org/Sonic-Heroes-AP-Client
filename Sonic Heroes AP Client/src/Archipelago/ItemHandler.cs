@@ -79,7 +79,7 @@ public static class ItemHandler
         
         
         var itemName = item.ItemName;
-        var itemId = (FillerSHItem)(item.ItemId - 0x93930000);
+        var itemId = (FillerSHItem)(item.ItemId - SonicHeroesDefinitions.AllIdsStartOffset);
         
         //check for items here
         CheckPlayableCharItemName(itemName, ref handled);

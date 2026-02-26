@@ -7,6 +7,7 @@ using Archipelago.MultiClient.Net.Helpers;
 using Archipelago.MultiClient.Net.MessageLog.Messages;
 using Archipelago.MultiClient.Net.Packets;
 using Sonic_Heroes_AP_Client.Configuration;
+using Sonic_Heroes_AP_Client.Definitions;
 using Sonic_Heroes_AP_Client.MusicShuffle;
 using Sonic_Heroes_AP_Client.UI;
 
@@ -200,13 +201,13 @@ public class ArchipelagoHandler
     
     public void CheckLocations(Int64[] ids)
     {
-        ids.ToList().ForEach(id => _locationsToCheck.Enqueue(id + 0x93930000));
+        ids.ToList().ForEach(id => _locationsToCheck.Enqueue(id + SonicHeroesDefinitions.AllIdsStartOffset));
     }
     
     
     public void CheckLocation(Int64 id)
     {
-        _locationsToCheck.Enqueue(0x93930000 + id);
+        _locationsToCheck.Enqueue(SonicHeroesDefinitions.AllIdsStartOffset + id);
     }
     
     
@@ -226,14 +227,14 @@ public class ArchipelagoHandler
     
     public bool IsLocationChecked(Int64 id)
     {
-        return _session.Locations.AllLocationsChecked.Contains(id + 0x93930000);
+        return _session.Locations.AllLocationsChecked.Contains(id + SonicHeroesDefinitions.AllIdsStartOffset);
     }
     
     
     public int CountLocationsCheckedInRange(Int64 start, Int64 end)
     {
-        var startId = start + 0x93930000;
-        var endId = end + 0x93930000;
+        var startId = start + SonicHeroesDefinitions.AllIdsStartOffset;
+        var endId = end + SonicHeroesDefinitions.AllIdsStartOffset;
         return _session.Locations.AllLocationsChecked.Count(loc => loc >= startId && loc < endId);
     }
 
