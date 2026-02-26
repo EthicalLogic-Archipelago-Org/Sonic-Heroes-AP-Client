@@ -1,5 +1,107 @@
 # Sonic Heroes Archipelago Changelog
 
+===================================================
+===================================================
+
+## Version 2.1.3 (Mod) (goes with APWorld Version 2.1.0)
+
+## Mod
+
+### Additions
+- Have Sea Gate Completion send Metal Madness location (just for QOL)
+- Added Stage Obj ID 0x3383 (Unknown Multiplayer Bobsled Object)
+
+### Changes
+- Final Boss now requires having its Gate unlocked (in addition to other requirements) (The APWorld already assumes this)
+- Moved Egg Fleet Sonic Spawn Position Further Back (this specific spawn position is my least favorite by far)
+
+### Fixes
+- Fix CompleteLevel Hook (for Sonic Bosses) when SuperHardMode is enabled but Sonic is not (thx for report lemountain)
+- Fix Spawn Pos rendering in Level Select UI for Team Chaotix
+- Fix Dark Ocean Palace Checkpoint 2 Spawn Position (thx for report SquireLynx)
+- Add handling in Level complete hook if level is Metal Overlord and goal is Sea Gate
+
+### Refactors
+- Use LastOrDefault instead of FirstOrDefault in ItemHandler.cs for checking Region of Item (Boss and FinalBoss conflict)
+
+
+===================================================
+===================================================
+
+## Version 2.1.2 (Mod) (goes with APWorld Version 2.1.0)
+
+## Mod
+
+### Fixes
+- Fix Index Out of Bounds when having 7 Level Gates
+
+
+===================================================
+===================================================
+
+## Version 2.1.1 (Mod) (goes with APWorld Version 2.1.0)
+
+## Mod
+
+### Fixes
+- Default Ability Unlocks for Special Stage, Boss, and Final Boss Regions to true (This fixes flight in the Final Boss when on a new save)
+- Set Debug flag to false for release version
+
+
+===================================================
+===================================================
+
+## Version 2.1.0 (APWorld and Mod)
+
+## Both APWorld and Mod
+
+### Additions
+- Legacy Level Gates Functionally added
+
+
+## APWorld
+
+### Changes
+- Lowered Filler weights for Ring Filler if Rose or Chaotix OBJ Sanity is enabled
+
+### Fixes
+- Fix Rule With In Ground Containers in Hang Castle and Mystic Mansion not allowing Combo Finisher to progress
+- Swapped to using world.random (instead of world.multiworld.random) for deterministic seeding in specific places where random is used
+
+### Refactors
+- Significant Options Refactor to include Legacy Level Gates option to allow for the legacy run type
+
+## Mod
+
+### Additions
+- Overhaul of Mod Options including 2 new options
+
+### Changes
+- Freeze Trap base duration lowered: 10 -> 8, now stacks duration when receiving multiple
+- NoSwap Trap length fixed (results in lower duration by ~10-11%) (NoSwap is now the only trap that does not stack duration)
+- Stealth Trap duration increased 5 -> 8, now stack duration when receiving multiple
+- Charmy Trap duration lowered by 1 voiceline 5 -> 4 
+- Extra Life Item now increments Save Data lives in addition to in level lives
+- Changed Sonic Rail Canyon Checkpoint 3 Spawn Position to Higher Checkpoint
+- Changed Sonic Frog Forest Checkpoint 3 Spawn Position to Higher Checkpoint
+
+
+### Fixes
+- Fix Flight Lockout to properly work instead of changing to a hover state (sorry Chibi, had to be done)
+- Implement a file lock for mod writing save file and remove an uneeded Save on getting a checkpoint (thanks Harlequin)
+- Deathlink now correctly resets flag when in menus or paused and receving a deathlink packet (should fix all dealthlink issues hopefully)
+- BugFix for Level Completions Final Boss Unlock with both Acts enabled
+- Actually Read RemoveCasinoParkVIPTableLaserGate value (instead of always setting to true) (this only works for team Sonic)
+
+### Improvements
+- Rocket Accel is now Orange in Level Select UI when a second character is not unlocked (it needs a second character)
+
+
+### Refactors
+- Freeze Trap moved to Threads (instead of timer)
+- Update Multiclient to 0.6.7
+
+
 
 ===================================================
 ===================================================
