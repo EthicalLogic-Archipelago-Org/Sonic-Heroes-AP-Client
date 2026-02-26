@@ -272,7 +272,7 @@ public static class StageObjHandler
             var objsToFind = new List<StageObjTypes>(StageObjData.StageObjsToMessWith);
             
             //if (!objsToFind.Contains(StageObjTypes.LaserFence))
-            objsToFind.Add(StageObjTypes.LaserFence);
+            //objsToFind.Add(StageObjTypes.LaserFence);
             
             //if (!objsToFind.Contains(StageObjTypes.CageBox))
             //objsToFind.Add(StageObjTypes.CageBox);
@@ -297,8 +297,6 @@ public static class StageObjHandler
                     }
                 }
             }
-            
-            
             
             
             switch (level)
@@ -456,10 +454,10 @@ public static class StageObjHandler
             var objsToFind = new List<StageObjTypes>(StageObjData.StageObjsToMessWith);
             
             //if (!objsToFind.Contains(StageObjTypes.LaserFence))
-            objsToFind.Add(StageObjTypes.LaserFence);
+            //objsToFind.Add(StageObjTypes.LaserFence);
             
             //if (!objsToFind.Contains(StageObjTypes.CageBox))
-            objsToFind.Add(StageObjTypes.CageBox);
+            //objsToFind.Add(StageObjTypes.CageBox);
             
             var foundAddrs = GetAddrsOfObjInTable(objsToFind);
 

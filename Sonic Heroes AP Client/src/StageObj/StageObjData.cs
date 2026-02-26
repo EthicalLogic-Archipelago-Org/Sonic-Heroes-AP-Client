@@ -53,6 +53,7 @@ public static class StageObjData
         StageObjTypes.RegularWeight,
         StageObjTypes.BreakableWeight,
         //StageObjTypes.SpikeBall,
+        StageObjTypes.LaserFence,
         StageObjTypes.ItemBox,
         StageObjTypes.ItemBalloon,
         StageObjTypes.GoalRing,
