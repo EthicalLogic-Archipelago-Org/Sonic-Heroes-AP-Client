@@ -64,9 +64,7 @@ Universal Tracker is a client that allows you to see which locations are in logi
 
 To use UT, just install it (and the Sonic Heroes APWorld) like a regular APWorld, relaunch the Archipelago client, and Universal Tracker client will be an option to launch. Just connect the client to the multiworld like a text client and it will show the possible locations in logic.
 
-The new version now has yaml-less support for Universal Tracker. 
-
-The legacy version does not work with Universal Tracker and will show incorrect information.
+The both versions now have yaml-less support for Universal Tracker.
 
 
 
@@ -74,11 +72,21 @@ The legacy version does not work with Universal Tracker and will show incorrect 
 
 The new version now locks out characters and abilities (except for a single starting character). These abilities and characters are items in the multiworld that will unlock their respective ability once received. 
 
-There are 2 exceptions:
+Here are some additional requirements:
+- Homing Attack requires Jump
+- Tornado requires Jump
+- Rocket Accel requires the speed character and an additional character (having all 3 characters adds an additional kick)
+- Triangle Jump requires both Jump and Homing Attack
+- Light Attack requires Jump
+- Amy Hammer Hover requires Jump
+- Invisibility requires both Jump and Tornado
+- Combo Finisher requires Power Attack
+- Fire Dunk requires Jump
+- Belly Flop Requires Jump
 - Flight requires Thundershoot
-- Triangle Jump requires Homing Attack
+ 
 
-In the In-game UI, If you have Flight but not Thundershoot or Triangle Jump without Homing Attack, that ability will be Yellow to indicate that you need the corresponding ability in order to use it.
+In the In-game UI, If you have an ability but are missing a requirement, the color will be blue. The color will be purple if you are missing 2 or more requirements.
 
 
 ### Levels
