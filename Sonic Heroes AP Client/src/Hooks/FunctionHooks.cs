@@ -1104,6 +1104,7 @@ public class FunctionHooks
     {
         try
         {
+            TrapHandler.DisableStealthTrap();
             if (DeathLinkHandler.SomeoneElseDied)
             {
                 DeathLinkHandler.SomeoneElseDied = false;

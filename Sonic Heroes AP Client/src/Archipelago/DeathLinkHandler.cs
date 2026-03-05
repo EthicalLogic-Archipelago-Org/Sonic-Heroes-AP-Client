@@ -9,6 +9,7 @@ namespace Sonic_Heroes_AP_Client.Archipelago;
 public static class DeathLinkHandler
 {
     public static DateTime LastDeathLinkPacketTime = DateTime.Now;
+    public static TimeSpan DeathLinkMercyTime = TimeSpan.FromSeconds(1);
     public static string lastDeath = "The Big Bang";
     public static bool SomeoneElseDied = false;
     
@@ -64,7 +65,7 @@ public static class DeathLinkHandler
         BouncePacket packet = new BouncePacket();
         var now = DateTime.Now;
 
-        if (now - LastDeathLinkPacketTime < TimeSpan.FromSeconds(1))
+        if (now - LastDeathLinkPacketTime < DeathLinkMercyTime)
             return;
         
         packet.Tags = new List<string> { "DeathLink" };

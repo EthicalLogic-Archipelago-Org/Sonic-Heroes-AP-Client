@@ -13,7 +13,7 @@ public enum FreezeType
 
 public static class TrapHandler
 {
-    public const int StealthTrapDuration = 7;
+    public const int StealthTrapDuration = 140; //20 a sec
     public const int FreezeTrapDuration = 8;
     
     public const int NoSwapTrapDuration = 10;
@@ -72,7 +72,8 @@ public static class TrapHandler
         try
         {
             Interlocked.Add(ref remainingStealthDuration, StealthTrapDuration);
-            SoundHandler.PlaySound((int)Mod.ModuleBase, 0xE00D);
+            if (Mod.Configuration!.PlaySounds)
+                SoundHandler.PlaySound((int)Mod.ModuleBase, 0xE00D);
             if (StealthTrapRunning)
                 return;
             StealthTrapRunning = true;
@@ -80,15 +81,33 @@ public static class TrapHandler
             var t = new Thread(() =>
             {
                 ItemGameWrites.SetStealth(1);
-                while (Interlocked.CompareExchange(ref remainingStealthDuration, 0, 0) > 0) {
-                    Thread.Sleep(1000);
+                while (Interlocked.CompareExchange(ref remainingStealthDuration, 0, 0) > 0) 
+                {
+                    Thread.Sleep(50);
                     Interlocked.Decrement(ref remainingStealthDuration);
                 }
-                ItemGameWrites.SetStealth(previousStealth);
-                SoundHandler.PlaySound((int)Mod.ModuleBase, 0xE00E);
-                StealthTrapRunning = false;
+                DisableStealthTrap();
             });
             t.Start();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+        }
+    }
+
+
+    public static void DisableStealthTrap()
+    {
+        if (!StealthTrapRunning)
+            return;
+        try
+        {
+            Interlocked.Exchange(ref remainingStealthDuration, 0);
+            ItemGameWrites.SetStealth(previousStealth);
+            if (Mod.Configuration!.PlaySounds)
+                SoundHandler.PlaySound((int)Mod.ModuleBase, 0xE00E);
+            StealthTrapRunning = false;
         }
         catch (Exception e)
         {
@@ -108,11 +127,11 @@ public static class TrapHandler
         try
         {
             Interlocked.Add(ref remainingFreezeDuration, duration);
-            SoundHandler.PlaySound((int)Mod.ModuleBase, 0xE014);
+            if (Mod.Configuration!.PlaySounds)
+                SoundHandler.PlaySound((int)Mod.ModuleBase, 0xE014);
             if (previousFreeze == freezeType)
                 return;
             previousFreeze = freezeType;
-            //SoundHandler.PlaySound((int)Mod.ModuleBase, 0xE014);
             var t = new Thread(() =>
             {
                 ItemGameWrites.SetFreeze(freezeType);
