@@ -1,4 +1,5 @@
 
+using System.Numerics;
 using Sonic_Heroes_AP_Client.Archipelago;
 using Sonic_Heroes_AP_Client.Definitions;
 
@@ -69,6 +70,25 @@ public static class GameStateHandler
             Console.WriteLine(e);
         }
 
+        return null;
+    }
+
+
+    public static unsafe Vector3? GetCurrentLeaderPos()
+    {
+        try
+        {
+            if (!InGame(true))
+                return null;
+            var leaderStructAddr = *(int*)(Mod.ModuleBase + 0x5CE820);
+            var leaderPos = *(Vector3*)(leaderStructAddr + 0xE8);
+            Console.WriteLine($"Leader Pos: [{leaderPos.X}, {leaderPos.Y}, {leaderPos.Z}]");
+            return leaderPos;
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+        }
         return null;
     }
     
