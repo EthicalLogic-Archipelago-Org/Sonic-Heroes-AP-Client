@@ -42,6 +42,8 @@ public class SaveDataHandler
         {
             try
             {
+                Console.WriteLine($"Save File Exists Here: {Path.GetFullPath(filePath)}");
+                
                 var data = JsonConvert.DeserializeObject<CustomSaveData>(File.ReadAllText(filePath));
                 CustomSaveData = data ?? throw new Exception("AHHHHHHHHHHHHH");
                 //Logger.Log("Save loaded successfully!");
@@ -119,7 +121,7 @@ public class SaveDataHandler
 
             CustomSaveData.ModVersion = Mod.ModConfig.ModVersion;
         
-            Console.WriteLine("Saved Here");
+            Console.WriteLine($"Saved Here: {Path.GetFullPath(filePath)}");
             var json = JsonConvert.SerializeObject(CustomSaveData, Formatting.Indented);
 
             lock (Lock)

@@ -46,6 +46,13 @@ public class SlotData
             foreach (var x in slotDict) 
                 Console.WriteLine($"{x.Key} {x.Value}");
             
+            if (slotDict.ContainsKey("AllowDebugForMod"))
+            {
+                Mod.DebugHostYaml = (long)slotDict["AllowDebugForMod"] == 1;
+                Console.WriteLine($"Setting DebugHostYaml: {Mod.DebugHostYaml}");
+                Mod.CheckDebugStatusChange();
+            }
+            
             var apworldversion = "0.0.0";
 
             if (slotDict.ContainsKey("ModVersion"))

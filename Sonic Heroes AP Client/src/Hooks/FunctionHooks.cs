@@ -644,9 +644,9 @@ public class FunctionHooks
     {
         try
         {
-            Console.WriteLine($"HintRing Activated");
-            var staticPtr = *(int*)(edi + 0x2C);
-            Console.WriteLine($"StaticPtr: 0x{staticPtr:x}");
+            //Console.WriteLine($"HintRing Activated");
+            //var staticPtr = *(int*)(edi + 0x2C);
+            //Console.WriteLine($"StaticPtr: 0x{staticPtr:x}");
         }
         catch (Exception e)
         {
@@ -664,9 +664,9 @@ public class FunctionHooks
         //Balloon has 1 L because that is how the game stores it
         try
         {
-            Console.WriteLine($"ItemBalloon Collected");
-            var staticPtr = *(int*)(edx + 0x2C);
-            Console.WriteLine($"StaticPtr: 0x{staticPtr:x}");
+            //Console.WriteLine($"ItemBalloon Collected");
+            //var staticPtr = *(int*)(edx + 0x2C);
+            //Console.WriteLine($"StaticPtr: 0x{staticPtr:x}");
         }
         catch (Exception e)
         {
@@ -682,9 +682,9 @@ public class FunctionHooks
     {
         try
         {
-            Console.WriteLine($"ItemBox Collected");
-            var staticPtr = *(int*)(edi + 0x2C);
-            Console.WriteLine($"StaticPtr: 0x{staticPtr:x}");
+            //Console.WriteLine($"ItemBox Collected");
+            //var staticPtr = *(int*)(edi + 0x2C);
+            //Console.WriteLine($"StaticPtr: 0x{staticPtr:x}");
         }
         catch (Exception e)
         {
@@ -731,9 +731,9 @@ public class FunctionHooks
     {
         try
         {
-            Console.WriteLine($"Egg Hammer Killed");
+            //Console.WriteLine($"Egg Hammer Killed");
             var staticPtr = *(int*)(esi + 0x2C);
-            Console.WriteLine($"StaticPtr: 0x{staticPtr:x}");
+            //Console.WriteLine($"StaticPtr: 0x{staticPtr:x}");
         }
         catch (Exception e)
         {
@@ -749,9 +749,9 @@ public class FunctionHooks
     {
         try
         {
-            Console.WriteLine($"E2000 Killed");
+            //Console.WriteLine($"E2000 Killed");
             var staticPtr = *(int*)(esi + 0x2C);
-            Console.WriteLine($"StaticPtr: 0x{staticPtr:x}");
+            //Console.WriteLine($"StaticPtr: 0x{staticPtr:x}");
         }
         catch (Exception e)
         {
@@ -767,9 +767,9 @@ public class FunctionHooks
     {
         try
         {
-            Console.WriteLine($"OnEnemyDestroyMyself");
+            //Console.WriteLine($"OnEnemyDestroyMyself");
             var staticPtr = *(int*)(esi + 0x2C);
-            Console.WriteLine($"StaticPtr: 0x{staticPtr:x}");
+            //Console.WriteLine($"StaticPtr: 0x{staticPtr:x}");
         }
         catch (Exception e)
         {
@@ -785,20 +785,20 @@ public class FunctionHooks
     {
         try
         {
-            Console.WriteLine($"OnPickUpRing: Ring Index: {ecx}");
+            //Console.WriteLine($"OnPickUpRing: Ring Index: {ecx}");
             
             var heapPtr = *(int*)(esi + 0xD8);
-            Console.WriteLine($"HeapPtr: 0x{heapPtr:x}");
+            //Console.WriteLine($"HeapPtr: 0x{heapPtr:x}");
             
             var ringGroupType = *(byte*)(heapPtr + 0x29);
-            Console.WriteLine($"RingGroupType: {ringGroupType}");
+            //Console.WriteLine($"RingGroupType: {ringGroupType}");
             
             var numRingsTotal = *(byte*)(heapPtr + 0x28);
-            Console.WriteLine($"NumRingsTotal: {numRingsTotal}");
+            //Console.WriteLine($"NumRingsTotal: {numRingsTotal}");
 
             if (ringGroupType == 4)
             {
-                Console.WriteLine($"I think this is a scattered ring group.");
+                //Console.WriteLine($"I think this is a scattered ring group.");
                 return 1;
             }
             
@@ -808,10 +808,10 @@ public class FunctionHooks
             //Console.WriteLine($"LinkedListStartPtr: 0x{linkedListStartPtr:x}");
             
             var staticPtr = *(int*)(heapPtr + 0x54);
-            Console.WriteLine($"StaticPtr: 0x{staticPtr:x}");
+            //Console.WriteLine($"StaticPtr: 0x{staticPtr:x}");
             
             var staticRingCount =  *(byte*)(*(int*)(staticPtr + 0x2C) + 0x2);
-            Console.WriteLine($"StaticRingCount: {staticRingCount}");
+            //Console.WriteLine($"StaticRingCount: {staticRingCount}");
             
         }
         catch (Exception e)

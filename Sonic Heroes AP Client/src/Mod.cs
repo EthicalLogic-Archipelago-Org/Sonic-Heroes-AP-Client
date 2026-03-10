@@ -13,6 +13,7 @@ using Sonic_Heroes_AP_Client.GameState;
 using Sonic_Heroes_AP_Client.Hooks;
 using Sonic_Heroes_AP_Client.LevelSelect;
 using Sonic_Heroes_AP_Client.LevelSpawnPosition;
+using Sonic_Heroes_AP_Client.Logging;
 using Sonic_Heroes_AP_Client.MusicShuffle;
 using Sonic_Heroes_AP_Client.Sanity.Checkpoints;
 using Sonic_Heroes_AP_Client.SaveData;
@@ -32,6 +33,8 @@ public class Mod: ModBase
     /// Should NOT be enabled in prod.
     /// </summary>
     public static bool IsDebug = false;
+
+    public static bool DebugHostYaml = false;
     
     private readonly IModLoader _modLoader;
     
@@ -95,7 +98,7 @@ public class Mod: ModBase
             _modLoader = context.ModLoader;
             _hooks = context.Hooks;
             Logger = context.Logger;
-            //Logger.OnWriteLine += (sender, tuple) => { };
+            Logger.OnWriteLine += LoggingHandler.OnModLoggerWriteLine;
             _owner = context.Owner;
             ModConfig = context.ModConfig;
             Configuration = context.Configuration;
@@ -182,6 +185,26 @@ public class Mod: ModBase
         }
         return false;
     }
+
+    public static void CheckDebugStatusChange()
+    {
+        try
+        {
+            if (Configuration.DebugConfig && DebugHostYaml)
+            {
+                Console.WriteLine($"Setting Debug Status to True");
+                IsDebug = true;
+                return;
+            }
+                
+            Console.WriteLine($"Setting Debug Status to False");
+            IsDebug = false;
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+        }
+    }
     
     public void OnModConfigChange(IUpdatableConfigurable x)
     {
@@ -190,6 +213,7 @@ public class Mod: ModBase
             if (ArchipelagoHandler.Seed == null)
                 return;
             CheckInvalidConfigValues();
+            CheckDebugStatusChange();
             //Console.WriteLine($"Mod Config Changed. Seed is: {Seed}");
             MusicShuffleHandler.Shuffle(int.Parse(ArchipelagoHandler.Seed[..9]));
             

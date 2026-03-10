@@ -30,6 +30,14 @@ public class Config : Configurable<Config>
     //[DefaultValue(true)]
     //public bool TestOption { get; set; } = true;
     
+    
+    [Category("AAAAAAA")]
+    [DisplayName("Debug Mode")]
+    [Description("Enable debug mode. This requires a host YAML setting to be enabled.")]
+    [DefaultValue(false)]
+    public bool DebugConfig { get; set; } = false;
+    
+    
     [Category("Connection")]
     [DisplayName("Host IP")]
     [Description("Host address of the Archipelago server")]
