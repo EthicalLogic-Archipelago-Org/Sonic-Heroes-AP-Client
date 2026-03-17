@@ -1,5 +1,102 @@
 # Sonic Heroes Archipelago Changelog
 
+
+===================================================
+===================================================
+
+## Version 2.2.0 (APWorld and Mod) (This is a debug release)
+
+## Apworld
+
+### Additions
+- Add Jump to Item Abilties (Power Attack was already added)
+- Add MovingItemBalloon, PowerPlantShutter, PowerPlantCollisionGlassBallObject, PowerPlantGlassBall, LavaShutter, NormalCannon, LargeCannon, HorizontalCannon, MovingCannon, AnotherCannon, KankyoHakai and HigherCannon to Stage Obj item list
+- Added get_filler_item_name() and fill_hook()
+
+### Removals
+- Remove empty Option Group 'Connection Tags'
+
+
+### Fixes
+- Picking multiple options for the same Sanity and team is no longer allowed
+- Fix Choatix ObjSanity checks from generating if their Act is not enabled
+- Fixed default YAML Level Completions All Teams and Super Hard Checkpoint Sanity options
+
+
+### Refactors
+- Add Fuzzer Meta Yaml to Git
+
+## Mod
+
+### Additions
+- Logging now logs to Reloaded's Logger
+- Added an option to limit Logging Level during play
+- Add Function Hooks for Item Boxes, Item Balloons, and Hint Rings (working)
+- Added Jump to Ability List (this includes Level Select UI)
+- Added disable for Power Attack (and team blast meter gain for disabled power attack)
+- Unlock Power Attack in InitConnect
+- Add Jump enable/disable to save file and poll updates
+- Add ModVersion to Save File and enforce version check on loading save file
+- Add Shadow the Hedgehog Music to Music Rando
+- Add more Stage Objs to StageObjsToMessWith
+- Add hook for Enemy Sanity E2000 and Egg Hammer (enemy sanity should be done code-wise)
+- Write File Path location to console when saving/loading
+
+### Removals
+- Disable Stealth Trap on Death (to prevent Deathloop)
+- Remove Gate Boss Unlocked and Gate Boss Complete From Save Data
+- Remove Unlock All Abilities on Teams other than Sonic and Regions above Sky
+- Remove Slot Data null check in WriteLevelUnlockToRedirectSaveData
+
+### Changes
+- Load save file (and shuffle music) after successful connection instead of before
+- Sadx Speed Highway 2 marked as LongJingle (doesnt loop)
+- Prevent duplicate abilities in Level Select UI
+- Remove Jump from Char Level calculation
+- Add Power Attack to list of abilities used for level ups
+- Change Color of text in UI (and fix ImVec4 conversion)
+
+### Fixes
+- Fix Chaotix Egg Fleet Checkpoint 4 Spawn Pos
+- Correctly Create a new save file on failing to load an old one
+- Fix Spawn Position when only having a single one that is not the start of level (This allows for full checkpoint rando)
+- Fix Level Completions Per Team unlocking Final Boss 1 level early
+- Fix Unlocking All abilities with legacy run type
+- Fix Tutorial access from menu
+- Correctly award 10 Rings on Team Blast Filler when Team Blast is not possible (instead of 1) and 1 ring when possible (instead of 10)
+- Fix Key Error log when opening level select for the first time
+- Fix Unlocking ALL Spawn Positions on Connect when Debug Flag is on
+- Fix RingSanity Function Hook
+- Fix using incorrect reverse wrap on hook for TObjResult Constructor
+- Actually save ModVersion in save file
+- Fix duplicate CageBox entry in StageObjHandler
+- Fix Stage Obj Handling when region not specified (Region does not matter currently)
+- Fix null error on StageObjHandler when Region is null
+
+### Improvements
+- Add Version Checker Error Output back to in-game logger
+- Update README with updated Ability requirements and colors and mention UT support for legacy gates version
+- Enable Jump Ability (and Abilities on regions above Sky) on Connection (InitConnect)
+- Change NoControlTime for SeasideHill Sonic to allow for easier time not dying when Ruins dont exist
+- Play Stealth and Freeze Trap Sounds every time item is handled (instead of when thread while loop is started)
+- Change Active Trap Color to Orange (in UI)
+- Make Level Tracker Window taller
+
+
+### Refactors
+- Significant Refactor of Logging to allow for using Reloaded's logging
+- Debug Flag moved to Build Type (Release/Debug)
+- Add LaserFence to StageObjsToMessWith
+- Use LastOrDefault for ability and stage obj item name matching
+- Change incorrect Sanity.AbilityAndCharacter namespace to AbilityAndCharacter
+- Rename StageObjsWithSpecialHandling to avoid conflict
+- Move Default spawn pos unlock to InitConnect
+- Reorder InitConnect Calls in Mod
+- Add handling to change base ID offset (in case Core decides to limit ID's to 32 bit ints)
+- Add GetCurrentLeaderPos to GameStateHandler
+
+
+
 ===================================================
 ===================================================
 
