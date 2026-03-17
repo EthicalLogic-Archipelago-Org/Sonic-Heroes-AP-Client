@@ -11,7 +11,7 @@ public static class SaveDataGameWrites
 {
     public static void RedirectSaveData(IntPtr redirectAddress)
     {
-        //Console.WriteLine($"addr: {redirectAddress}");
+        //"addr: {redirectAddress}"
         Memory.Instance.SafeWrite(Mod.ModuleBase + 0x4BAD7, BitConverter.GetBytes((int)(redirectAddress + 0x4C + 0xB)));
         Memory.Instance.SafeWrite(Mod.ModuleBase + 0x4BAF4, BitConverter.GetBytes((int)(redirectAddress + 0x4C + 0x23)));
         Memory.Instance.SafeWrite(Mod.ModuleBase + 0x4BB11, BitConverter.GetBytes((int)(redirectAddress + 0x4C + 0x33)));

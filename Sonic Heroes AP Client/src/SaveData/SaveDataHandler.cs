@@ -4,6 +4,7 @@ using Newtonsoft.Json;
 using Reloaded.Memory;
 using Reloaded.Memory.Interfaces;
 using Sonic_Heroes_AP_Client.Definitions;
+using Sonic_Heroes_AP_Client.Logging;
 
 namespace Sonic_Heroes_AP_Client.SaveData;
 
@@ -33,8 +34,9 @@ public class SaveDataHandler
     private int[] redirectEmblemCount = new int[1];
     
     
-    public unsafe void LoadSaveData(string seed, string slot)
+    public unsafe void LoadSaveData(string seed, string slot, string taskName)
     {
+        LoggingHandler.LogMessage($"Start of Load Save File", taskName, LogLevel.SuperDebug);
         var filePath = $"./Saves/{seed}{slot}.json";
         if (!Directory.Exists("./Saves"))
             Directory.CreateDirectory("./Saves");
@@ -42,7 +44,7 @@ public class SaveDataHandler
         {
             try
             {
-                Console.WriteLine($"Save File Exists Here: {Path.GetFullPath(filePath)}");
+                LoggingHandler.LogMessage($"Save File Exists Here: {Path.GetFullPath(filePath)}", taskName, LogLevel.Info);
                 
                 var data = JsonConvert.DeserializeObject<CustomSaveData>(File.ReadAllText(filePath));
                 CustomSaveData = data ?? throw new Exception("AHHHHHHHHHHHHH");
@@ -50,60 +52,54 @@ public class SaveDataHandler
 
                 if (!Mod.CheckCurrentModVersionWithValue(CustomSaveData.ModVersion))
                 {
-                    Console.WriteLine($"Creating a new save. Current Mod Version: {Mod.ModConfig.ModVersion} Save File Mod Version: {CustomSaveData.ModVersion}");
+                    LoggingHandler.LogMessage($"Creating a new save. Current Mod Version: {Mod.ModConfig.ModVersion} Save File Mod Version: {CustomSaveData.ModVersion}", taskName, LogLevel.APAction);
                     CustomSaveData = new CustomSaveData();
-                    SaveGame(seed, slot);
+                    SaveGame(seed, slot, taskName);
                 }
                 
                 redirectEmblemCount[0] = CustomSaveData.Emblems;
             }
             catch (Exception e)
             {
-                Console.WriteLine(e);
-                Console.WriteLine($"Creating a new save as loading the previous one failed");
+                LoggingHandler.LogMessage(e.ToString(), taskName, LogLevel.Error);
+                LoggingHandler.LogMessage($"Creating a new save as loading the previous one failed", taskName, LogLevel.APAction);
+                
                 CustomSaveData = new CustomSaveData();
-                SaveGame(seed, slot);
+                SaveGame(seed, slot, taskName);
             }
         }
         else
         {
-            //Logger.Log("Creating a new save file.");
-            Console.WriteLine($"Creating save");
+            LoggingHandler.LogMessage("Creating Save", taskName, LogLevel.APAction);
             CustomSaveData = new CustomSaveData();
-            SaveGame(seed, slot);
-            //Logger.Log("Save file created");
+            SaveGame(seed, slot, taskName);
         }
-
-        try
-        {
-            SaveData = (SaveData*)(Mod.ModuleBase + 0x6A4228);
-            RedirectData = (SaveData*)Marshal.AllocHGlobal(sizeof(SaveData)).ToPointer();
-            var redirectAddress = (IntPtr)RedirectData;
-            var empty = new SaveData();
-            Marshal.StructureToPtr(empty, (IntPtr)RedirectData, false);
-            SaveDataGameWrites.RedirectSaveData(redirectAddress);
-            SaveData->EmblemCount = (byte)CustomSaveData.Emblems;
-            RedirectData->Emerald[3] = CustomSaveData.Emeralds[Emerald.Green] ? 1 : 0;
-            RedirectData->Emerald[6] = CustomSaveData.Emeralds[Emerald.Blue] ? 1 : 0;
-            RedirectData->Emerald[9] = CustomSaveData.Emeralds[Emerald.Yellow] ? 1 : 0;
-            RedirectData->Emerald[12] = CustomSaveData.Emeralds[Emerald.White] ? 1 : 0;
-            RedirectData->Emerald[15] = CustomSaveData.Emeralds[Emerald.Cyan] ? 1 : 0;
-            RedirectData->Emerald[18] = CustomSaveData.Emeralds[Emerald.Purple] ? 1 : 0;
-            RedirectData->Emerald[21] = CustomSaveData.Emeralds[Emerald.Red] ? 1 : 0;
-
-            var handle = GCHandle.Alloc(redirectEmblemCount, GCHandleType.Pinned);
         
-            Memory.Instance.SafeWrite(Mod.ModuleBase + 0x4B6E3, new byte[] { 0xA1 });
-            Memory.Instance.SafeWrite(Mod.ModuleBase + 0x4B6E4, BitConverter.GetBytes((int)handle.AddrOfPinnedObject()));
-            Memory.Instance.SafeWrite(Mod.ModuleBase + 0x4B6E8, new byte[] { 0x90, 0x90 });
-        
-            //GameHandler.Change99LivesCap(true);
-            //GameHandler.Change999RingsCap(true);
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine(e);
-        }
+        LoggingHandler.LogMessage("Save finished, now writing to exe memory", taskName, LogLevel.SuperDebug);
+        SaveData = (SaveData*)(Mod.ModuleBase + 0x6A4228);
+        RedirectData = (SaveData*)Marshal.AllocHGlobal(sizeof(SaveData)).ToPointer();
+        var redirectAddress = (IntPtr)RedirectData;
+        var empty = new SaveData();
+        Marshal.StructureToPtr(empty, (IntPtr)RedirectData, false);
+        SaveDataGameWrites.RedirectSaveData(redirectAddress);
+        SaveData->EmblemCount = (byte)CustomSaveData.Emblems;
+        RedirectData->Emerald[3] = CustomSaveData.Emeralds[Emerald.Green] ? 1 : 0;
+        RedirectData->Emerald[6] = CustomSaveData.Emeralds[Emerald.Blue] ? 1 : 0;
+        RedirectData->Emerald[9] = CustomSaveData.Emeralds[Emerald.Yellow] ? 1 : 0;
+        RedirectData->Emerald[12] = CustomSaveData.Emeralds[Emerald.White] ? 1 : 0;
+        RedirectData->Emerald[15] = CustomSaveData.Emeralds[Emerald.Cyan] ? 1 : 0;
+        RedirectData->Emerald[18] = CustomSaveData.Emeralds[Emerald.Purple] ? 1 : 0;
+        RedirectData->Emerald[21] = CustomSaveData.Emeralds[Emerald.Red] ? 1 : 0;
+
+        var handle = GCHandle.Alloc(redirectEmblemCount, GCHandleType.Pinned);
+    
+        Memory.Instance.SafeWrite(Mod.ModuleBase + 0x4B6E3, new byte[] { 0xA1 });
+        Memory.Instance.SafeWrite(Mod.ModuleBase + 0x4B6E4, BitConverter.GetBytes((int)handle.AddrOfPinnedObject()));
+        Memory.Instance.SafeWrite(Mod.ModuleBase + 0x4B6E8, new byte[] { 0x90, 0x90 });
+    
+        //GameHandler.Change99LivesCap(true);
+        //GameHandler.Change999RingsCap(true);
+        LoggingHandler.LogMessage("End of Load Save File", taskName, LogLevel.SuperDebug);
     }
     
     
@@ -113,68 +109,60 @@ public class SaveDataHandler
     /// </summary>
     private static object Lock = new object();
     
-    public void SaveGame(string seed, string slot)
+    public void SaveGame(string seed, string slot, string taskName)
     {
-        try
-        {
-            var filePath = $"./Saves/{seed}{slot}.json";
+        LoggingHandler.LogMessage($"Start of SaveGame", taskName, LogLevel.SuperDebug);
+        var filePath = $"./Saves/{seed}{slot}.json";
 
-            CustomSaveData.ModVersion = Mod.ModConfig.ModVersion;
+        CustomSaveData.ModVersion = Mod.ModConfig.ModVersion;
         
-            Console.WriteLine($"Saved Here: {Path.GetFullPath(filePath)}");
-            var json = JsonConvert.SerializeObject(CustomSaveData, Formatting.Indented);
+        var json = JsonConvert.SerializeObject(CustomSaveData, Formatting.Indented);
 
-            lock (Lock)
-            {
-                File.WriteAllText(filePath, json);
-            }
-            redirectEmblemCount[0] = CustomSaveData!.Emblems;
-        }
-        catch (Exception e)
+        lock (Lock)
         {
-            Console.WriteLine(e);
+            LoggingHandler.LogMessage($"Writing to Save File: {Path.GetFullPath(filePath)}", taskName, LogLevel.APAction);
+            File.WriteAllText(filePath, json);
         }
+        redirectEmblemCount[0] = CustomSaveData!.Emblems;
+        LoggingHandler.LogMessage($"End of SaveGame", taskName, LogLevel.SuperDebug);
     }
     
     public unsafe void WriteLevelUnlockToRedirectSaveData(LevelId level, bool isBoss, Team? story, bool value)
     {
-        try
+        LoggingHandler.LogMessage($"Start of WriteLevelUnlockToRedirectSaveData", "Unknown", LogLevel.SuperDebug);
+
+        var rank = value ? Rank.ERank : Rank.NoRank;
+    
+        if (level == LevelId.MetalMadness)
         {
-            var rank = value ? Rank.ERank : Rank.NoRank;
+            //Logger.Log($"Setting boss: {level} to {rank}");
+            RedirectData->MetalMadness.Rank = rank;
+            return;
+        }
+        if (isBoss)
+        { 
+            //Logger.Log($"Setting boss: {level} to {rank}");
+            if (Mod.LevelSelectManager.EnabledStoriesAndSanities.HasFlag(StoriesAndSanities.SonicActA) || Mod.LevelSelectManager.EnabledStoriesAndSanities.HasFlag(StoriesAndSanities.SonicActB) || Mod.LevelSelectManager.EnabledStoriesAndSanities.HasFlag(StoriesAndSanities.SuperHardMode))
+                RedirectData->Bosses[(int)level - 16].SonicBoss.Rank = rank;
+            if (Mod.LevelSelectManager.EnabledStoriesAndSanities.HasFlag(StoriesAndSanities.DarkActA) || Mod.LevelSelectManager.EnabledStoriesAndSanities.HasFlag(StoriesAndSanities.DarkActB))
+                RedirectData->Bosses[(int)level - 16].DarkBoss.Rank = rank;
+            if (Mod.LevelSelectManager.EnabledStoriesAndSanities.HasFlag(StoriesAndSanities.RoseActA) || Mod.LevelSelectManager.EnabledStoriesAndSanities.HasFlag(StoriesAndSanities.RoseActB))
+                RedirectData->Bosses[(int)level - 16].RoseBoss.Rank = rank;
+            if (Mod.LevelSelectManager.EnabledStoriesAndSanities.HasFlag(StoriesAndSanities.ChaotixActA) || Mod.LevelSelectManager.EnabledStoriesAndSanities.HasFlag(StoriesAndSanities.ChaotixActB))
+                RedirectData->Bosses[(int)level - 16].ChaotixBoss.Rank = rank;
+            return;
+        }
+        //Logger.Log($"Setting {story}'s {level} to {rank}");
+        if (story == Team.Sonic)
+            RedirectData->Levels[(int)level - 2].Sonic.Mission1.Rank = rank;
+        if (story == Team.Dark)
+            RedirectData->Levels[(int)level - 2].Dark.Mission1.Rank = rank;
+        if (story == Team.Rose)
+            RedirectData->Levels[(int)level - 2].Rose.Mission1.Rank = rank;
+        if (story == Team.Chaotix)
+            RedirectData->Levels[(int)level - 2].Chaotix.Mission1.Rank = rank;
         
-            if (level == LevelId.MetalMadness)
-            {
-                //Logger.Log($"Setting boss: {level} to {rank}");
-                RedirectData->MetalMadness.Rank = rank;
-                return;
-            }
-            if (isBoss)
-            { 
-                //Logger.Log($"Setting boss: {level} to {rank}");
-                if (Mod.LevelSelectManager.EnabledStoriesAndSanities.HasFlag(StoriesAndSanities.SonicActA) || Mod.LevelSelectManager.EnabledStoriesAndSanities.HasFlag(StoriesAndSanities.SonicActB) || Mod.LevelSelectManager.EnabledStoriesAndSanities.HasFlag(StoriesAndSanities.SuperHardMode))
-                    RedirectData->Bosses[(int)level - 16].SonicBoss.Rank = rank;
-                if (Mod.LevelSelectManager.EnabledStoriesAndSanities.HasFlag(StoriesAndSanities.DarkActA) || Mod.LevelSelectManager.EnabledStoriesAndSanities.HasFlag(StoriesAndSanities.DarkActB))
-                    RedirectData->Bosses[(int)level - 16].DarkBoss.Rank = rank;
-                if (Mod.LevelSelectManager.EnabledStoriesAndSanities.HasFlag(StoriesAndSanities.RoseActA) || Mod.LevelSelectManager.EnabledStoriesAndSanities.HasFlag(StoriesAndSanities.RoseActB))
-                    RedirectData->Bosses[(int)level - 16].RoseBoss.Rank = rank;
-                if (Mod.LevelSelectManager.EnabledStoriesAndSanities.HasFlag(StoriesAndSanities.ChaotixActA) || Mod.LevelSelectManager.EnabledStoriesAndSanities.HasFlag(StoriesAndSanities.ChaotixActB))
-                    RedirectData->Bosses[(int)level - 16].ChaotixBoss.Rank = rank;
-                return;
-            }
-            //Logger.Log($"Setting {story}'s {level} to {rank}");
-            if (story == Team.Sonic)
-                RedirectData->Levels[(int)level - 2].Sonic.Mission1.Rank = rank;
-            if (story == Team.Dark)
-                RedirectData->Levels[(int)level - 2].Dark.Mission1.Rank = rank;
-            if (story == Team.Rose)
-                RedirectData->Levels[(int)level - 2].Rose.Mission1.Rank = rank;
-            if (story == Team.Chaotix)
-                RedirectData->Levels[(int)level - 2].Chaotix.Mission1.Rank = rank;
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine(e);
-        }
+        LoggingHandler.LogMessage($"End of WriteLevelUnlockToRedirectSaveData", "Unknown", LogLevel.SuperDebug);
     }
     
 }

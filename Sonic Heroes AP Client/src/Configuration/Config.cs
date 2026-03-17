@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using Reloaded.Mod.Interfaces.Structs;
+using Sonic_Heroes_AP_Client.Definitions;
 using Sonic_Heroes_AP_Client.Template.Configuration;
 
 namespace Sonic_Heroes_AP_Client.Configuration;
@@ -29,13 +30,14 @@ public class Config : Configurable<Config>
     //[Description("Test.")]
     //[DefaultValue(true)]
     //public bool TestOption { get; set; } = true;
+
+
+    [Category("AAAAAAAA")]
+    [DisplayName("DebugLoggingLevel")]
+    [Description($"Lowest Level of Logging logged to the Reloaded log file. SuperDebug is very verbose and will result in large log file sizes")]
+    [DefaultValue(LogLevel.Info)]
+    public LogLevel LowestLogAllowed  { get; set; } = LogLevel.Info;
     
-    
-    [Category("AAAAAAA")]
-    [DisplayName("Debug Mode")]
-    [Description("Enable debug mode. This requires a host YAML setting to be enabled.")]
-    [DefaultValue(false)]
-    public bool DebugConfig { get; set; } = false;
     
     
     [Category("Connection")]

@@ -1,5 +1,6 @@
 
 using Sonic_Heroes_AP_Client.Definitions;
+using Sonic_Heroes_AP_Client.Logging;
 using Sonic_Heroes_AP_Client.Sound;
 
 namespace Sonic_Heroes_AP_Client.Archipelago;
@@ -24,36 +25,35 @@ public static class TrapHandler
     public const int CharmyTrapDuration = 4;
 
     public static bool StealthTrapRunning = false;
-    private static byte previousStealth = 0x0;
-    private static int remainingStealthDuration = 0;
-
-    public static bool NoSwapTrapRunning => IsNoSwapRunning();
+    public static byte PreviousStealth = 0x0;
+    public static int RemainingStealthDuration = 0;
     
-    public static bool FreezeTrapRunning => previousFreeze != FreezeType.NoFreeze;
-    private static FreezeType previousFreeze = FreezeType.NoFreeze;
-    private static int remainingFreezeDuration = 0;
+    public static bool FreezeTrapRunning => PreviousFreeze != FreezeType.NoFreeze;
+    public static readonly FreezeType FreezeTrapType = FreezeType.FullFreeze;
+    public static FreezeType PreviousFreeze = FreezeType.NoFreeze;
+    public static int RemainingFreezeDuration = 0;
     
     
     public static bool CharmyTrapRunning = false;
-    private static readonly int[] _charmyLines = 
-    {
+    public static readonly int[] CharmyLines =
+    [
         1446, 485, 1602, 1636, 1971, 485,
         2055, 2079, 2103, 2116, 2259, 2296, 485, 2309, 2350, 2490,
         2710, 2755, 2832, 2844, 2878, 2941, 3169, 485, 3204, 3215,
         3220, 3230, 3287, 3321, 3355, 3373, 3485, 3738, 3762,
         3772, 3791, 3802, 3804, 3810, 3878, 4273, 4282, 4291,
         3398, 4522, 4621, 485
-    };
-    private static readonly Random _random = new();
-    private static int remainingCharmyTrap = 0;
+    ];
+    
+    public static int RemainingCharmyTrap = 0;
 
-    public static bool IsAnyTrapRunning()
+    public static bool IsAnyTrapRunning(string taskName)
     {
-        return StealthTrapRunning || FreezeTrapRunning || NoSwapTrapRunning || CharmyTrapRunning;
+        return StealthTrapRunning || FreezeTrapRunning || IsNoSwapRunning(taskName) || CharmyTrapRunning;
     }
 
     //Stealth
-    private static unsafe byte GetStealth()
+    private static unsafe byte GetStealth(string taskName)
     {
         try
         {
@@ -62,124 +62,92 @@ public static class TrapHandler
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
+            LoggingHandler.LogMessage($"{e}", taskName, LogLevel.Error);
         }
         return 0x0;
     }
 
-    public static void HandleStealthTrap()
+    public static void HandleStealthTrap(string taskName)
     {
-        try
+        if (Mod.Configuration == null)
         {
-            Interlocked.Add(ref remainingStealthDuration, StealthTrapDuration);
-            if (Mod.Configuration!.PlaySounds)
-                SoundHandler.PlaySound((int)Mod.ModuleBase, 0xE00D);
-            if (StealthTrapRunning)
-                return;
-            StealthTrapRunning = true;
-            previousStealth = GetStealth();
-            var t = new Thread(() =>
-            {
-                ItemGameWrites.SetStealth(1);
-                while (Interlocked.CompareExchange(ref remainingStealthDuration, 0, 0) > 0) 
-                {
-                    Thread.Sleep(50);
-                    Interlocked.Decrement(ref remainingStealthDuration);
-                }
-                DisableStealthTrap();
-            });
-            t.Start();
+            LoggingHandler.LogMessage($"Mod Configuration is Null in HandleStealthTrap", taskName, LogLevel.Error);
         }
-        catch (Exception e)
+        else
         {
-            Console.WriteLine(e);
+            if (Mod.Configuration.PlaySounds)
+                SoundHandler.PlaySound((int)Mod.ModuleBase, 0xE00D, taskName);
         }
+        
+        Interlocked.Add(ref RemainingStealthDuration, StealthTrapDuration);
+        if (Mod.StealthTrapTask.Status != TaskStatus.Running)
+        {
+            PreviousStealth = GetStealth(taskName);
+            LoggingHandler.LogMessage($"Stealth Trap Task not running, starting now.", taskName, LogLevel.SuperDebug);
+            Mod.StealthTrapTask.Start();
+            return;
+        }
+        LoggingHandler.LogMessage($"Stealth Trap Already Running", taskName, LogLevel.SuperDebug);
     }
 
 
-    public static void DisableStealthTrap()
+    public static void DisableStealthTrap(string taskName)
     {
         if (!StealthTrapRunning)
             return;
-        try
-        {
-            Interlocked.Exchange(ref remainingStealthDuration, 0);
-            ItemGameWrites.SetStealth(previousStealth);
-            if (Mod.Configuration!.PlaySounds)
-                SoundHandler.PlaySound((int)Mod.ModuleBase, 0xE00E);
-            StealthTrapRunning = false;
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine(e);
-        }
-    }
 
-
-    //Freeze
-    public static void HandleFreezeTrap()
-    {
-        StartFreeze(FreezeType.FullFreeze, FreezeTrapDuration);
-    }
-
-    private static unsafe void StartFreeze(FreezeType freezeType, int duration)
-    {
-        try
+        Interlocked.Exchange(ref RemainingStealthDuration, 0);
+        ItemGameWrites.SetStealth(PreviousStealth, taskName);
+        StealthTrapRunning = false;
+        if (Mod.Configuration == null)
         {
-            Interlocked.Add(ref remainingFreezeDuration, duration);
-            if (Mod.Configuration!.PlaySounds)
-                SoundHandler.PlaySound((int)Mod.ModuleBase, 0xE014);
-            if (previousFreeze == freezeType)
-                return;
-            previousFreeze = freezeType;
-            var t = new Thread(() =>
-            {
-                ItemGameWrites.SetFreeze(freezeType);
-                while (Interlocked.CompareExchange(ref remainingFreezeDuration, 0, 0) > 0) 
-                {
-                    Thread.Sleep(1000);
-                    Interlocked.Decrement(ref remainingFreezeDuration);
-                }
-                ItemGameWrites.SetFreeze(FreezeType.NoFreeze);
-                previousFreeze = FreezeType.NoFreeze;
-            });
-            t.Start();
-            
-            /*
-            var timer = new System.Timers.Timer(duration * 1000);
-            timer.Elapsed += (sender, e) =>
-            {
-                ItemGameWrites.SetFreeze(FreezeType.NoFreeze);
-                previousFreeze = FreezeType.NoFreeze;
-                timer.Stop();
-                timer.Dispose();
-            };
-            timer.AutoReset = false;
-            timer.Start();
-            */
+            LoggingHandler.LogMessage($"Mod Configuration is Null in DisableStealthTrap", taskName, LogLevel.Error);
+            return;
         }
-        catch (Exception e)
-        {
-            Console.WriteLine(e);
-        }
+        if (Mod.Configuration.PlaySounds)
+            SoundHandler.PlaySound((int)Mod.ModuleBase, 0xE00E, taskName);
+        
     }
     
+    //Freeze
+    public static void HandleFreezeTrap(string taskName)
+    {
+        if (Mod.Configuration == null)
+        {
+            LoggingHandler.LogMessage($"Mod Configuration is Null in HandleFreezeTrap", taskName, LogLevel.Error);
+        }
+        else
+        {
+            if (Mod.Configuration.PlaySounds) 
+                SoundHandler.PlaySound((int)Mod.ModuleBase, 0xE014, taskName);
+        }
+        
+        if (PreviousFreeze == FreezeTrapType)
+        {
+            LoggingHandler.LogMessage($"Previous Freeze = Full Freeze (dropping Freeze Trap)", taskName, LogLevel.SuperDebug);
+            return;
+        }
+            
+        Interlocked.Add(ref RemainingFreezeDuration, FreezeTrapDuration);
+        PreviousFreeze = FreezeTrapType;
+        if (Mod.FreezeTrapTask.Status != TaskStatus.Running)
+        {
+            LoggingHandler.LogMessage($"Freeze Trap Task not running, starting now.", taskName, LogLevel.SuperDebug);
+            Mod.FreezeTrapTask.Start();
+            return;
+        }
+        LoggingHandler.LogMessage($"Freeze Trap Task running, adding time.", taskName, LogLevel.SuperDebug);
+    }
     
     //NoSwap
-    public static void HandleNoSwapTrap()
+    public static void HandleNoSwapTrap(string taskName)
     {
-        try
-        {
-            SoundHandler.PlaySound((int)Mod.ModuleBase, 0xE018);
-            ItemGameWrites.SetNoSwap(NoSwapTrapDuration);
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine(e);
-        }
+        SoundHandler.PlaySound((int)Mod.ModuleBase, 0xE018, taskName);
+        ItemGameWrites.SetNoSwap(NoSwapTrapDuration, taskName);
     }
     
-    private static unsafe bool IsNoSwapRunning()
+    
+    public static unsafe bool IsNoSwapRunning(string taskName)
     {
         try
         {
@@ -188,37 +156,21 @@ public static class TrapHandler
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
+            LoggingHandler.LogMessage($"{e}", taskName, LogLevel.Error);
         }
         return false;
     }
     
     //Charmy Trap
-    public static void HandleCharmyTrap()
+    public static void HandleCharmyTrap(string taskName)
     {
-        try
+        Interlocked.Add(ref RemainingCharmyTrap, CharmyTrapDuration);
+        if (Mod.CharmyTrapTask.Status != TaskStatus.Running)
         {
-            Interlocked.Add(ref remainingCharmyTrap, CharmyTrapDuration);
-            if (CharmyTrapRunning)
-                return;
-            CharmyTrapRunning = true;
-            var t = new Thread(() =>
-            {
-                while (Interlocked.CompareExchange(ref remainingCharmyTrap, 0, 0) > 0) 
-                {
-                    SoundHandler.PlayAFSSound((int)Mod.ModuleBase, _charmyLines[_random.Next(_charmyLines.Length)]);
-                    Thread.Sleep(_random.Next(5000, 15000));
-                    Interlocked.Decrement(ref remainingCharmyTrap);
-                }
-                CharmyTrapRunning = false;
-            });
-            t.Start();
+            LoggingHandler.LogMessage($"Charmy Trap Task not running, starting now.", taskName, LogLevel.SuperDebug);
+            Mod.CharmyTrapTask.Start();
+            return;
         }
-        catch (Exception e)
-        {
-            Console.WriteLine(e);
-        }
+        LoggingHandler.LogMessage($"Charmy Trap Task running, adding time.", taskName, LogLevel.SuperDebug);
     }
-    
-    
 }

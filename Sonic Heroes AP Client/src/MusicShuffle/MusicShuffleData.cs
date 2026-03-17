@@ -36,6 +36,7 @@ public static class MusicShuffleData
     /// </summary>
     public static string CustomFolder => Mod.Configuration.MusicShuffleCustomFolder.Replace("/", "\\");
     
+    
     public static List<(string name, MusicType type)> HeroesSongs = new()
     {
         (Path.Combine(HeroesBGMFolder, "SNG_BTL01.adx"), MusicType.ShortMusic),             //2P Battle Sea Area

@@ -4,6 +4,13 @@ namespace Sonic_Heroes_AP_Client.LevelSpawnPosition;
 
 public static class LevelSpawnData
 {
+    /// <summary>
+    /// Pointer to the Start of the Spawn Data.
+    /// Should be ModuleBase + 0x3C2FC8 in all cases
+    /// </summary>
+    public static uint SpawnDataStartAddr;
+    
+    
     public static readonly Dictionary<Team, Dictionary<LevelId, List<LevelSpawnEntry>>> AllSpawnData = new ()
     {
         {

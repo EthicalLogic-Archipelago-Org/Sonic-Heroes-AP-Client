@@ -2,24 +2,26 @@
 
 using Archipelago.MultiClient.Net.Packets;
 using Newtonsoft.Json.Linq;
+using Sonic_Heroes_AP_Client.Definitions;
+using Sonic_Heroes_AP_Client.Logging;
 
 namespace Sonic_Heroes_AP_Client.Archipelago;
 
 public static class BouncePacketHandler
 {
     
-    public static void BouncePacketReceived(BouncePacket packet)
+    public static void BouncePacketReceived(BouncePacket packet, string taskName)
     {
-        if (DeathLinkHandler.IsDeathLinkEnabled())
+        if (DeathLinkHandler.IsDeathLinkEnabled(taskName))
             ProcessBouncePacket(packet, "DeathLink", ref DeathLinkHandler.lastDeath, (source, data) =>
-                DeathLinkHandler.HandleDeathLink(source, data["cause"]?.ToString() ?? "Unknown")); 
+                DeathLinkHandler.HandleDeathLink(source, data["cause"].ToString() ?? "Unknown", taskName), taskName); 
 
-        if (RingLinkHandler.IsRingLinkEnabled())
-            ProcessBouncePacket(packet, "RingLink", ref RingLinkHandler.lastRing, (source, data) =>
-                RingLinkHandler.HandleRingLink(source, data["amount"]?.ToString() ?? "0"));
+        if (RingLinkHandler.IsRingLinkEnabled(taskName))
+            ProcessBouncePacket(packet, "RingLink", ref RingLinkHandler.LastRing, (source, data) =>
+                RingLinkHandler.HandleRingLink(source, data["amount"].ToString() ?? "0", taskName), taskName);
     }
     
-    private static void ProcessBouncePacket(BouncePacket packet, string tag, ref string lastTime, Action<string, Dictionary<string, JToken>> handler)
+    private static void ProcessBouncePacket(BouncePacket packet, string tag, ref string lastTime, Action<string, Dictionary<string, JToken>> handler, string taskName)
     {
         if (!packet.Tags.Contains(tag)) return;
         if (!packet.Data.TryGetValue("time", out var timeObj)) 
@@ -33,7 +35,7 @@ public static class BouncePacketHandler
         if (packet.Data.TryGetValue("cause", out var causeObj))
         {
             var cause = causeObj?.ToString() ?? "Unknown";
-            Console.WriteLine($"Received Bounce Packet with Tag: {tag} :: {cause}");
+            LoggingHandler.LogMessage($"Received Bounce Packet with Tag: {tag} :: {cause}", taskName, LogLevel.SuperDebug);
         }
         handler(source, packet.Data);
     }

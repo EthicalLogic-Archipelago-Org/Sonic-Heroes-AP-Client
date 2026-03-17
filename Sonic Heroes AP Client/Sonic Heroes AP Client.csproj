@@ -10,6 +10,7 @@
         <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
         <OutputPath>$(RELOADEDIIMODS)/Sonic_Heroes_AP_Client</OutputPath>
         <ImplicitUsings>enable</ImplicitUsings>
+        <DebugType>embedded</DebugType>
 
         <!-- IL Trimming Support for Framework Dependent Apps. Unofficial.
              If you set this to true, trimming will be enabled when you publish the mod.
@@ -28,6 +29,7 @@
         <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
         <OutputPath>~/Sonic_Heroes_AP_Client</OutputPath>
         <ImplicitUsings>enable</ImplicitUsings>
+        <DebugType>embedded</DebugType>
 
         <!-- IL Trimming Support for Framework Dependent Apps. Unofficial.
              If you set this to true, trimming will be enabled when you publish the mod.

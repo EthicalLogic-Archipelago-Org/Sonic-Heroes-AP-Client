@@ -7,6 +7,7 @@ using Sonic_Heroes_AP_Client.AbilityAndCharacter;
 using Sonic_Heroes_AP_Client.Definitions;
 using Sonic_Heroes_AP_Client.GameState;
 using Sonic_Heroes_AP_Client.LevelSpawnPosition;
+using Sonic_Heroes_AP_Client.Logging;
 using Sonic_Heroes_AP_Client.Sanity.BonusKeys;
 using Sonic_Heroes_AP_Client.Sanity.Checkpoints;
 using Region = Sonic_Heroes_AP_Client.Definitions.Region;
@@ -116,21 +117,18 @@ public class LevelTracker
     private Color _needsMultipleItemsColor = Color.FromArgb(0xFF, 0xFF, 0x40, 0xFF);
     private Color _somethingWentWrongColor = Color.IndianRed;
     
-    public unsafe void Draw(float outerWidth, float outerHeight, float uiScale)
+    public unsafe void Draw(float outerWidth, float outerHeight, float uiScale, string taskName)
     {
         try
         {
-            if (Mod.ArchipelagoHandler?.SlotData == null)
+            if (!(GameStateHandler.IsInLevelSelect(taskName) || GameStateHandler.IsInGameAndPaused(taskName)))
                 return;
 
-            if (!(GameStateHandler.IsInLevelSelect() || GameStateHandler.IsInGameAndPaused()))
-                return;
-
-            SetUpTrackerWindow(outerWidth, outerHeight, uiScale);
+            SetUpTrackerWindow(outerWidth, outerHeight, uiScale, taskName);
             
             //get level and team
-            var team = GetTeamForLevelTracker();
-            if (!GetLevelForLevelTracker(out var result))
+            var team = GetTeamForLevelTracker(taskName);
+            if (!GetLevelForLevelTracker(taskName, out var result))
                 return;
 
             var levelId = (LevelId)result!;
@@ -142,26 +140,26 @@ public class LevelTracker
             var cursorPos = new ImVec2();
             ImGui.GetCursorScreenPos(cursorPos);
             
-            HandleRegionAndGateDisplayForLevel(team, levelId);
+            HandleRegionAndGateDisplayForLevel(team, levelId, taskName);
             ImGui.SetWindowFontScale(_uiScale + 0.3f);
             
             switch (levelId)
             {
                 case LevelId.MetalMadness or LevelId.MetalOverlord or LevelId.SeaGate:
-                    HandleFinalBossLayout();
+                    HandleFinalBossLayout(taskName);
                     break;
                 case >= LevelId.EggHawk and < LevelId.MetalMadness:
-                    HandleBossLayout(team, levelId);
+                    HandleBossLayout(team, levelId, taskName);
                     break;
                 case >= LevelId.SeasideHill and <= LevelId.FinalFortress:
-                    HandleRegularLevelLayout(team, levelId);
+                    HandleRegularLevelLayout(team, levelId, taskName);
                     break;
                 case >= LevelId.BonusStage1 and <= LevelId.BonusStage7:
                 case >= LevelId.EmeraldStage1 and <= LevelId.EmeraldStage7:
-                    HandleBonusEmeraldStageLayout(levelId);
+                    HandleBonusEmeraldStageLayout(levelId, taskName);
                     break;
                 default:
-                    Console.WriteLine($"{levelId} in Level Tracker Draw(). HOW DID WE GET HERE???");
+                    LoggingHandler.LogMessage($"{levelId} in Level Tracker Draw(). HOW DID WE GET HERE???", taskName, LogLevel.Error);
                     break;
             }
             
@@ -170,11 +168,11 @@ public class LevelTracker
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
+            LoggingHandler.LogMessage($"{e}", taskName, LogLevel.Error);
         }
     }
 
-    private unsafe void SetUpTrackerWindow(float outerWidth, float outerHeight, float uiScale)
+    private unsafe void SetUpTrackerWindow(float outerWidth, float outerHeight, float uiScale, string taskName)
     {
         try
         {
@@ -202,7 +200,7 @@ public class LevelTracker
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
+            LoggingHandler.LogMessage($"{e}", taskName, LogLevel.Error);
         }
     }
     
@@ -211,12 +209,12 @@ public class LevelTracker
     /// WILL NOT RETURN SUPERHARD IF IN LVL SELECT
     /// </summary>
     /// <returns></returns>
-    private unsafe Team GetTeamForLevelTracker()
+    private unsafe Team GetTeamForLevelTracker(string taskName)
     { 
         try
         {
-            if (GameStateHandler.InGame(true)) 
-                return (Team)GameStateHandler.GetCurrentStory()!;
+            if (GameStateHandler.InGame(taskName, true)) 
+                return (Team)GameStateHandler.GetCurrentStory(taskName)!;
             
             var levelSelectPtr = *(IntPtr*)(Mod.ModuleBase + 0x6777B4);
             var storyIndex = *(int*)(levelSelectPtr + 0x220);
@@ -224,18 +222,18 @@ public class LevelTracker
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
+            LoggingHandler.LogMessage($"{e}", taskName, LogLevel.Error);
         }
         return Team.Sonic;
     }
     
-    private unsafe bool GetLevelForLevelTracker(out LevelId? level)
+    private unsafe bool GetLevelForLevelTracker(string taskName, out LevelId? level)
     { 
         try
         {
-            if (GameStateHandler.InGame(true))
+            if (GameStateHandler.InGame(taskName, true))
             {
-                level = (LevelId)GameStateHandler.GetCurrentLevel()!;
+                level = (LevelId)GameStateHandler.GetCurrentLevel(taskName)!;
                 return true;
             }
             
@@ -251,7 +249,7 @@ public class LevelTracker
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
+            LoggingHandler.LogMessage($"{e}", taskName, LogLevel.Error);
         }
 
         level = null;
@@ -282,21 +280,22 @@ public class LevelTracker
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
+            LoggingHandler.LogMessage($"{e}", taskName, LogLevel.Error);
         }
         return Act.Act3;
     }
     */
-    
-    
+
+
     /// <summary>
     /// Writes Text to the Level Select UI
     /// </summary>
     /// <param name="text">text to write</param>
+    /// <param name="taskName">name of task running this function</param>
     /// <param name="color">color (defaults to regular)</param>
     /// <param name="largerText">should the text be larger (defaults to False)</param>
     /// <param name="column">which column (1-3) (defaults to 2 which is center of screen)</param>
-    private unsafe void WriteCenteredText(string text, Color color = default, bool largerText = false, int column = 2)
+    private unsafe void WriteCenteredText(string text, string taskName, Color color = default, bool largerText = false, int column = 2)
     {
         try
         {
@@ -331,16 +330,16 @@ public class LevelTracker
             }
             else
             {
-                ImGui.TextColored(GetImVec4FromColor(color), text);
+                ImGui.TextColored(GetImVec4FromColor(color, taskName), text);
             }
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
+            LoggingHandler.LogMessage($"{e}", taskName, LogLevel.Error);
         }
     }
     
-    private void HandleFinalBossLayout()
+    private void HandleFinalBossLayout(string taskName)
     {
         try
         {
@@ -356,23 +355,23 @@ public class LevelTracker
             if (Mod.ArchipelagoHandler.SlotData.EntireRunUnlockType is EntireRunUnlockType.AbilityCharacterUnlocks ||
                 Mod.LevelSelectManager.GoalUnlockConditions.HasFlag(GoalUnlockConditions.LevelCompletionsPerStory))
             {
-                foreach (var team in Enum.GetValues<Team>().Where(x => (bool)Mod.LevelSelectManager.IsThisTeamEnabled(x)!))
+                foreach (var team in Enum.GetValues<Team>().Where(x => (bool)Mod.LevelSelectManager.IsThisTeamEnabled(x, taskName)!))
                 {
                     text = $"Team {team} Requirements:";
-                    WriteCenteredText(text, Color.Empty);
+                    WriteCenteredText(text, taskName, Color.Empty);
                     
                     //characters are required if they are items
                     if (Mod.ArchipelagoHandler.SlotData.EntireRunUnlockType is EntireRunUnlockType.AbilityCharacterUnlocks)
                     {
-                            text = $"Characters Unlocked:{AbilityCharacterManager.GetLevelSelectUIStringForCharUnlocksForTeam(team)}";
-                            WriteCenteredText(text, Color.Empty);
+                            text = $"Characters Unlocked:{AbilityCharacterManager.GetLevelSelectUIStringForCharUnlocksForTeam(team, taskName)}";
+                            WriteCenteredText(text, taskName, Color.Empty);
                     }
 
                     //level completions per story
                     if (Mod.LevelSelectManager.GoalUnlockConditions.HasFlag(GoalUnlockConditions.LevelCompletionsPerStory))
                     {
                         text = $"Level Completions: {Mod.LevelSelectManager.GetCompletedLevelsForTeam(team)} / {Mod.ArchipelagoHandler.SlotData.GoalLevelCompletionsPerStory}";
-                        WriteCenteredText(text, Color.Empty);
+                        WriteCenteredText(text, taskName, Color.Empty);
                     }
                 }
             }
@@ -380,11 +379,11 @@ public class LevelTracker
             //Level Completions (All Teams)
             if (Mod.LevelSelectManager.GoalUnlockConditions.HasFlag(GoalUnlockConditions.LevelCompletionsAllTeams))
             {
-                var levelcompletions = Enum.GetValues<Team>().Where(x => (bool)Mod.LevelSelectManager.IsThisTeamEnabled(x)!).Sum(team => Mod.LevelSelectManager.GetCompletedLevelsForTeam(team));
+                var levelcompletions = Enum.GetValues<Team>().Where(x => (bool)Mod.LevelSelectManager.IsThisTeamEnabled(x, taskName)!).Sum(team => Mod.LevelSelectManager.GetCompletedLevelsForTeam(team));
                 var levelcompletionsneeded = Mod.ArchipelagoHandler.SlotData.GoalLevelCompletions;
                 
                 text = $"Total Level Completions For All Teams: {levelcompletions} / {levelcompletionsneeded}";
-                WriteCenteredText(text, Color.Empty);
+                WriteCenteredText(text, taskName, Color.Empty);
             }
             
             //emblems
@@ -394,7 +393,7 @@ public class LevelTracker
                 if (gateIndex != null)
                 {
                     text = $"Emblems: {Mod.SaveDataHandler.CustomSaveData!.Emblems} / {Mod.LevelSelectManager.GateData[(int)gateIndex].BossCost}";
-                    WriteCenteredText(text, Color.Empty);
+                    WriteCenteredText(text, taskName, Color.Empty);
                 }
             }
             
@@ -407,17 +406,17 @@ public class LevelTracker
                     Color textColor = Mod.SaveDataHandler.CustomSaveData.Emeralds[emerald]
                         ? Color.Green
                         : Color.Red;
-                    WriteCenteredText(text, textColor);
+                    WriteCenteredText(text, taskName, textColor);
                 }
             }
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
+            LoggingHandler.LogMessage($"{e}", taskName, LogLevel.Error);
         }
     }
     
-    private void HandleBonusEmeraldStageLayout(LevelId level)
+    private void HandleBonusEmeraldStageLayout(LevelId level, string taskName)
     {
         try
         {
@@ -427,19 +426,19 @@ public class LevelTracker
             var emeraldLocationID = SonicHeroesDefinitions.EmeraldStartId + level - LevelId.EmeraldStage1;
             var emeraldCompleted = Mod.ArchipelagoHandler.IsLocationChecked(emeraldLocationID);
             
-            WriteCenteredText($"{(Emerald)(level - LevelId.EmeraldStage1)} Chaos Emerald Location");
+            WriteCenteredText($"{(Emerald)(level - LevelId.EmeraldStage1)} Chaos Emerald Location", taskName);
             var cursorPos = new ImVec2();
             ImGui.GetCursorScreenPos(cursorPos);
             DrawCircle(_drawList, _outerWidth - _windowWidth / 2, cursorPos.Y + _circRadius, _circRadius, emeraldCompleted); 
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
+            LoggingHandler.LogMessage($"{e}", taskName, LogLevel.Error);
         }
         
     }
     
-    private void HandleBossLayout(Team team, LevelId level)
+    private void HandleBossLayout(Team team, LevelId level, string taskName)
     {
         try
         {
@@ -455,39 +454,31 @@ public class LevelTracker
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
+            LoggingHandler.LogMessage($"{e}", taskName, LogLevel.Error);
         }
     }
 
-    private void HandleRegularLevelLayout(Team team, LevelId level)
+    private void HandleRegularLevelLayout(Team team, LevelId level, string taskName)
     {
-        try
+        switch (team)
         {
-            switch (team)
-            {
-                case Team.Sonic or Team.SuperHardMode:
-                    HandleSonicOrSuperHardLayout(level);
-                    break;
-                case Team.Dark:
-                    HandleDarkLayout(level);
-                    break;
-                case Team.Rose:
-                    HandleRoseLayout(level);
-                    break;
-                case Team.Chaotix:
-                    HandleChaotixLayout(level);
-                    break;
-            }
+            case Team.Sonic or Team.SuperHardMode:
+                HandleSonicOrSuperHardLayout(level, taskName);
+                break;
+            case Team.Dark:
+                HandleDarkLayout(level, taskName);
+                break;
+            case Team.Rose:
+                HandleRoseLayout(level, taskName);
+                break;
+            case Team.Chaotix:
+                HandleChaotixLayout(level, taskName);
+                break;
         }
-        catch (Exception e)
-        {
-            Console.WriteLine(e);
-        }
-        
     }
     
     
-    private void HandleEmeraldStageForRegularLevelLayout(Team team, LevelId level)
+    private void HandleEmeraldStageForRegularLevelLayout(Team team, LevelId level, string taskName)
     {
         try
         {
@@ -495,18 +486,18 @@ public class LevelTracker
             var cursorPos = new ImVec2();
             var emeraldLocationID = SonicHeroesDefinitions.EmeraldStartId + level - LevelId.EmeraldStage1;
             var emeraldStageComplete = Mod.ArchipelagoHandler.IsLocationChecked(emeraldLocationID);
-            WriteCenteredText(text, Color.Empty);
+            WriteCenteredText(text, taskName, Color.Empty);
             ImGui.GetCursorScreenPos(cursorPos);
             DrawCircle(_drawList, _outerWidth - _windowWidth / 2, cursorPos.Y + _circRadius, _circRadius, emeraldStageComplete);
             ImGui.NewLine();
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
+            LoggingHandler.LogMessage($"{e}", taskName, LogLevel.Error);
         }
     }
     
-    private unsafe void HandleSonicOrSuperHardLayout(LevelId level)
+    private unsafe void HandleSonicOrSuperHardLayout(LevelId level, string taskName)
     {
         try
         {
@@ -527,9 +518,9 @@ public class LevelTracker
             var isAct2Complete = Mod.ArchipelagoHandler.IsLocationChecked(act2CompleteId);
             
 
-            var shouldRightSideBeDrawn = Mod.LevelSelectManager.IsThisTeamActEnabled(team, Act.Act2) || (bool)Mod.LevelSelectManager.IsThisTeamEnabled(Team.SuperHardMode)!;
+            var shouldRightSideBeDrawn = Mod.LevelSelectManager.IsThisTeamActEnabled(team, Act.Act2, taskName) || (bool)Mod.LevelSelectManager.IsThisTeamEnabled(Team.SuperHardMode, taskName)!;
             
-            if (Mod.LevelSelectManager.IsThisTeamActEnabled(team, Act.Act1))
+            if (Mod.LevelSelectManager.IsThisTeamActEnabled(team, Act.Act1, taskName))
             {
                 text = "Act 1";
                 ImGui.__Internal.CalcTextSize((IntPtr)(&textSize), text, null, false, -1.0f);
@@ -537,12 +528,12 @@ public class LevelTracker
                 ImGui.Text(text);
                 DrawCircle(_drawList, _windowPosX + _col1Centre - textSize.x / 2 - 4 * _circRadius, cursorPos.Y + 2 * _circRadius, _circRadius, isAct1Complete);
             }
-            if (Mod.LevelSelectManager.IsThisTeamActEnabled(team, Act.Act1) && shouldRightSideBeDrawn)
+            if (Mod.LevelSelectManager.IsThisTeamActEnabled(team, Act.Act1, taskName) && shouldRightSideBeDrawn)
                 ImGui.__Internal.SameLine(0, 0);
             
             if (shouldRightSideBeDrawn)
             {
-                if (Mod.LevelSelectManager.IsThisTeamActEnabled(team, Act.Act2))
+                if (Mod.LevelSelectManager.IsThisTeamActEnabled(team, Act.Act2, taskName))
                 {
                     //Sonic
                     text = "Act 2";
@@ -563,26 +554,26 @@ public class LevelTracker
             }
             if ((int)level % 2 == 1 && level is < LevelId.EggHawk and > LevelId.Unk2)
                 //emerald stage here
-                HandleEmeraldStageForRegularLevelLayout(team, SonicHeroesDefinitions.LevelToBonusStage[level]);
+                HandleEmeraldStageForRegularLevelLayout(team, SonicHeroesDefinitions.LevelToBonusStage[level], taskName);
             
-            HandleKeySanityLayout(team, level);
-            HandleCheckpointSanityLayout(team, level);
-            HandleSpawnPos(team, level);
-            HandleCharDisplayForTeam(team);
+            HandleKeySanityLayout(team, level, taskName);
+            HandleCheckpointSanityLayout(team, level, taskName);
+            HandleSpawnPos(team, level, taskName);
+            HandleCharDisplayForTeam(team, taskName);
             if (!SonicHeroesDefinitions.LevelIdToRegion.TryGetValue(level, out var region))
                 return;
-            HandleAbilityDisplayForRegion(team, region,(bool)Mod.LevelSelectManager.IsThisTeamEnabled(Team.SuperHardMode)!);
+            HandleAbilityDisplayForRegion(team, region, taskName,(bool)Mod.LevelSelectManager.IsThisTeamEnabled(Team.SuperHardMode, taskName)!);
             
             //ObjSanity
             //there is none
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
+            LoggingHandler.LogMessage($"{e}", taskName, LogLevel.Error);
         }
     }
     
-    private unsafe void HandleDarkLayout(LevelId level)
+    private unsafe void HandleDarkLayout(LevelId level, string taskName)
     {
         try
         {
@@ -601,7 +592,7 @@ public class LevelTracker
             var isAct2Complete = Mod.ArchipelagoHandler.IsLocationChecked(act2CompleteId);
             ImGui.GetCursorScreenPos(cursorPos);
             
-            if (Mod.LevelSelectManager.IsThisTeamActEnabled(team, Act.Act1))
+            if (Mod.LevelSelectManager.IsThisTeamActEnabled(team, Act.Act1, taskName))
             {
                 text = "Act 1";
                 ImGui.__Internal.CalcTextSize((IntPtr)(&textSize), text, null, false, -1.0f);
@@ -611,10 +602,10 @@ public class LevelTracker
                     cursorPos.Y + 2 * _circRadius, _circRadius, isAct1Complete);
             }
             
-            if ((bool)Mod.LevelSelectManager.IsThisTeamEnabled(team, true)!)
+            if ((bool)Mod.LevelSelectManager.IsThisTeamEnabled(team, taskName, true)!)
                 ImGui.__Internal.SameLine(0, 0);
             
-            if (Mod.LevelSelectManager.IsThisTeamActEnabled(team, Act.Act2))
+            if (Mod.LevelSelectManager.IsThisTeamActEnabled(team, Act.Act2, taskName))
             {
                 text = "Act 2";
                 ImGui.__Internal.CalcTextSize((IntPtr)(&textSize), text, null, false, -1.0f);
@@ -625,35 +616,35 @@ public class LevelTracker
             }
             if ((int)level % 2 == 1 && level is < LevelId.EggHawk and > LevelId.Unk2)
                 //emerald stage here
-                HandleEmeraldStageForRegularLevelLayout(team, SonicHeroesDefinitions.LevelToBonusStage[level]);
+                HandleEmeraldStageForRegularLevelLayout(team, SonicHeroesDefinitions.LevelToBonusStage[level], taskName);
             
             
-            HandleKeySanityLayout(team, level);
-            HandleCheckpointSanityLayout(team, level);
-            HandleSpawnPos(team, level);
-            HandleCharDisplayForTeam(team);
+            HandleKeySanityLayout(team, level, taskName);
+            HandleCheckpointSanityLayout(team, level, taskName);
+            HandleSpawnPos(team, level, taskName);
+            HandleCharDisplayForTeam(team, taskName);
             if (!SonicHeroesDefinitions.LevelIdToRegion.TryGetValue(level, out var region))
                 return;
-            HandleAbilityDisplayForRegion(team, region);
+            HandleAbilityDisplayForRegion(team, region, taskName);
             
             //ObjSanity
-            if (!(bool)Mod.LevelSelectManager.IsThisSanityEnabled(Team.Dark, SanityType.ObjSanity)!)
+            if (!(bool)Mod.LevelSelectManager.IsThisSanityEnabled(Team.Dark, SanityType.ObjSanity, taskName)!)
                 return;
-            if (!Mod.LevelSelectManager.IsThisTeamActEnabled(Team.Dark, Act.Act2))
+            if (!Mod.LevelSelectManager.IsThisTeamActEnabled(Team.Dark, Act.Act2, taskName))
                 return;
             var sanityLevelOffset = SonicHeroesDefinitions.DarkObjSanityStartId + ((int)level - 2) * 100;
             var sanityMax = 100 / Mod.ArchipelagoHandler.SlotData.DarksanityCheckSize;
             var sanityChecked =
                 Mod.ArchipelagoHandler.CountLocationsCheckedInRange(sanityLevelOffset, sanityLevelOffset + 100);
-            HandleSanityLayout("Enemies", sanityChecked, sanityMax, _windowWidth / 2);
+            HandleSanityLayout("Enemies", sanityChecked, sanityMax, _windowWidth / 2, taskName);
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
+            LoggingHandler.LogMessage($"{e}", taskName, LogLevel.Error);
         }
     }
     
-    private unsafe void HandleRoseLayout(LevelId level)
+    private unsafe void HandleRoseLayout(LevelId level, string taskName)
     {
         try
         {
@@ -672,7 +663,7 @@ public class LevelTracker
             var isAct2Complete = Mod.ArchipelagoHandler.IsLocationChecked(act2CompleteId);
             ImGui.GetCursorScreenPos(cursorPos);
             
-            if (Mod.LevelSelectManager.IsThisTeamActEnabled(team, Act.Act1))
+            if (Mod.LevelSelectManager.IsThisTeamActEnabled(team, Act.Act1, taskName))
             {
                 text = "Act 1";
                 ImGui.__Internal.CalcTextSize((IntPtr)(&textSize), text, null, false, -1.0f);
@@ -682,10 +673,10 @@ public class LevelTracker
                     cursorPos.Y + 2 * _circRadius, _circRadius, isAct1Complete);
             }
             
-            if ((bool)Mod.LevelSelectManager.IsThisTeamEnabled(team, true)!)
+            if ((bool)Mod.LevelSelectManager.IsThisTeamEnabled(team, taskName, true)!)
                 ImGui.__Internal.SameLine(0, 0);
             
-            if (Mod.LevelSelectManager.IsThisTeamActEnabled(team, Act.Act2))
+            if (Mod.LevelSelectManager.IsThisTeamActEnabled(team, Act.Act2, taskName))
             {
                 text = "Act 2";
                 ImGui.__Internal.CalcTextSize((IntPtr)(&textSize), text, null, false, -1.0f);
@@ -696,35 +687,35 @@ public class LevelTracker
             }
             if ((int)level % 2 == 1 && level is < LevelId.EggHawk and > LevelId.Unk2)
                 //emerald stage here
-                HandleEmeraldStageForRegularLevelLayout(team, SonicHeroesDefinitions.LevelToBonusStage[level]);
+                HandleEmeraldStageForRegularLevelLayout(team, SonicHeroesDefinitions.LevelToBonusStage[level], taskName);
             
-            HandleKeySanityLayout(team, level);
-            HandleCheckpointSanityLayout(team, level);
-            HandleSpawnPos(team, level);
-            HandleCharDisplayForTeam(team);
+            HandleKeySanityLayout(team, level, taskName);
+            HandleCheckpointSanityLayout(team, level, taskName);
+            HandleSpawnPos(team, level, taskName);
+            HandleCharDisplayForTeam(team, taskName);
             if (!SonicHeroesDefinitions.LevelIdToRegion.TryGetValue(level, out var region))
                 return;
-            HandleAbilityDisplayForRegion(team, region);
+            HandleAbilityDisplayForRegion(team, region, taskName);
             
             //ObjSanity
-            if (!(bool)Mod.LevelSelectManager.IsThisSanityEnabled(team, SanityType.ObjSanity)!)
+            if (!(bool)Mod.LevelSelectManager.IsThisSanityEnabled(team, SanityType.ObjSanity, taskName)!)
                 return;
-            if (!Mod.LevelSelectManager.IsThisTeamActEnabled(team, Act.Act2))
+            if (!Mod.LevelSelectManager.IsThisTeamActEnabled(team, Act.Act2, taskName))
                 return;
             var sanityLevelOffset = SonicHeroesDefinitions.RoseObjSanityStartId + ((int)level - 2) * 200;
             var sanityMax = 200 / Mod.ArchipelagoHandler.SlotData.RosesanityCheckSize;
             var sanityChecked = Mod.ArchipelagoHandler.CountLocationsCheckedInRange(sanityLevelOffset, sanityLevelOffset + 200);
-            HandleSanityLayout("Rings", sanityChecked, sanityMax, _windowWidth / 2);
+            HandleSanityLayout("Rings", sanityChecked, sanityMax, _windowWidth / 2, taskName);
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
+            LoggingHandler.LogMessage($"{e}", taskName, LogLevel.Error);
         }
         
         
     }
     
-    private unsafe void HandleChaotixLayout(LevelId level)
+    private unsafe void HandleChaotixLayout(LevelId level, string taskName)
     {
         try
         {
@@ -743,7 +734,7 @@ public class LevelTracker
             var isAct2Complete = Mod.ArchipelagoHandler.IsLocationChecked(act2CompleteId);
             ImGui.GetCursorScreenPos(cursorPos);
             
-            if (Mod.LevelSelectManager.IsThisTeamActEnabled(team, Act.Act1))
+            if (Mod.LevelSelectManager.IsThisTeamActEnabled(team, Act.Act1, taskName))
             {
                 text = "Act 1";
                 ImGui.__Internal.CalcTextSize((IntPtr)(&textSize), text, null, false, -1.0f);
@@ -753,10 +744,10 @@ public class LevelTracker
                     cursorPos.Y + 2 * _circRadius, _circRadius, isAct1Complete);
             }
             
-            if ((bool)Mod.LevelSelectManager.IsThisTeamEnabled(team, true)!)
+            if ((bool)Mod.LevelSelectManager.IsThisTeamEnabled(team, taskName, true)!)
                 ImGui.__Internal.SameLine(0, 0);
             
-            if (Mod.LevelSelectManager.IsThisTeamActEnabled(team, Act.Act2))
+            if (Mod.LevelSelectManager.IsThisTeamActEnabled(team, Act.Act2, taskName))
             {
                 text = "Act 2";
                 ImGui.__Internal.CalcTextSize((IntPtr)(&textSize), text, null, false, -1.0f);
@@ -767,49 +758,49 @@ public class LevelTracker
             }
             if ((int)level % 2 == 1 && level is < LevelId.EggHawk and > LevelId.Unk2)
                 //emerald stage here
-                HandleEmeraldStageForRegularLevelLayout(team, SonicHeroesDefinitions.LevelToBonusStage[level]);
+                HandleEmeraldStageForRegularLevelLayout(team, SonicHeroesDefinitions.LevelToBonusStage[level], taskName);
             
-            HandleKeySanityLayout(team, level);
-            HandleCheckpointSanityLayout(team, level);
-            HandleSpawnPos(team, level);
-            HandleCharDisplayForTeam(team);
+            HandleKeySanityLayout(team, level, taskName);
+            HandleCheckpointSanityLayout(team, level, taskName);
+            HandleSpawnPos(team, level, taskName);
+            HandleCharDisplayForTeam(team, taskName);
             if (!SonicHeroesDefinitions.LevelIdToRegion.TryGetValue(level, out var region))
                 return;
-            HandleAbilityDisplayForRegion(team, region);
+            HandleAbilityDisplayForRegion(team, region, taskName);
             
             //ObjSanity
             var chaotixData = _chaotixsanityData[(int)level];
-            if (!(bool)Mod.LevelSelectManager.IsThisSanityEnabled(team, SanityType.ObjSanity)!)
+            if (!(bool)Mod.LevelSelectManager.IsThisSanityEnabled(team, SanityType.ObjSanity, taskName)!)
                 return;
 
-            if (Mod.LevelSelectManager.IsThisTeamActEnabled(team, Act.Act1))
+            if (Mod.LevelSelectManager.IsThisTeamActEnabled(team, Act.Act1, taskName))
             {
                 var sanityMax = chaotixData.Act1Max;
                 var sanityChecked = Mod.ArchipelagoHandler.CountLocationsCheckedInRange(chaotixData.Act1Offset, chaotixData.Act1Offset + chaotixData.Act1Max);
                 if (level == LevelId.CasinoPark)
                     sanityMax /= Mod.ArchipelagoHandler.SlotData.ChaotixsanityRingCheckSize;
-                HandleSanityLayout(chaotixData.Type, sanityChecked, sanityMax, _col1Centre - 0.05f * _windowWidth);
+                HandleSanityLayout(chaotixData.Type, sanityChecked, sanityMax, _col1Centre - 0.05f * _windowWidth, taskName);
             }
             
-            if (Mod.LevelSelectManager.IsThisTeamActEnabled(team, Act.Act1) && Mod.LevelSelectManager.IsThisTeamActEnabled(team, Act.Act2))
+            if (Mod.LevelSelectManager.IsThisTeamActEnabled(team, Act.Act1, taskName) && Mod.LevelSelectManager.IsThisTeamActEnabled(team, Act.Act2, taskName))
                 ImGui.__Internal.SameLine(0, 0);
 
-            if (Mod.LevelSelectManager.IsThisTeamActEnabled(team, Act.Act2))
+            if (Mod.LevelSelectManager.IsThisTeamActEnabled(team, Act.Act2, taskName))
             {
                 var sanityMax = chaotixData.Act2Max;
                 var sanityChecked = Mod.ArchipelagoHandler.CountLocationsCheckedInRange(chaotixData.Act2Offset, chaotixData.Act2Offset + chaotixData.Act2Max);
                 if (level == LevelId.CasinoPark)
                     sanityMax /= Mod.ArchipelagoHandler.SlotData.ChaotixsanityRingCheckSize;
-                HandleSanityLayout(chaotixData.Type, sanityChecked, sanityMax, _col2Centre + 0.05f * _windowWidth);
+                HandleSanityLayout(chaotixData.Type, sanityChecked, sanityMax, _col2Centre + 0.05f * _windowWidth, taskName);
             }
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
+            LoggingHandler.LogMessage($"{e}", taskName, LogLevel.Error);
         }
     }
 
-    private void HandleRegionAndGateDisplayForLevel(Team team, LevelId level)
+    private void HandleRegionAndGateDisplayForLevel(Team team, LevelId level, string taskName)
     {
         try
         {
@@ -871,7 +862,7 @@ public class LevelTracker
                 case >= LevelId.BonusStage1 and <= LevelId.BonusStage7:
                 case >= LevelId.EmeraldStage1 and <= LevelId.EmeraldStage7:
                     var regularLevel = SonicHeroesDefinitions.BonusStageToLevelId[level];
-                    var minGateNum = Enum.GetValues<Team>().Where(x => (bool)Mod.LevelSelectManager.IsThisTeamEnabled(x)!).Select(t => Mod.LevelSelectManager.FindGateForLevel(regularLevel, t)).OfType<int>().Select(gatenum => gatenum).Prepend(SonicHeroesDefinitions.GateLimit).Min();
+                    var minGateNum = Enum.GetValues<Team>().Where(x => (bool)Mod.LevelSelectManager.IsThisTeamEnabled(x, taskName)!).Select(t => Mod.LevelSelectManager.FindGateForLevel(regularLevel, t)).OfType<int>().Select(gatenum => gatenum).Prepend(SonicHeroesDefinitions.GateLimit).Min();
                     emblemCost = SonicHeroesDefinitions.EmblemCostLimit;
                     gate = minGateNum;
                     switch (minGateNum)
@@ -922,24 +913,24 @@ public class LevelTracker
             };
 
             firstTextLine = string.IsNullOrEmpty(regionStr) ? $"{levelStr}" : $"{levelStr} - {regionStr}";
-            WriteCenteredText(firstTextLine, Color.Empty, true);
+            WriteCenteredText(firstTextLine, taskName, Color.Empty, true);
             secondTextLine = string.IsNullOrEmpty(unlockRequirementsStr) ? $"{gateStr}" : $"{gateStr} - {unlockRequirementsStr}";
-            WriteCenteredText(secondTextLine, Color.Empty, true);
+            WriteCenteredText(secondTextLine, taskName, Color.Empty, true);
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
+            LoggingHandler.LogMessage($"{e}", taskName, LogLevel.Error);
         }
     }
 
-    private unsafe void HandleKeySanityLayout(Team team, LevelId level)
+    private unsafe void HandleKeySanityLayout(Team team, LevelId level, string taskName)
     {
         try
         {
             //Super Hard does not have keys
-            if (!(bool)Mod.LevelSelectManager.IsThisTeamEnabled(team)!)
+            if (!(bool)Mod.LevelSelectManager.IsThisTeamEnabled(team, taskName)!)
                 return;
-            if (!((bool)Mod.LevelSelectManager.IsThisSanityEnabled(team, SanityType.KeySanity)! || (bool)Mod.LevelSelectManager.IsThisSanityEnabled(team, SanityType.KeySanity, true)!))
+            if (!((bool)Mod.LevelSelectManager.IsThisSanityEnabled(team, SanityType.KeySanity, taskName)! || (bool)Mod.LevelSelectManager.IsThisSanityEnabled(team, SanityType.KeySanity, taskName, true)!))
                 return;
             
             var text = $"Bonus Keys";
@@ -954,7 +945,7 @@ public class LevelTracker
             var bonusKeyOffset = BonusKeyData.AllKeyPositions.IndexOf(keylist[0]); 
             var cursorPos = new ImVec2();
             ImGui.GetCursorScreenPos(cursorPos);
-            WriteCenteredText(text, Color.Empty);
+            WriteCenteredText(text, taskName, Color.Empty);
             
             ImGui.__Internal.CalcTextSize((IntPtr) (&textSize), text, null, false, -1.0f);
             var windowCentre = _outerWidth - _windowWidth / 2;
@@ -962,12 +953,12 @@ public class LevelTracker
             var textStart = _windowWidth / 2 - textWidth;
             var textEnd = _windowWidth / 2 + textWidth;
 
-            if (Mod.LevelSelectManager.IsThisTeamActEnabled(team, Act.Act1))
+            if (Mod.LevelSelectManager.IsThisTeamActEnabled(team, Act.Act1, taskName))
             {
                 //draw left circles
                 for (var i = 0; i < keylist.Count; i++)
                 {
-                    var bonusKeyChecked = (bool)Mod.LevelSelectManager.IsThisSanityEnabled(team, SanityType.KeySanity)! 
+                    var bonusKeyChecked = (bool)Mod.LevelSelectManager.IsThisSanityEnabled(team, SanityType.KeySanity, taskName)! 
                         //1 set
                         ? Mod.ArchipelagoHandler.IsLocationChecked(SonicHeroesDefinitions.BonusKeyNoActStartId + bonusKeyOffset + i) 
                         //both sets
@@ -978,12 +969,12 @@ public class LevelTracker
                 }
             }
 
-            if (Mod.LevelSelectManager.IsThisTeamActEnabled(team, Act.Act2))
+            if (Mod.LevelSelectManager.IsThisTeamActEnabled(team, Act.Act2, taskName))
             {
                 //draw right circles
                 for (var i = 0; i < keylist.Count; i++)
                 {
-                    var bonusKeyChecked = (bool)Mod.LevelSelectManager.IsThisSanityEnabled(team, SanityType.KeySanity)! 
+                    var bonusKeyChecked = (bool)Mod.LevelSelectManager.IsThisSanityEnabled(team, SanityType.KeySanity, taskName)! 
                         //1 set
                         ? Mod.ArchipelagoHandler.IsLocationChecked(SonicHeroesDefinitions.BonusKeyNoActStartId + bonusKeyOffset + i) 
                         //both sets
@@ -995,11 +986,11 @@ public class LevelTracker
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
+            LoggingHandler.LogMessage($"{e}", taskName, LogLevel.Error);
         }
     }
     
-    private unsafe void HandleCheckpointSanityLayout(Team team, LevelId level)
+    private unsafe void HandleCheckpointSanityLayout(Team team, LevelId level, string taskName)
     {
         try
         {
@@ -1008,19 +999,19 @@ public class LevelTracker
 
             if (team is Team.Sonic)
             {
-                if (!((bool)Mod.LevelSelectManager.IsThisTeamEnabled(team)! || (bool)Mod.LevelSelectManager.IsThisTeamEnabled(Team.SuperHardMode)!))
+                if (!((bool)Mod.LevelSelectManager.IsThisTeamEnabled(team, taskName)! || (bool)Mod.LevelSelectManager.IsThisTeamEnabled(Team.SuperHardMode, taskName)!))
                     return;
                 
-                if (!((bool)Mod.LevelSelectManager.IsThisSanityEnabled(team, SanityType.CheckpointSanity)! ||
-                      (bool)Mod.LevelSelectManager.IsThisSanityEnabled(team, SanityType.CheckpointSanity, true)! ||
-                      (bool)Mod.LevelSelectManager.IsThisSanityEnabled(Team.SuperHardMode, SanityType.CheckpointSanity)!))
+                if (!((bool)Mod.LevelSelectManager.IsThisSanityEnabled(team, SanityType.CheckpointSanity, taskName)! ||
+                      (bool)Mod.LevelSelectManager.IsThisSanityEnabled(team, SanityType.CheckpointSanity, taskName, true)! ||
+                      (bool)Mod.LevelSelectManager.IsThisSanityEnabled(Team.SuperHardMode, SanityType.CheckpointSanity, taskName)!))
                     return;
             }
             else
             {
-                if (!(bool)Mod.LevelSelectManager.IsThisTeamEnabled(team)!)
+                if (!(bool)Mod.LevelSelectManager.IsThisTeamEnabled(team, taskName)!)
                     return;
-                if (!((bool)Mod.LevelSelectManager.IsThisSanityEnabled(team, SanityType.CheckpointSanity)! || (bool)Mod.LevelSelectManager.IsThisSanityEnabled(team, SanityType.CheckpointSanity, true)!))
+                if (!((bool)Mod.LevelSelectManager.IsThisSanityEnabled(team, SanityType.CheckpointSanity, taskName)! || (bool)Mod.LevelSelectManager.IsThisSanityEnabled(team, SanityType.CheckpointSanity, taskName, true)!))
                     return;
             }
             
@@ -1033,7 +1024,7 @@ public class LevelTracker
             var superhardcheckpointOffset = CheckpointData.AllCheckpoints.IndexOf(superhardcheckpointlist[0]);
             var cursorPos = new ImVec2();
             ImGui.GetCursorScreenPos(cursorPos);
-            WriteCenteredText(text, Color.Empty);
+            WriteCenteredText(text, taskName, Color.Empty);
             
             ImGui.__Internal.CalcTextSize((IntPtr) (&textSize), text, null, false, -1.0f);
             var windowCentre = _outerWidth - _windowWidth / 2;
@@ -1043,12 +1034,12 @@ public class LevelTracker
             
             //if not Sonic, then draw if Act 1 enabled (already checked sanity enabled)
             //if Sonic, then draw if Sonic Sanity on and Act 1 enabled
-            if (team is not Team.Sonic && Mod.LevelSelectManager.IsThisTeamActEnabled(team, Act.Act1) || (team is Team.Sonic && ((bool)Mod.LevelSelectManager.IsThisSanityEnabled(team, SanityType.CheckpointSanity)! || (bool)Mod.LevelSelectManager.IsThisSanityEnabled(team, SanityType.CheckpointSanity, true)!) && Mod.LevelSelectManager.IsThisTeamActEnabled(team, Act.Act1)))
+            if (team is not Team.Sonic && Mod.LevelSelectManager.IsThisTeamActEnabled(team, Act.Act1, taskName) || (team is Team.Sonic && ((bool)Mod.LevelSelectManager.IsThisSanityEnabled(team, SanityType.CheckpointSanity, taskName)! || (bool)Mod.LevelSelectManager.IsThisSanityEnabled(team, SanityType.CheckpointSanity, taskName, true)!) && Mod.LevelSelectManager.IsThisTeamActEnabled(team, Act.Act1, taskName)))
             {
                 //draw left circles
                 for (var i = 0; i < checkpointlist.Count; i++)
                 {
-                    var checkpointChecked = (bool)Mod.LevelSelectManager.IsThisSanityEnabled(team, SanityType.CheckpointSanity)! 
+                    var checkpointChecked = (bool)Mod.LevelSelectManager.IsThisSanityEnabled(team, SanityType.CheckpointSanity, taskName)! 
                         //1 set
                         ? Mod.ArchipelagoHandler.IsLocationChecked(SonicHeroesDefinitions.CheckpointNoActStartId + checkpointOffset + i) 
                         //both sets
@@ -1058,14 +1049,14 @@ public class LevelTracker
                 }
             }
 
-            if (Mod.LevelSelectManager.IsThisTeamActEnabled(team, Act.Act2) || (team is Team.Sonic && (bool)Mod.LevelSelectManager.IsThisTeamEnabled(Team.SuperHardMode)! && (bool)Mod.LevelSelectManager.IsThisSanityEnabled(Team.SuperHardMode, SanityType.CheckpointSanity)!))
+            if (Mod.LevelSelectManager.IsThisTeamActEnabled(team, Act.Act2, taskName) || (team is Team.Sonic && (bool)Mod.LevelSelectManager.IsThisTeamEnabled(Team.SuperHardMode, taskName)! && (bool)Mod.LevelSelectManager.IsThisSanityEnabled(Team.SuperHardMode, SanityType.CheckpointSanity, taskName)!))
             {
-                if (Mod.LevelSelectManager.IsThisTeamActEnabled(team, Act.Act2))
+                if (Mod.LevelSelectManager.IsThisTeamActEnabled(team, Act.Act2, taskName))
                 {
                     //Sonic Here
                     for (var i = 0; i < checkpointlist.Count; i++)
                     {
-                        var checkpointChecked = (bool)Mod.LevelSelectManager.IsThisSanityEnabled(team, SanityType.CheckpointSanity)! 
+                        var checkpointChecked = (bool)Mod.LevelSelectManager.IsThisSanityEnabled(team, SanityType.CheckpointSanity, taskName)! 
                             //1 set
                             ? Mod.ArchipelagoHandler.IsLocationChecked(SonicHeroesDefinitions.CheckpointNoActStartId + checkpointOffset + i) 
                             //both sets
@@ -1087,11 +1078,11 @@ public class LevelTracker
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
+            LoggingHandler.LogMessage($"{e}", taskName, LogLevel.Error);
         }
     }
     
-    private unsafe void HandleSanityLayout(string sanityText, int sanityChecked, int sanityMax, float posX)
+    private unsafe void HandleSanityLayout(string sanityText, int sanityChecked, int sanityMax, float posX, string taskName)
     {
         try
         {
@@ -1102,26 +1093,26 @@ public class LevelTracker
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
+            LoggingHandler.LogMessage($"{e}", taskName, LogLevel.Error);
         }
     }
     
     
-    private void HandleSpawnPos(Team team, LevelId level)
+    private void HandleSpawnPos(Team team, LevelId level, string taskName)
     {
         try
         {
-            var text = $"Spawn Position: - {LevelSpawnUnlockHandler.GetLevelSelectUiText(team, level)}";
-            WriteCenteredText(text, Color.Empty);
+            var text = $"Spawn Position: - {LevelSpawnUnlockHandler.GetLevelSelectUiText(team, level, taskName)}";
+            WriteCenteredText(text, taskName, Color.Empty);
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
+            LoggingHandler.LogMessage($"{e}", taskName, LogLevel.Error);
         }
     }
     
     
-    private void HandleCharDisplayForTeam(Team team)
+    private void HandleCharDisplayForTeam(Team team, string taskName)
     {
         try
         {
@@ -1129,31 +1120,31 @@ public class LevelTracker
                 return;
 
             var text = $"";
-            text = $"Team {team} Characters Unlocked:{AbilityCharacterManager.GetLevelSelectUIStringForCharUnlocksForTeam(team)}";
-            WriteCenteredText(text, Color.Empty);
+            text = $"Team {team} Characters Unlocked:{AbilityCharacterManager.GetLevelSelectUIStringForCharUnlocksForTeam(team, taskName)}";
+            WriteCenteredText(text, taskName, Color.Empty);
 
-            if (team is not Team.Sonic || !(bool)Mod.LevelSelectManager.IsThisTeamEnabled(Team.SuperHardMode)!)
+            if (team is not Team.Sonic || !(bool)Mod.LevelSelectManager.IsThisTeamEnabled(Team.SuperHardMode, taskName)!)
                 return;
-            text = $"Team {Team.SuperHardMode} Characters Unlocked:{AbilityCharacterManager.GetLevelSelectUIStringForCharUnlocksForTeam(Team.SuperHardMode)}";
-            WriteCenteredText(text, Color.Empty);
+            text = $"Team {Team.SuperHardMode} Characters Unlocked:{AbilityCharacterManager.GetLevelSelectUIStringForCharUnlocksForTeam(Team.SuperHardMode, taskName)}";
+            WriteCenteredText(text, taskName, Color.Empty);
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
+            LoggingHandler.LogMessage($"{e}", taskName, LogLevel.Error);
         }
     }
     
     
-    private void HandleAbilityDisplayForRegion(Team team, Region region, bool shouldHandleSuperHard = false)
+    private void HandleAbilityDisplayForRegion(Team team, Region region, string taskName, bool shouldHandleSuperHard = false)
     {
         try
         {
             if (Mod.ArchipelagoHandler.SlotData.EntireRunUnlockType is EntireRunUnlockType.LegacyLevelGates)
                 return;
             var text = "";
-            List<Ability> teamAbilities = AbilityCharacterManager.GetAbilitiesForTeam(team, true);
+            List<Ability> teamAbilities = AbilityCharacterManager.GetAbilitiesForTeam(team, taskName, true);
             List<Ability> handledAbilities = [];
-            List<Ability> superHardAbilities = AbilityCharacterManager.GetAbilitiesForTeam(Team.SuperHardMode, true);
+            List<Ability> superHardAbilities = AbilityCharacterManager.GetAbilitiesForTeam(Team.SuperHardMode, taskName, true);
             List<Ability> handledSuperHardAbilities = [];
 
             foreach (var ability in teamAbilities)
@@ -1179,32 +1170,32 @@ public class LevelTracker
             {
                 var ability = handledAbilities[i];
                 text = ability.ToString();
-                Color textColor = getColorForAbilityForTeamAndRegion(ability, team, region);
+                Color textColor = getColorForAbilityForTeamAndRegion(ability, team, region, taskName);
 
                 if (team is not Team.Sonic || !shouldHandleSuperHard)
                 {
-                    WriteCenteredText(text, textColor);
+                    WriteCenteredText(text, taskName, textColor);
                 }
                 else
                 {
-                    WriteCenteredText(text, textColor, column: 1);
+                    WriteCenteredText(text, taskName, textColor, column: 1);
                     ImGui.__Internal.SameLine(0, 0);
                     ability = handledSuperHardAbilities[i];
                     text = ability.ToString();
-                    textColor = getColorForAbilityForTeamAndRegion(ability, Team.SuperHardMode, region);
-                    WriteCenteredText(text, textColor, column: 3);
+                    textColor = getColorForAbilityForTeamAndRegion(ability, Team.SuperHardMode, region, taskName);
+                    WriteCenteredText(text, taskName, textColor, column: 3);
                 }
                 
             }
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
+            LoggingHandler.LogMessage($"{e}", taskName, LogLevel.Error);
         }
     }
 
 
-    private Color getColorForAbilityForTeamAndRegion(Ability ability, Team team, Region region)
+    private Color getColorForAbilityForTeamAndRegion(Ability ability, Team team, Region region, string taskName)
     {
         try
         {
@@ -1262,7 +1253,7 @@ public class LevelTracker
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
+            LoggingHandler.LogMessage($"{e}", taskName, LogLevel.Error);
         }
         return _somethingWentWrongColor;
     }
@@ -1278,7 +1269,7 @@ public class LevelTracker
     }
     
     
-    private ImVec4 GetImVec4FromColor(Color color)
+    private ImVec4 GetImVec4FromColor(Color color, string taskName)
     {
         ImVec4 result = new ImVec4();
         result.W = color.A / 255f; //Alpha
@@ -1286,7 +1277,7 @@ public class LevelTracker
         result.Y = color.G / 255f;
         result.Z = color.B / 255f;
         
-        //Console.WriteLine($"Result: ({result.W}, {result.X}, {result.Y}, {result.Z}) Color: {color}");
+        //LoggingHandler.LogMessage($"Result: ({result.W}, {result.X}, {result.Y}, {result.Z}) Color: {color}", taskName, LogLevel.Debug);
         return result;
     }
 }

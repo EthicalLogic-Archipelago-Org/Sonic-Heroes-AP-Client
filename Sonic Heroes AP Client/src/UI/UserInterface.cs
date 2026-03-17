@@ -2,6 +2,8 @@ using System.Runtime.InteropServices;
 using Reloaded.Imgui.Hook;
 using Reloaded.Imgui.Hook.Direct3D11;
 using Reloaded.Imgui.Hook.Implementations;
+using Sonic_Heroes_AP_Client.Definitions;
+using Sonic_Heroes_AP_Client.Logging;
 
 namespace Sonic_Heroes_AP_Client.UI;
 
@@ -17,8 +19,9 @@ public class UserInterface
         Task.Run(CreateGui);
     }
 
-    private async void CreateGui()
+    public async void CreateGui()
     {
+        const string TaskName = "GUITask";
         LoggerWindow = new LoggerWindow();
         LevelTracker = new LevelTracker();
         TrapTracker = new TrapTracker();
@@ -35,8 +38,7 @@ public class UserInterface
         }
         catch (Exception ex)
         {
-            Console.WriteLine(ex.Message);
-            Console.WriteLine("Disabling overlay, did you add d3d8.dll to the game directory?");
+            LoggingHandler.LogMessage($"{ex}\n\nDisabling Overlay, did you add d3d8.dll to game directory?", TaskName, LogLevel.Error);
         }
     }
     
@@ -46,6 +48,7 @@ public class UserInterface
     
     private unsafe void Render()
     {
+        const string TaskName = "GUITask";
         if (!GetWindowRect(ImguiHook.WndProcHook.WindowHandle, out var rect))
             return;
         var width = rect.Right - rect.Left;
@@ -55,8 +58,8 @@ public class UserInterface
         var widthScale = (float)width / baseWidth;
         var heightScale = (float)height / baseHeight;
         var uiScale = widthScale < heightScale ? widthScale : heightScale;
-        LoggerWindow.Draw(width, height, uiScale);
-        LevelTracker.Draw(width, height, uiScale);
-        TrapTracker.Draw(width, height, uiScale);
+        LoggerWindow.Draw(width, height, uiScale, TaskName);
+        LevelTracker.Draw(width, height, uiScale, TaskName);
+        TrapTracker.Draw(width, height, uiScale, TaskName);
     }
 }

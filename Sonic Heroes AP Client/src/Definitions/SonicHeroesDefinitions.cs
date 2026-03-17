@@ -1,6 +1,5 @@
 
-using System.Numerics;
-using System.Runtime.InteropServices;
+//global using static Sonic_Heroes_AP_Client.Definitions.SonicHeroesDefinitions;
 
 namespace Sonic_Heroes_AP_Client.Definitions;
 
@@ -15,11 +14,14 @@ public enum SanityType
 
 public enum LogLevel
 {
-    Error,
-    APAction,
-    GameAction,
-    Info,
+    
+    SuperDebug,
     Debug,
+    Info,
+    GameAction,
+    // ReSharper disable once InconsistentNaming
+    APAction,
+    Error,
 }
 
 public enum MusicType
@@ -369,6 +371,7 @@ public enum StageObjTypes : ushort
     BobsledJumpCollisionObject = 0x0066,
     BonusKey = 0x0067,
     TeleportTrigger = 0x0080,
+    // ReSharper disable once InconsistentNaming
     SECollisionObject = 0x0081,
     NoOttoOttoCollisionObject = 0x0082,
 
@@ -425,6 +428,7 @@ public enum StageObjTypes : ushort
     GrandMetropolisPipeDesign = 0x0383,
     GrandMetropolisEnergyPiston = 0x0384,
     GrandMetropolisFlashingDoorLights = 0x0385,
+    // ReSharper disable once InconsistentNaming
     HEXAecoSignboard = 0x0386,
 
     //Power Plant
@@ -445,6 +449,7 @@ public enum StageObjTypes : ushort
     EnergyWallBackground = 0x0481,
     PowerPlantCrane = 0x0482,
     PowerPlantSatellite = 0x0483,
+    // ReSharper disable once InconsistentNaming
     HEXAecoWallLight = 0x0484,
     PowerPlantFloorLight = 0x0485,
     LavaShutter = 0x0486,
@@ -507,8 +512,11 @@ public enum StageObjTypes : ushort
     RailChangeRail = 0x0783,
     RailBulletRack = 0x0785,
     RailWaterSupply = 0x0786,
+    // ReSharper disable once InconsistentNaming
     RailMechTypeABC = 0x0787,
+    // ReSharper disable once InconsistentNaming
     RailCapEN = 0x0788,
+    // ReSharper disable once InconsistentNaming
     RailCapEX = 0x0789,
     RailWideCapBlue = 0x078A,
     RailWideCapRed = 0x078B,
@@ -547,9 +555,11 @@ public enum StageObjTypes : ushort
     MossyBall = 0x090C,
     StopRain = 0x090D,
     Alligator = 0x090E,
+    // ReSharper disable once InconsistentNaming
     RainFruitMI = 0x090F,
     IvyThatGrowsAsYouGrindOnIt2 = 0x0910,
     IvyThatGrowsAsYouGrindOnIt3 = 0x0911,
+    // ReSharper disable once InconsistentNaming
     IvyThatGrowsAsYouGrindOnItETC = 0x0912,
     RainCollisionObject = 0x0913,
     Butterflies = 0x0980,
@@ -635,6 +645,7 @@ public enum StageObjTypes : ushort
     MissilePod = 0x1381,
     Screw = 0x1382,
     EggFleetDesignPipe = 0x1383,
+    // ReSharper disable once InconsistentNaming
     EggFleetUFO = 0x1384,
     Blinklight = 0x1385,
     Antenna = 0x1386,
@@ -677,6 +688,7 @@ public enum StageObjTypes : ushort
     RedLight = 0x1485,
     RoadSideA = 0x1486,
     RoadLight = 0x1487,
+    // ReSharper disable once InconsistentNaming
     FinalFortressUFO = 0x1488,
     RedRingLight = 0x1489,
     WallNeon = 0x148A,
@@ -726,7 +738,9 @@ public enum StageObjTypes : ushort
     SpecialStageFormationGate = 0x15F4,
 
     //EggEmperor
+    // ReSharper disable once InconsistentNaming
     EggEmperorCollisionCC = 0x1600,
+    // ReSharper disable once InconsistentNaming
     EggEmperorCollisionCP = 0x1601,
     EggEmperorKingPawn = 0x1602,
 
@@ -794,6 +808,9 @@ public static class SonicHeroesDefinitions
     /// The limit checked against for Max Emblem cost.
     /// </summary>
     public const int EmblemCostLimit = 9999;
+
+
+    public const string PleaseDontContainMe = "THISISNOTINTHEITEMNAME.HEY,YALIKEJAZZ";
     
     public static readonly Dictionary<LevelId, int> LevelToSpawnDataIndex = new()
     {
@@ -838,6 +855,7 @@ public static class SonicHeroesDefinitions
         { LevelId.EmeraldStage7, 38 },
     };
     
+    // ReSharper disable once InconsistentNaming
     public static readonly Dictionary<int, int> LevelTrackerUILevelMapping = new()
     {
         {0, (int)LevelId.SeasideHill},
@@ -882,58 +900,58 @@ public static class SonicHeroesDefinitions
     public static readonly Dictionary<Region, List<LevelId>> RegionToLevelId = new()
     {
         {
-            Region.Ocean, new List<LevelId>()
-            {
+            Region.Ocean, 
+            [
                 LevelId.SeasideHill,
-                LevelId.OceanPalace,
-            }
+                LevelId.OceanPalace
+            ]
         },
         {
-            Region.HotPlant, new List<LevelId>()
-            {
+            Region.HotPlant, 
+            [
                 LevelId.GrandMetropolis,
-                LevelId.PowerPlant,
-            }
+                LevelId.PowerPlant
+            ]
         },
         {
-            Region.Casino, new List<LevelId>()
-            {
+            Region.Casino, 
+            [
                 LevelId.CasinoPark,
-                LevelId.BingoHighway,
-            }
+                LevelId.BingoHighway
+            ]
         },
         {
-            Region.Train, new List<LevelId>()
-            {
+            Region.Train, 
+            [
                 LevelId.RailCanyon,
                 LevelId.BulletStation,
-                LevelId.ChaotixRailCanyon,
-            }
+                LevelId.ChaotixRailCanyon
+            ]
         },
         {
-            Region.BigPlant, new List<LevelId>()
-            {
+            Region.BigPlant, 
+            [
                 LevelId.FrogForest,
-                LevelId.LostJungle,
-            }
+                LevelId.LostJungle
+            ]
         },
         {
-            Region.Ghost, new List<LevelId>()
-            {
+            Region.Ghost, 
+            [
                 LevelId.HangCastle,
-                LevelId.MysticMansion,
-            }
+                LevelId.MysticMansion
+            ]
         },
         {
-            Region.Sky, new List<LevelId>()
-            {
+            Region.Sky, 
+            [
                 LevelId.EggFleet,
-                LevelId.FinalFortress,
-            }
+                LevelId.FinalFortress
+            ]
         },
         {
-            Region.SpecialStage, new List<LevelId>()
-            {
+            Region.SpecialStage, 
+            [
                 LevelId.BonusStage1,
                 LevelId.BonusStage2,
                 LevelId.BonusStage3,
@@ -947,12 +965,12 @@ public static class SonicHeroesDefinitions
                 LevelId.EmeraldStage4,
                 LevelId.EmeraldStage5,
                 LevelId.EmeraldStage6,
-                LevelId.EmeraldStage7,
-            }
+                LevelId.EmeraldStage7
+            ]
         },
         {
-            Region.Boss, new List<LevelId>()
-            {
+            Region.Boss, 
+            [
                 LevelId.EggHawk,
                 LevelId.TeamFight1,
                 LevelId.RobotCarnival,
@@ -960,15 +978,15 @@ public static class SonicHeroesDefinitions
                 LevelId.TeamFight2,
                 LevelId.RobotStorm,
                 LevelId.EggEmperor
-            }
+            ]
         },
         {
-            Region.FinalBoss, new List<LevelId>()
-            {
+            Region.FinalBoss, 
+            [
                 LevelId.MetalMadness,
                 LevelId.MetalOverlord,
-                LevelId.SeaGate,
-            }
+                LevelId.SeaGate
+            ]
         },
     };
 

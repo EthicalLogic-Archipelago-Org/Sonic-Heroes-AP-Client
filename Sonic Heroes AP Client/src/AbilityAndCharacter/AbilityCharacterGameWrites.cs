@@ -1,6 +1,7 @@
 using Reloaded.Memory;
 using Reloaded.Memory.Interfaces;
 using Sonic_Heroes_AP_Client.Definitions;
+using Sonic_Heroes_AP_Client.Logging;
 
 namespace Sonic_Heroes_AP_Client.AbilityAndCharacter;
 
@@ -16,7 +17,8 @@ public static class AbilityCharacterGameWrites
     /// <param name="formationChar">Which formation? (Speed, Power, Flying)</param>
     /// <param name="value">True to unlock character, false to lock</param>
     /// <param name="force">Should the character be force-unlocked? (This breaks capture state)</param>
-    public static unsafe void SetCharState(FormationChar formationChar, bool value, bool force)
+    /// <param name="taskName">Name of the task running this</param>
+    public static unsafe void SetCharState(FormationChar formationChar, bool value, bool force, string taskName)
     {
         try
         {
@@ -32,7 +34,7 @@ public static class AbilityCharacterGameWrites
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
+            LoggingHandler.LogMessage($"{e}", taskName, LogLevel.Error);
         }
     }
     
@@ -41,7 +43,8 @@ public static class AbilityCharacterGameWrites
     /// </summary>
     /// <param name="formationChar">Which formation? (Speed, Power, Flying)</param>
     /// <param name="level">(0, 1, 2, 3) Must be In-Game.</param>
-    public static unsafe void SetCharLevel(FormationChar formationChar, byte level)
+    /// <param name="taskName">Name of the task running this</param>
+    public static unsafe void SetCharLevel(FormationChar formationChar, byte level, string taskName)
     {
         try
         {
@@ -51,7 +54,7 @@ public static class AbilityCharacterGameWrites
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
+            LoggingHandler.LogMessage($"{e}", taskName, LogLevel.Error);
         }
     }
 
@@ -147,9 +150,9 @@ public static class AbilityCharacterGameWrites
         Memory.Instance.SafeWrite(Mod.ModuleBase + 0x1BFD3B, bytes);
     }
     
-    public static void SetFlying(bool value)
+    public static void SetFlying(bool value, string taskName)
     {
-        //Console.WriteLine($"SetFlying: {value}");
+        //LoggingHandler.LogMessage($"SetFlying: {value}", taskName, LogLevel.SuperDebug);
         //var bytes = value ? new byte[] { 0x34 } : new byte[] { 0x35 };
         //Memory.Instance.SafeWrite(Mod.ModuleBase + 0x1C9C7F, bytes);
         //Memory.Instance.SafeWrite(Mod.ModuleBase + 0x1CA608, bytes);

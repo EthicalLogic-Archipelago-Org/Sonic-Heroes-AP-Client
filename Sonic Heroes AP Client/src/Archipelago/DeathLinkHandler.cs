@@ -1,7 +1,9 @@
 using Archipelago.MultiClient.Net.Converters;
 using Archipelago.MultiClient.Net.Packets;
 using Newtonsoft.Json.Linq;
+using Sonic_Heroes_AP_Client.Definitions;
 using Sonic_Heroes_AP_Client.GameState;
+using Sonic_Heroes_AP_Client.Logging;
 using Sonic_Heroes_AP_Client.UI;
 
 namespace Sonic_Heroes_AP_Client.Archipelago;
@@ -47,22 +49,19 @@ public static class DeathLinkHandler
         "should have picked Team Rose (died)"
     };
     
-    public static bool IsDeathLinkEnabled()
+    public static bool IsDeathLinkEnabled(string taskName)
     {
-        try
+        if (Mod.Configuration == null)
         {
-            return Mod.Configuration.DeathLink;
+            LoggingHandler.LogMessage($"Mod Configuration is Null in IsDeathLinkEnabled", taskName, LogLevel.Error);
+            return false;
         }
-        catch (Exception e)
-        {
-            Console.WriteLine(e);
-        }
-        return false;
+        return Mod.Configuration.DeathLink;
     }
     
-    public static void SendDeath()
+    public static void SendDeath(string taskName)
     {
-        BouncePacket packet = new BouncePacket();
+        var packet = new BouncePacket();
         var now = DateTime.Now;
 
         if (now - LastDeathLinkPacketTime < DeathLinkMercyTime)
@@ -73,42 +72,42 @@ public static class DeathLinkHandler
         {
             { "time", now.ToUnixTimeStamp() },
             { "source", Mod.ArchipelagoHandler.Slot },
-            { "cause", $"{Mod.ArchipelagoHandler.Slot} {_deathMessages[_random.Next(_deathMessages.Length)]}" }
+            { "cause", $"{Mod.ArchipelagoHandler.Slot} {_deathMessages[_random.Next(_deathMessages.Length)]}"}
         };
 
         if (packet.Data.TryGetValue("source", out var sourceObj))
         {
-            var source = sourceObj?.ToString() ?? "Unknown";
+            var source = sourceObj.ToString() ?? "Unknown";
             if (packet.Data.TryGetValue("cause", out var causeObj))
             {
-                var cause = causeObj?.ToString() ?? "Unknown";
+                var cause = causeObj.ToString() ?? "Unknown";
                 if (packet.Data.TryGetValue("time", out var timeObj))
                 {
-                    var time = timeObj?.ToString() ?? "Unknown";
-                    Console.WriteLine(
-                        $"Sending DeathLink Packet: {source} {cause} :: with time: {time}");
+                    var time = timeObj.ToString() ?? "Unknown";
+                    LoggingHandler.LogMessage($"Sending DeathLink Packet: {source} {cause} :: with time: {time}", taskName, LogLevel.SuperDebug);
                 }
             }
         }
-        Mod.ArchipelagoHandler._session.Socket.SendPacket(packet);
+        Mod.ArchipelagoHandler.Session.Socket.SendPacket(packet);
         LastDeathLinkPacketTime = now;
     }
     
-    public static void HandleDeathLink(string source, string cause)
+    public static void HandleDeathLink(string source, string cause, string taskName)
     {
-        if (!IsDeathLinkEnabled())
+        if (!IsDeathLinkEnabled(taskName))
             return;
-        LoggerWindow.Log($"{cause}");
-        Console.WriteLine($"{cause}");
+        
+        //LoggerWindow.Log($"{cause}");
+        LoggingHandler.LogMessage($"{cause}", taskName, LogLevel.APAction);
         if (source == Mod.ArchipelagoHandler.Slot)
             return;
-        if (!GameStateHandler.InGame())
+        if (!GameStateHandler.InGame(taskName))
             return;
         //Need to check if InGame here otherwise SomeoneElseDied is set to true
         //(if a deathlink packet is received while in a menu or paused) but
         //doesnt get set back to false resulting in ignoring a client death
         
         SomeoneElseDied = true;
-        GameStateGameWrites.Kill();
+        GameStateGameWrites.Kill(taskName);
     }
 }

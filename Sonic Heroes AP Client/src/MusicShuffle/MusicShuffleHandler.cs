@@ -3,6 +3,7 @@
 using System.Runtime.InteropServices;
 using System.Text;
 using Sonic_Heroes_AP_Client.Definitions;
+using Sonic_Heroes_AP_Client.Logging;
 
 namespace Sonic_Heroes_AP_Client.MusicShuffle;
 
@@ -18,7 +19,7 @@ public static class MusicShuffleHandler
     public static Dictionary<string, string> Map = new (StringComparer.OrdinalIgnoreCase);
 
     
-    public static unsafe void HandleBGMFilePathHook(int filePathAddr)
+    public static unsafe void HandleBGMFilePathHook(int filePathAddr, string taskName)
     {
         try
         {
@@ -27,12 +28,16 @@ public static class MusicShuffleHandler
             
             var oldFileFullPath = Encoding.ASCII.GetString(filePath, 0, filePath.Length).Trim('\0');
             
-            //Console.WriteLine($"HandleBGMFilePathHook oldFileFullPath: {oldFileFullPath}");
+            //LoggingHandler.LogMessage($"HandleBGMFilePathHook oldFileFullPath: {oldFileFullPath}", taskName, LogLevel.Debug);
             
             var success = Map.TryGetValue(oldFileFullPath, out var newName);
             if (!success)
+            {
+                LoggingHandler.LogMessage($"HandleBGMFilePathHook oldFileFullPath: {oldFileFullPath} failed to match.", taskName, LogLevel.Error);
                 return;
-            //Console.WriteLine($"HandleBGMFilePathHook Success: newName: {newName}");
+            }
+                
+            //LoggingHandler.LogMessage($"HandleBGMFilePathHook Success: newName: {newName}", taskName, LogLevel.Debug);
             newName += '\0';
             var newNameBytes = Encoding.ASCII.GetBytes(newName.ToArray());
             for (var i = 0; i < newName.Length; i++)
@@ -40,37 +45,40 @@ public static class MusicShuffleHandler
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
+            LoggingHandler.LogMessage($"{e}", taskName, LogLevel.Error);
         }
     }
     
     
-    
 
-    public static void Shuffle(int seed)
+    public static void Shuffle(int seed, string taskName)
     {
-        if (!Mod.Configuration!.MusicShuffleHeroes 
-            && !Mod.Configuration.MusicShuffleSA2 
-            && !Mod.Configuration.MusicShuffleSADX
-            && !Mod.Configuration.MusicShuffleShadow
-            && !Mod.Configuration.MusicShuffleCustom)
-            return;
-        
-        Map = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        var allSongs = new List<(string name, MusicType type)>();
-        var heroesSongs = MusicShuffleData.HeroesSongs;
-        
-        if (Mod.Configuration!.MusicShuffleHeroes)
-            allSongs.AddRange(heroesSongs);
-        if (Mod.Configuration.MusicShuffleSADX)
-            allSongs.AddRange(MusicShuffleData.SADXSongs);
-        if (Mod.Configuration.MusicShuffleSA2)
-            allSongs.AddRange(MusicShuffleData.SA2Songs);
-        if (Mod.Configuration.MusicShuffleShadow)
-            allSongs.AddRange(MusicShuffleData.ShadowSongs);
-        
+        LoggingHandler.LogMessage($"Music Shuffle Start", taskName, LogLevel.SuperDebug);
         try
         {
+            if (!Mod.Configuration.MusicShuffleHeroes && !Mod.Configuration.MusicShuffleSA2 && !Mod.Configuration.MusicShuffleSADX
+                && !Mod.Configuration.MusicShuffleShadow && !Mod.Configuration.MusicShuffleCustom)
+            {
+                LoggingHandler.LogMessage($"Canceling MusicShuffle as no games/custom are enabled", taskName, LogLevel.APAction);
+                return;
+            }
+            
+            
+            
+            Map = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            var allSongs = new List<(string name, MusicType type)>();
+            var heroesSongs = MusicShuffleData.HeroesSongs;
+            
+            if (Mod.Configuration.MusicShuffleHeroes)
+                allSongs.AddRange(heroesSongs);
+            if (Mod.Configuration.MusicShuffleSADX)
+                allSongs.AddRange(MusicShuffleData.SADXSongs);
+            if (Mod.Configuration.MusicShuffleSA2)
+                allSongs.AddRange(MusicShuffleData.SA2Songs);
+            if (Mod.Configuration.MusicShuffleShadow)
+                allSongs.AddRange(MusicShuffleData.ShadowSongs);
+            
+
             if (Mod.Configuration.MusicShuffleCustom)
             {
                 if (Directory.Exists(MusicShuffleData.CustomFolder))
@@ -159,14 +167,14 @@ public static class MusicShuffleHandler
                     for (var i = 0; i < shuffled.Count; i++)
                     {
                         Map[songs[i]] = shuffled[i];
-                        Mod.SaveDataHandler!.CustomSaveData!.MusicRandoMapping[songs[i].Split('\\').Last()] = shuffled[i].Split('\\').Last();
+                        Mod.SaveDataHandler.CustomSaveData.MusicRandoMapping[songs[i].Split('\\').Last()] = shuffled[i].Split('\\').Last();
                         //Mod.SaveDataHandler.CustomSaveData.MusicRandoMapping[songs[i]] = shuffled[i];
                     }
 
                     for (var i = shuffled.Count; i < songs.Count; i++)
                     {
                         Map[songs[i]] = songs[i];
-                        Mod.SaveDataHandler!.CustomSaveData!.MusicRandoMapping[songs[i].Split('\\').Last()] = songs[i].Split('\\').Last();
+                        Mod.SaveDataHandler.CustomSaveData.MusicRandoMapping[songs[i].Split('\\').Last()] = songs[i].Split('\\').Last();
                         //Mod.SaveDataHandler.CustomSaveData.MusicRandoMapping[songs[i]] = songs[i];
                     }
                     continue;
@@ -175,7 +183,7 @@ public static class MusicShuffleHandler
                 for (var i = 0; i < songs.Count; i++)
                 {
                     Map[songs[i]] = shuffled[i];  
-                    Mod.SaveDataHandler!.CustomSaveData!.MusicRandoMapping[songs[i].Split('\\').Last()] = shuffled[i].Split('\\').Last();
+                    Mod.SaveDataHandler.CustomSaveData.MusicRandoMapping[songs[i].Split('\\').Last()] = shuffled[i].Split('\\').Last();
                     //Mod.SaveDataHandler.CustomSaveData.MusicRandoMapping[songs[i]] = shuffled[i];
                 }
                     
@@ -184,15 +192,14 @@ public static class MusicShuffleHandler
             
             //Handle Mystic Mansion Here
             //var tempStr = Map[Path.Combine(MusicShuffleData.HeroesBGMFolder, "SNG_STG12.adx")];
-            //Console.WriteLine($"Mystic Mansion Should Now Be: {tempStr}");
+            //"Mystic Mansion Should Now Be: {tempStr}"
             Map[Path.Combine(MusicShuffleData.HeroesBGMFolder, "SNG_STG12A.adx")] = Map[Path.Combine(MusicShuffleData.HeroesBGMFolder, "SNG_STG12.adx")];
-            Mod.SaveDataHandler!.CustomSaveData!.MusicRandoMapping["SNG_STG12A.adx"] = Map[Path.Combine(MusicShuffleData.HeroesBGMFolder, "SNG_STG12A.adx")].Split('\\').Last();
-            
+            Mod.SaveDataHandler.CustomSaveData.MusicRandoMapping["SNG_STG12A.adx"] = Map[Path.Combine(MusicShuffleData.HeroesBGMFolder, "SNG_STG12A.adx")].Split('\\').Last();
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
+            LoggingHandler.LogMessage($"{e}", taskName, LogLevel.Error);
         }
-        
+        LoggingHandler.LogMessage($"Music Shuffle End", taskName, LogLevel.SuperDebug);
     }
 }

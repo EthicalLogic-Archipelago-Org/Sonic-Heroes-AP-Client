@@ -5,6 +5,7 @@ using Archipelago.MultiClient.Net.Models;
 using Sonic_Heroes_AP_Client.AbilityAndCharacter;
 using Sonic_Heroes_AP_Client.Definitions;
 using Sonic_Heroes_AP_Client.GameState;
+using Sonic_Heroes_AP_Client.Logging;
 using Sonic_Heroes_AP_Client.Sound;
 using Sonic_Heroes_AP_Client.StageObj;
 
@@ -36,345 +37,324 @@ public enum FillerSHItem
 
 public static class ItemHandler
 {
-    private static readonly ConcurrentQueue<Tuple<int, ItemInfo>> receivedItems = new();
-    private static readonly ConcurrentQueue<FillerSHItem> cachedInGameItems = new();
+    public static readonly ConcurrentQueue<Tuple<int, ItemInfo>> ReceivedItems = new();
+    private static readonly ConcurrentQueue<FillerSHItem> CachedInGameItems = new();
     
     
     public static void QueueItem(int index, ItemInfo item)
     {
-        receivedItems.Enqueue(Tuple.Create(index, item));
-    }
-
-    public static void RunCheckReceivedItemsQueue()
-    {
-        try
-        {
-            while (true)
-            {
-                if (receivedItems.TryDequeue(out var itemTuple))
-                    HandleItem(itemTuple.Item1, itemTuple.Item2);
-                else
-                {
-                    Thread.Sleep(100);
-                }
-            }
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine(e);
-        }
+        ReceivedItems.Enqueue(Tuple.Create(index, item));
     }
     
-    public static void HandleItem(int index, ItemInfo item)
+    public static void HandleItem(int index, ItemInfo item, string taskName)
     {
-        if (index < Mod.SaveDataHandler!.CustomSaveData.LastItemIndex)
+        if (Mod.SaveDataHandler.CustomSaveData == null)
         {
-            //Console.WriteLine($"Item #{index}: {item.ItemName} dropped due to index being lower than Save Data index: {Mod.SaveDataHandler.CustomSaveData.LastItemIndex}");
+            LoggingHandler.LogMessage($"Custom Save Data is Null in Handle Item", taskName, LogLevel.Error);
             return;
         }
         
+        if (index < Mod.SaveDataHandler.CustomSaveData.LastItemIndex)
+        {
+            LoggingHandler.LogMessage($"Item #{index}: {item.ItemName} dropped due to index being lower than Save Data index: {Mod.SaveDataHandler.CustomSaveData.LastItemIndex}", taskName, LogLevel.SuperDebug);
+            return;
+        }
         
-        Mod.SaveDataHandler!.CustomSaveData!.LastItemIndex++;
+        LoggingHandler.LogMessage($"Handle Item Start", taskName, LogLevel.SuperDebug);
+                
+        Mod.SaveDataHandler.CustomSaveData.LastItemIndex++;
         var handled = false;
         
-        
         var itemName = item.ItemName;
-        var itemId = (FillerSHItem)(item.ItemId - SonicHeroesDefinitions.AllIdsStartOffset);
         
         //check for items here
-        CheckPlayableCharItemName(itemName, ref handled);
-        CheckEmeraldItemName(itemName, ref handled);
-        CheckEmblemItemName(itemName, ref handled);
-        CheckAbilityItemName(itemName, ref handled);
-        CheckStageObjItemName(itemName, ref handled);
-        
-        if (handled && Mod.ArchipelagoHandler.SlotData != null)
-            Mod.LevelSelectManager.RecalculateOpenLevels();
-        Mod.ArchipelagoHandler!.Save();
-        
-        if (!GameStateHandler.InGame())
+        CheckPlayableCharItemName(itemName, ref handled, taskName);
+        CheckEmeraldItemName(itemName, ref handled, taskName);
+        CheckEmblemItemName(itemName, ref handled, taskName);
+        CheckAbilityItemName(itemName, ref handled, taskName);
+        CheckStageObjItemName(itemName, ref handled, taskName);
+
+        if (handled)
         {
-            cachedInGameItems.Enqueue(itemId);
+            LoggingHandler.LogMessage($"Item Handled in HandleItem", taskName, LogLevel.SuperDebug);
+            Mod.LevelSelectManager.RecalculateOpenLevels(taskName: taskName);
+            Mod.ArchipelagoHandler!.Save(taskName);
             return;
         }
-        HandleInGameItem(itemId);
+
+        if (item.ItemId - SonicHeroesDefinitions.AllIdsStartOffset < (long)FillerSHItem.ExtraLife)
+        {
+            LoggingHandler.LogMessage($"Item not handled but ID is not in Filler items. \nHOW DID WE GET HERE? Item: {itemName}", taskName, LogLevel.Error);
+            return;
+        }
+            
+        
+        //have filler item here
+        if (!GameStateHandler.InGame(taskName))
+        {
+            CachedInGameItems.Enqueue((FillerSHItem)item.ItemId);
+            return;
+        }
+        HandleInGameItem((FillerSHItem)item.ItemId, taskName);
     }
     
-    public static void HandleCachedItems()
+    public static void HandleCachedItems(string taskName)
     {
-        while (cachedInGameItems.Count > 0)
+        while (!CachedInGameItems.IsEmpty)
         {
-            if (cachedInGameItems.TryDequeue(out var item))
-                HandleInGameItem(item);
+            if (CachedInGameItems.TryDequeue(out var item))
+                HandleInGameItem(item, taskName);
         }
     }
     
-    public static void HandleInGameItem(FillerSHItem itemId)
+    public static unsafe void HandleInGameItem(FillerSHItem itemId, string taskName)
     {
         switch (itemId)
         {
             case FillerSHItem.ExtraLife:
-                GameStateGameWrites.ModifyLives((int)Mod.ModuleBase, 1);
-                unsafe
+                LoggingHandler.LogMessage($"Handling Extra Life: {itemId}", taskName, LogLevel.SuperDebug);
+                GameStateGameWrites.ModifyLives((int)Mod.ModuleBase, 1, taskName);
+                try
                 {
-                    try
-                    {
-                        Mod.SaveDataHandler.SaveData->savedLives++;
-                    }
-                    catch (Exception e)
-                    {
-                        Console.WriteLine(e);
-                    }
+                    Mod.SaveDataHandler.SaveData->savedLives++;
                 }
-                if (Mod.Configuration!.PlaySounds)
-                    SoundHandler.PlaySound((int)Mod.ModuleBase, 0x1034);
+                catch (Exception e)
+                {
+                    LoggingHandler.LogMessage($"Error Handling Extra Life: {e}", taskName, LogLevel.Error);
+                }
+                
+                if (Mod.Configuration != null && Mod.Configuration.PlaySounds)
+                    SoundHandler.PlaySound((int)Mod.ModuleBase, 0x1034, taskName);
                 break;
             case FillerSHItem.FiveRings:
-                GameStateGameWrites.SetRingCount(GameStateGameWrites.GetRingCount() + 5);
-                if (Mod.Configuration!.PlaySounds)
-                    SoundHandler.PlaySound((int)Mod.ModuleBase, 0x1033);
+                GameStateGameWrites.SetRingCount(GameStateGameWrites.GetRingCount(taskName) + 5, taskName);
+                if (Mod.Configuration != null && Mod.Configuration.PlaySounds)
+                    SoundHandler.PlaySound((int)Mod.ModuleBase, 0x1033, taskName);
                 break;
             case FillerSHItem.TenRings:
-                GameStateGameWrites.SetRingCount(GameStateGameWrites.GetRingCount() + 10);
-                if (Mod.Configuration!.PlaySounds)
-                    SoundHandler.PlaySound((int)Mod.ModuleBase, 0x1033);
+                GameStateGameWrites.SetRingCount(GameStateGameWrites.GetRingCount(taskName) + 10, taskName);
+                if (Mod.Configuration != null && Mod.Configuration.PlaySounds)
+                    SoundHandler.PlaySound((int)Mod.ModuleBase, 0x1033, taskName);
                 break;
             case FillerSHItem.TwentyRings:
-                GameStateGameWrites.SetRingCount(GameStateGameWrites.GetRingCount() + 20);
-                if (Mod.Configuration!.PlaySounds)
-                    SoundHandler.PlaySound((int)Mod.ModuleBase, 0x1033);
+                GameStateGameWrites.SetRingCount(GameStateGameWrites.GetRingCount(taskName) + 20, taskName);
+                if (Mod.Configuration != null && Mod.Configuration.PlaySounds)
+                    SoundHandler.PlaySound((int)Mod.ModuleBase, 0x1033, taskName);
                 break;
             case FillerSHItem.Shield:
-                GameStateGameWrites.GiveShield((int)Mod.ModuleBase);
-                if (Mod.Configuration!.PlaySounds)
-                    SoundHandler.PlaySound((int)Mod.ModuleBase, 0x1036);
+                GameStateGameWrites.GiveShield((int)Mod.ModuleBase, taskName);
+                if (Mod.Configuration != null && Mod.Configuration.PlaySounds)
+                    SoundHandler.PlaySound((int)Mod.ModuleBase, 0x1036, taskName);
+                break;
+            case FillerSHItem.Invincibility:
+                //not implemented yet
                 break;
             case FillerSHItem.SpeedLevelUp:
-                ItemGameWrites.GiveLevelUp(LevelUpType.Speed);
-                if (Mod.Configuration!.PlaySounds)
-                    SoundHandler.PlaySound((int)Mod.ModuleBase, 0xE005);
+                ItemGameWrites.GiveLevelUp(LevelUpType.Speed, taskName);
+                if (Mod.Configuration != null && Mod.Configuration.PlaySounds)
+                    SoundHandler.PlaySound((int)Mod.ModuleBase, 0xE005, taskName);
                 break;
             case FillerSHItem.PowerLevelUp:
-                ItemGameWrites.GiveLevelUp(LevelUpType.Power);
-                if (Mod.Configuration!.PlaySounds)
-                    SoundHandler.PlaySound((int)Mod.ModuleBase, 0xE005);
+                ItemGameWrites.GiveLevelUp(LevelUpType.Power, taskName);
+                if (Mod.Configuration != null && Mod.Configuration.PlaySounds)
+                    SoundHandler.PlaySound((int)Mod.ModuleBase, 0xE005, taskName);
                 break;
             case FillerSHItem.FlyLevelUp:
-                ItemGameWrites.GiveLevelUp(LevelUpType.Flying);
-                if (Mod.Configuration!.PlaySounds)
-                    SoundHandler.PlaySound((int)Mod.ModuleBase, 0xE005);
+                ItemGameWrites.GiveLevelUp(LevelUpType.Flying, taskName);
+                if (Mod.Configuration != null && Mod.Configuration.PlaySounds)
+                    SoundHandler.PlaySound((int)Mod.ModuleBase, 0xE005, taskName);
                 break;
             case FillerSHItem.TeamLevelUp: 
-                ItemGameWrites.GiveLevelUp(LevelUpType.Speed);
-                ItemGameWrites.GiveLevelUp(LevelUpType.Power);
-                ItemGameWrites.GiveLevelUp(LevelUpType.Flying);
-                if (Mod.Configuration!.PlaySounds)
-                    SoundHandler.PlaySound((int)Mod.ModuleBase, 0xE005);
+                ItemGameWrites.GiveLevelUp(LevelUpType.Speed, taskName);
+                ItemGameWrites.GiveLevelUp(LevelUpType.Power, taskName);
+                ItemGameWrites.GiveLevelUp(LevelUpType.Flying, taskName);
+                if (Mod.Configuration != null && Mod.Configuration.PlaySounds)
+                    SoundHandler.PlaySound((int)Mod.ModuleBase, 0xE005, taskName);
                 break;
             case FillerSHItem.TeamBlastFiller:
                 try
                 {
-                    ItemGameWrites.HandleTeamBlastFiller();
-                    var team = GameStateHandler.GetCurrentStory();
-                    var level = GameStateHandler.GetCurrentLevel();
+                    ItemGameWrites.HandleTeamBlastFiller(taskName);
+                    var team = GameStateHandler.GetCurrentStory(taskName);
+                    var level = GameStateHandler.GetCurrentLevel(taskName);
 
-                    if (!SonicHeroesDefinitions.LevelIdToRegion.TryGetValue((LevelId)level!, out Region region))
+                    if (!SonicHeroesDefinitions.LevelIdToRegion.TryGetValue((LevelId)level, out Region region))
                         break;
 
-                    if (!AbilityCharacterManager.CanTeamBlast((Team)team!, region))
+                    if (!AbilityCharacterManager.CanTeamBlast((Team)team, region, taskName))
                     {
-                        GameStateGameWrites.SetRingCount(GameStateGameWrites.GetRingCount() + 10);
-                        if (Mod.Configuration!.PlaySounds)
-                            SoundHandler.PlaySound((int)Mod.ModuleBase, 0x1033);
+                        GameStateGameWrites.SetRingCount(GameStateGameWrites.GetRingCount(taskName) + 10, taskName);
+                        if (Mod.Configuration != null && Mod.Configuration.PlaySounds)
+                            SoundHandler.PlaySound((int)Mod.ModuleBase, 0x1033, taskName);
                         break;
                     }
-                    GameStateGameWrites.SetRingCount(GameStateGameWrites.GetRingCount() + 1);
-                    if (Mod.Configuration!.PlaySounds)
-                        SoundHandler.PlaySound((int)Mod.ModuleBase, 0x1004);
+                    GameStateGameWrites.SetRingCount(GameStateGameWrites.GetRingCount(taskName) + 1, taskName);
+                    if (Mod.Configuration != null && Mod.Configuration.PlaySounds)
+                        SoundHandler.PlaySound((int)Mod.ModuleBase, 0x1004, taskName);
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine(e);
+                    LoggingHandler.LogMessage($"{e}", taskName, LogLevel.Error);
                 }
                 break;
             case FillerSHItem.StealthTrap:
-                TrapHandler.HandleStealthTrap();
+                TrapHandler.HandleStealthTrap(taskName);
                 break;
             case FillerSHItem.FreezeTrap:
-                TrapHandler.HandleFreezeTrap();
+                TrapHandler.HandleFreezeTrap(taskName);
                 break;
             case FillerSHItem.NoSwapTrap:
-                TrapHandler.HandleNoSwapTrap();
+                TrapHandler.HandleNoSwapTrap(taskName);
                 break;
             case FillerSHItem.RingTrap:
-                GameStateGameWrites.SetRingCount(Math.Max(0, GameStateGameWrites.GetRingCount() - 50));
-                if (Mod.Configuration!.PlaySounds)
-                    SoundHandler.PlaySound((int)Mod.ModuleBase, 0x1005);
-                RingLinkHandler.SendRingPacket(-50);
+                GameStateGameWrites.SetRingCount(Math.Max(0, GameStateGameWrites.GetRingCount(taskName) - 50), taskName);
+                if (Mod.Configuration != null && Mod.Configuration.PlaySounds)
+                    SoundHandler.PlaySound((int)Mod.ModuleBase, 0x1005, taskName);
+                RingLinkHandler.SendRingPacket(-50, taskName);
                 break;
             case FillerSHItem.CharmyTrap:
-                TrapHandler.HandleCharmyTrap();
+                TrapHandler.HandleCharmyTrap(taskName);
                 break;
             default:
                 break;
         }
     }
     
-    public static void CheckPlayableCharItemName(string itemName, ref bool handled)
+    public static void CheckPlayableCharItemName(string itemName, ref bool handled, string taskName)
     {
-        try
-        {
-            var character = Enum.GetValues<PlayableCharacter>().Cast<PlayableCharacter?>().FirstOrDefault(x =>
-                itemName.Replace(" ", "").Contains($"{x.ToString()!}", StringComparison.InvariantCultureIgnoreCase));
-            if (character == null) 
-                return;
-            //match here
-            var team = SonicHeroesDefinitions.PlayableCharToTeam[(PlayableCharacter)character];
-            var formation = SonicHeroesDefinitions.PlayableCharToFormation[(PlayableCharacter)character];
-            var unlocked = AbilityCharacterManager.GetCharUnlock(team, formation);
-            if (!Mod.IsDebug)
-                unlocked = false;
-            AbilityCharacterManager.SetCharUnlock(team, formation, !unlocked);
-            Console.WriteLine($"Got Item: {itemName}");
-            handled = true;
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine(e);
-        }
+        var character = Enum.GetValues<PlayableCharacter>().Cast<PlayableCharacter?>().FirstOrDefault(x =>
+            itemName.Replace(" ", "").Contains($"{x.ToString() ?? SonicHeroesDefinitions.PleaseDontContainMe}", StringComparison.InvariantCultureIgnoreCase));
+        if (character == null) 
+            return;
+        //match here
+        LoggingHandler.LogMessage($"Got Playable Char Item: {itemName}", taskName, LogLevel.APAction);
+        var team = SonicHeroesDefinitions.PlayableCharToTeam[(PlayableCharacter)character];
+        var formation = SonicHeroesDefinitions.PlayableCharToFormation[(PlayableCharacter)character];
+        var unlocked = AbilityCharacterManager.GetCharUnlock(team, formation, taskName);
+        if (!Mod.IsDebug)
+            unlocked = false;
+        AbilityCharacterManager.SetCharUnlock(team, formation, !unlocked, taskName);
+        handled = true;
     }
 
-    public static unsafe void CheckEmeraldItemName(string itemName, ref bool handled)
+    public static unsafe void CheckEmeraldItemName(string itemName, ref bool handled, string taskName)
     {
-        try
+        if (handled)
+            return;
+        if (Mod.SaveDataHandler.CustomSaveData == null)
         {
-            if (handled)
-                return;
-            Emerald? emerald = Enum.GetValues<Emerald>().Cast<Emerald?>().FirstOrDefault(x =>
-                itemName.Replace(" ", "").Contains($"{x.ToString()!}ChaosEmerald", StringComparison.InvariantCultureIgnoreCase));
-            if (emerald == null) 
-                return;
-            Mod.SaveDataHandler!.CustomSaveData!.Emeralds[(Emerald)emerald] = true;
-            Mod.SaveDataHandler!.RedirectData->Emerald[((int)emerald + 1) * 3] = 1;
-            Console.WriteLine($"Got Item: {itemName}");
-            handled = true;
+            LoggingHandler.LogMessage($"Custom Save Data is Null in Check Emerald Item", taskName, LogLevel.Error);
+            return;
         }
-        catch (Exception e)
-        {
-            Console.WriteLine(e);
-        }
+        Emerald? emerald = Enum.GetValues<Emerald>().Cast<Emerald?>().FirstOrDefault(x =>
+            itemName.Replace(" ", "").Contains($"{x.ToString() ?? SonicHeroesDefinitions.PleaseDontContainMe}ChaosEmerald", StringComparison.InvariantCultureIgnoreCase));
+        if (emerald == null) 
+            return;
+        LoggingHandler.LogMessage($"Got Emerald: {itemName}", taskName, LogLevel.APAction);
+        Mod.SaveDataHandler.CustomSaveData.Emeralds[(Emerald)emerald] = true;
+        Mod.SaveDataHandler.RedirectData->Emerald[((int)emerald + 1) * 3] = 1;
+        handled = true;
     }
 
-    public static unsafe void CheckEmblemItemName(string itemName, ref bool handled)
+    public static void CheckEmblemItemName(string itemName, ref bool handled, string taskName)
     {
-        try
+        if (handled)
+            return;
+        if (!itemName.Contains("Emblem"))
+            return;
+        if (Mod.SaveDataHandler.CustomSaveData == null)
         {
-            if (handled)
-                return;
-            if (!itemName.Contains("Emblem"))
-                return;
-            Mod.SaveDataHandler!.CustomSaveData!.Emblems++;
-            Console.WriteLine($"Got Item: {itemName}");
-            if (Mod.Configuration!.PlaySounds)
-                SoundHandler.PlaySound((int)Mod.ModuleBase, 0xE016);
-            handled = true;
+            LoggingHandler.LogMessage($"Custom Save Data is Null in Check Emblem Item", taskName, LogLevel.Error);
+            return;
         }
-        catch (Exception e)
+        if (Mod.Configuration == null)
         {
-            Console.WriteLine(e);
+            LoggingHandler.LogMessage($"Mod Configuration is Null in Handle Item", taskName, LogLevel.Error);
+            return;
         }
+        LoggingHandler.LogMessage($"Got Emblem: {itemName}", taskName, LogLevel.APAction);
+        Mod.SaveDataHandler.CustomSaveData.Emblems++;
+        if (Mod.Configuration.PlaySounds)
+            SoundHandler.PlaySound((int)Mod.ModuleBase, 0xE016, taskName);
+        handled = true;
     }
 
-    public static unsafe void CheckAbilityItemName(string itemName, ref bool handled)
+    public static void CheckAbilityItemName(string itemName, ref bool handled, string taskName)
     {
-        try
+        if (handled)
+            return;
+        Team? team;
+        Region? region;
+        if (itemName.Contains("All Abilities", StringComparison.InvariantCultureIgnoreCase))
         {
-            if (handled)
-                return;
-            Team? team;
-            Region? region;
-            if (itemName.Contains("All Abilities", StringComparison.InvariantCultureIgnoreCase))
-            {
-                team = CheckTeamItemName(itemName, ref handled);
-                region = CheckRegionItemName(itemName, ref handled);
-                AbilityCharacterManager.UnlockAbilityItemCallback(null, team, region);
-                Console.WriteLine($"Got Item: {itemName}");
-                handled = true;
-                return;
-            }
-            
-            Ability? ability = Enum.GetValues<Ability>().Cast<Ability?>().LastOrDefault(x =>
-                itemName.Replace(" ", "").Contains($"{x.ToString()!}", StringComparison.InvariantCultureIgnoreCase));
-            if (ability == null)
-                return;
-            team = CheckTeamItemName(itemName, ref handled);
-            region = CheckRegionItemName(itemName, ref handled);
-            AbilityCharacterManager.UnlockAbilityItemCallback(ability, team, region);
-            Console.WriteLine($"Got Item: {itemName}");
+            team = CheckTeamItemName(itemName, taskName);
+            region = CheckRegionItemName(itemName, taskName);
+            AbilityCharacterManager.UnlockAbilityItemCallback(null, team, region, taskName);
+            LoggingHandler.LogMessage($"Got Item: {itemName}", taskName, LogLevel.APAction);
             handled = true;
+            return;
         }
-        catch (Exception e)
-        {
-            Console.WriteLine(e);
-        }
+        
+        Ability? ability = Enum.GetValues<Ability>().Cast<Ability?>().LastOrDefault(x =>
+            itemName.Replace(" ", "").Contains($"{x.ToString() ?? SonicHeroesDefinitions.PleaseDontContainMe}", StringComparison.InvariantCultureIgnoreCase));
+        if (ability == null)
+            return;
+        team = CheckTeamItemName(itemName, taskName);
+        region = CheckRegionItemName(itemName, taskName);
+        AbilityCharacterManager.UnlockAbilityItemCallback(ability, team, region, taskName);
+        LoggingHandler.LogMessage($"Got Item: {itemName}", taskName, LogLevel.APAction);
+        handled = true;
     }
 
-    public static unsafe void CheckStageObjItemName(string itemName, ref bool handled)
+    public static void CheckStageObjItemName(string itemName, ref bool handled, string taskName)
     {
-        try
+        if (handled)
+            return;
+        Team? team;
+        Region? region;
+        if (itemName.Contains("All Stage Objects", StringComparison.InvariantCultureIgnoreCase))
         {
-            if (handled)
-                return;
-            Team? team;
-            Region? region;
-            if (itemName.Contains("All Stage Objects", StringComparison.InvariantCultureIgnoreCase))
-            {
-                team = CheckTeamItemName(itemName, ref handled);
-                region = CheckRegionItemName(itemName, ref handled);
-                StageObjHandler.UnlockStageObjItemCallback(null, team, region);
-                Console.WriteLine($"Got Item: {itemName}");
-                handled = true;
-                return;
-            }
-            StageObjTypes? stageObj = StageObjData.StageObjsToMessWith.Cast<StageObjTypes?>().LastOrDefault(x =>itemName.Replace(" ", "").Contains($"{x.ToString()!}", StringComparison.InvariantCultureIgnoreCase));
-            if (stageObj == null)
-                return;
-            team = CheckTeamItemName(itemName, ref handled);
-            region = CheckRegionItemName(itemName, ref handled);
-            StageObjHandler.UnlockStageObjItemCallback(stageObj, team, region);
-            Console.WriteLine($"Got Item: {itemName}");
+            LoggingHandler.LogMessage($"Got Item: {itemName}", taskName, LogLevel.APAction);
+            team = CheckTeamItemName(itemName, taskName);
+            region = CheckRegionItemName(itemName, taskName);
+            StageObjHandler.UnlockStageObjItemCallback(null, team, region, taskName);
             handled = true;
+            return;
         }
-        catch (Exception e)
-        {
-            Console.WriteLine(e);
-        }
+        StageObjTypes? stageObj = StageObjData.StageObjsToMessWith.Cast<StageObjTypes?>().LastOrDefault(x =>itemName.Replace(" ", "").Contains($"{x.ToString() ?? SonicHeroesDefinitions.PleaseDontContainMe}", StringComparison.InvariantCultureIgnoreCase));
+        if (stageObj == null)
+            return;
+        LoggingHandler.LogMessage($"Got Item: {itemName}", taskName, LogLevel.APAction);
+        team = CheckTeamItemName(itemName, taskName);
+        region = CheckRegionItemName(itemName, taskName);
+        StageObjHandler.UnlockStageObjItemCallback(stageObj, team, region, taskName);
+        handled = true;
     }
     
-    public static Team? CheckTeamItemName(string itemName, ref bool handled)
+    public static Team? CheckTeamItemName(string itemName, string taskName)
     {
         try
         {
             return Enum.GetValues<Team>().Cast<Team?>().FirstOrDefault(x =>
-                itemName.Replace(" ", "").Contains($"{x.ToString()!}", StringComparison.InvariantCultureIgnoreCase));
+                itemName.Replace(" ", "").Contains($"{x.ToString() ?? SonicHeroesDefinitions.PleaseDontContainMe}", StringComparison.InvariantCultureIgnoreCase));
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
+            LoggingHandler.LogMessage($"{e}", taskName, LogLevel.Error);
         }
         return null;
     }
     
-    public static Region? CheckRegionItemName(string itemName, ref bool handled)
+    public static Region? CheckRegionItemName(string itemName, string taskName)
     {
         try
         {
             return Enum.GetValues<Region>().Cast<Region?>().LastOrDefault(x =>
-                itemName.Replace(" ", "").Contains($"{x.ToString()!}Region", StringComparison.InvariantCultureIgnoreCase));
+                itemName.Replace(" ", "").Contains($"{x.ToString() ?? SonicHeroesDefinitions.PleaseDontContainMe}Region", StringComparison.InvariantCultureIgnoreCase));
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
+            LoggingHandler.LogMessage($"{e}", taskName, LogLevel.Error);
         }
         return null;
     }

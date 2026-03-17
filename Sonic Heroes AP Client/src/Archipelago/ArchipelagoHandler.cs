@@ -8,6 +8,7 @@ using Archipelago.MultiClient.Net.MessageLog.Messages;
 using Archipelago.MultiClient.Net.Packets;
 using Sonic_Heroes_AP_Client.Configuration;
 using Sonic_Heroes_AP_Client.Definitions;
+using Sonic_Heroes_AP_Client.Logging;
 using Sonic_Heroes_AP_Client.MusicShuffle;
 using Sonic_Heroes_AP_Client.UI;
 
@@ -18,17 +19,16 @@ public class ArchipelagoHandler
 {
     private const string GameName = "Sonic Heroes";
     public SlotData SlotData;
-    public ArchipelagoSession _session;
+    public ArchipelagoSession Session;
     private LoginSuccessful _loginSuccessful;
-    public bool IsSaveFileLoadedYet = false;
     
-    private ConcurrentQueue<Int64> _locationsToCheck = new();
+    public ConcurrentQueue<Int64> LocationsToCheck = new();
     
 
     private string Server { get; set; }
     private int Port { get; set; }
     public string Slot { get; set; }
-    public string? Seed { get; set; }
+    public string Seed { get; set; }
     private string Password { get; set; }
     public double SlotInstance { get; set; }
     
@@ -45,114 +45,116 @@ public class ArchipelagoHandler
     }
     
     
-    public void CreateSession()
+    public void CreateSession(string taskName)
     {
+        LoggingHandler.LogMessage($"Creating Archipelago Session ({Server}:{Port})", taskName, LogLevel.SuperDebug);
+        
         SlotInstance = DateTime.Now.ToUnixTimeStamp();
-        _session = ArchipelagoSessionFactory.CreateSession(Server, Port);
-        _session.Socket.ErrorReceived += OnError;
-        _session.MessageLog.OnMessageReceived += OnMessageReceived;
-        _session.Socket.SocketClosed += OnSocketClosed;
-        _session.Socket.PacketReceived += PacketReceived;
-        _session.Items.ItemReceived += ItemReceived;
+        Session = ArchipelagoSessionFactory.CreateSession(Server, Port);
+        Session.Socket.ErrorReceived += OnError;
+        Session.MessageLog.OnMessageReceived += OnMessageReceived;
+        Session.Socket.SocketClosed += OnSocketClosed;
+        Session.Socket.PacketReceived += PacketReceived;
+        Session.Items.ItemReceived += ItemReceived;
+        
+        LoggingHandler.LogMessage($"Archipelago Session Created", taskName, LogLevel.SuperDebug);
     }
     
-    public void InitConnect()
+    public void InitConnect(string taskName)
     {
         IsConnecting = true;
-        IsConnected = Connect();
+        IsConnected = Connect(taskName);
         IsConnecting = false;
     }
     
 
-    private bool Connect()
+    private bool Connect(string taskName)
     {
+        LoggingHandler.LogMessage($"Connect Start", taskName, LogLevel.SuperDebug);
         LoginResult result;
         try
         {
-            Seed = _session.ConnectAsync()?.Result?.SeedName;
-            LoggerWindow.Log(Seed + Slot);
+            //Yes I am aware that this is async (this is in a Task that is separate from Game Thread)
+            RoomInfoPacket connectAsyncResult = Session.ConnectAsync().Result;
+            Seed = connectAsyncResult.SeedName;
             
-            
-            result = _session.LoginAsync(
+            LoggingHandler.LogMessage($"Seed: {Seed} Slot: {Slot}", taskName, LogLevel.APAction);
+            result = Session.LoginAsync(
                 game: GameName, 
                 name: Slot,
                 itemsHandlingFlags: ItemsHandlingFlags.AllItems, 
                 version: new Version(1, 0, 0),
-                tags: new string[] {},
+                tags: [],
                 password: Password
             ).Result;
         }
         catch (Exception e)
         {
+            LoggingHandler.LogMessage($"LoginAsync Async Failed\n{e}", taskName, LogLevel.Error);
             result = new LoginFailure(e.GetBaseException().Message);
         }
-
-        try
+        
+        if (result.Successful)
         {
-            if (result.Successful)
-            {
-                Mod.SaveDataHandler!.LoadSaveData(Seed!, Slot);
-                IsSaveFileLoadedYet = true;
-                if (Mod.Configuration!.MusicShuffle)
-                    MusicShuffleHandler.Shuffle(int.Parse(Seed![..9]));
-                _loginSuccessful = (LoginSuccessful)result;
-                SlotData = new SlotData(_loginSuccessful.SlotData);
-                Mod.InitOnConnect();
-                new Thread(ItemHandler.RunCheckReceivedItemsQueue).Start();
-                new Thread(RunCheckLocationsFromList).Start();
-                //resync here
-                return true;
-            }
-            var failure = (LoginFailure)result;
-            var errorMessage = $"Failed to Connect to {Server}:{Port} as {Slot}:";
-            errorMessage = failure.Errors.Aggregate(errorMessage, (current, error) => current + $"\n    {error}");
-            errorMessage = failure.ErrorCodes.Aggregate(errorMessage, (current, error) => current + $"\n    {error}");
-            LoggerWindow.Log(errorMessage);
-            LoggerWindow.Log($"Attempting reconnect...");
-            IsSaveFileLoadedYet = false;
+            LoggingHandler.LogMessage($"LoginAsync Async Successful", taskName, LogLevel.SuperDebug);
+            Mod.SaveDataHandler.LoadSaveData(Seed, Slot, taskName);
+            if (Mod.Configuration != null && Mod.Configuration.MusicShuffle)
+                MusicShuffleHandler.Shuffle(int.Parse(Seed[..9]), taskName);
+            _loginSuccessful = (LoginSuccessful)result;
+            SlotData = new SlotData(_loginSuccessful.SlotData, taskName);
+            Mod.InitOnConnect(taskName);
+            Mod.CheckReceivedItemsTask.Start();
+            Mod.CheckedLocationsTask.Start();
+            //resync here
+            return true;
         }
-        catch (Exception e)
-        {
-            Console.WriteLine(e);
-        }
+        var failure = (LoginFailure)result;
+        var errorMessage = $"Failed to Connect to {Server}:{Port} as {Slot}:";
+        errorMessage = failure.Errors.Aggregate(errorMessage, (current, error) => current + $"\n    {error}");
+        errorMessage = failure.ErrorCodes.Aggregate(errorMessage, (current, error) => current + $"\n    {error}");
+        LoggingHandler.LogMessage($"LoginAsync Async Failed: {errorMessage}\nAttempting reconnect...", taskName, LogLevel.Error);
         return false;
     }
     
     
     public void Release()
     {
-        _session.SetGoalAchieved();
-        _session.SetClientState(ArchipelagoClientState.ClientGoal);
+        Session.SetGoalAchieved();
+        Session.SetClientState(ArchipelagoClientState.ClientGoal);
     }
     
     
     private void OnError(Exception exception, string msg)
     {
-        Console.WriteLine($"OnError: {exception} {msg}");
+        const string taskName = "OnError";
+        LoggingHandler.LogMessage($"OnError: {exception} {msg}", taskName, LogLevel.Error);
     }
     
     private static void OnMessageReceived(LogMessage message)
     {
-        LoggerWindow.Log(message.ToString() ?? string.Empty);
+        const string taskName = "OnMessageReceived";
+        LoggingHandler.LogMessage(message.ToString() ?? string.Empty, taskName, LogLevel.APAction);
+        //LoggerWindow.Log(message.ToString() ?? string.Empty);
     }
     
-    private void OnSocketClosed(string reason)
+    private static void OnSocketClosed(string reason)
     {
-        LoggerWindow.Log($"Connection closed ({reason}) Attempting reconnect...");
+        const string taskName = "OnSocketClosed";
+        LoggingHandler.LogMessage($"Connection closed ({reason}) Attempting reconnect...", taskName, LogLevel.Error);
         IsConnected = false;
     }
     
-    
-    private void PacketReceived(ArchipelagoPacketBase packet)
+    private static void PacketReceived(ArchipelagoPacketBase packet)
     {
+        const string taskName = "PacketReceived";
         switch (packet)
         {
             case BouncePacket bouncePacket:
-                BouncePacketHandler.BouncePacketReceived(bouncePacket);
+                BouncePacketHandler.BouncePacketReceived(bouncePacket, taskName);
                 break;
             /*
             case ReceivedItemsPacket receivedItemsPacket:
-                Console.WriteLine($"Received Items Packet Here. {string.Join(" ", receivedItemsPacket.Items.Select(x => x.Item.ToString("X")))}");
+                LoggingHandler.LogMessage($"Received Items Packet Here. {string.Join(" ", receivedItemsPacket.Items.Select(x => x.Item.ToString("X")))}", taskName, LogLevel.SuperDebug);
                 foreach (var item in receivedItemsPacket.Items.ToList()) {
                     Mod.ItemHandler.HandleItem(TempIndex, item);
                     TempIndex++;
@@ -161,10 +163,11 @@ public class ArchipelagoHandler
             */
         }
     }
-    
-    
-    public void ItemReceived(ReceivedItemsHelper helper)
+
+
+    private static void ItemReceived(ReceivedItemsHelper helper)
     {
+        const string taskName = "ItemReceived";
         while (helper.Any())
         {
             var itemIndex = helper.Index;
@@ -175,16 +178,18 @@ public class ArchipelagoHandler
     }
     
     
-    public void CheckTags()
+    public static void CheckTags(string taskName)
     {
-        List<string> tags = new List<string>();
-        var DeathLink = DeathLinkHandler.IsDeathLinkEnabled();
-        if (DeathLink)
+        LoggingHandler.LogMessage($"Check Tags Start", taskName, LogLevel.SuperDebug);
+        List<string> tags = [];
+        var deathLink = DeathLinkHandler.IsDeathLinkEnabled(taskName);
+        if (deathLink)
             tags.Add("DeathLink");
-        var RingLink = RingLinkHandler.IsRingLinkEnabled();
-        if (RingLink)
+        var ringLink = RingLinkHandler.IsRingLinkEnabled(taskName);
+        if (ringLink)
             tags.Add("RingLink");
         Mod.ArchipelagoHandler.UpdateTags(tags);
+        LoggingHandler.LogMessage($"Check Tags Done", taskName, LogLevel.SuperDebug);
     }
     
     
@@ -195,39 +200,25 @@ public class ArchipelagoHandler
             Tags = tags.ToArray(),
             ItemsHandling = ItemsHandlingFlags.AllItems
         };
-        _session.Socket.SendPacket(packet);
+        Session.Socket.SendPacket(packet);
     }
     
     
     public void CheckLocations(Int64[] ids)
     {
-        ids.ToList().ForEach(id => _locationsToCheck.Enqueue(id + SonicHeroesDefinitions.AllIdsStartOffset));
+        ids.ToList().ForEach(id => LocationsToCheck.Enqueue(id + SonicHeroesDefinitions.AllIdsStartOffset));
     }
     
     
     public void CheckLocation(Int64 id)
     {
-        _locationsToCheck.Enqueue(SonicHeroesDefinitions.AllIdsStartOffset + id);
-    }
-    
-    
-    public void RunCheckLocationsFromList()
-    {
-        while (true)
-        {
-            if (_locationsToCheck.TryDequeue(out var locationId))
-                _session.Locations.CompleteLocationChecks(locationId);
-            else
-            {
-                Thread.Sleep(100);
-            }
-        }
+        LocationsToCheck.Enqueue(SonicHeroesDefinitions.AllIdsStartOffset + id);
     }
     
     
     public bool IsLocationChecked(Int64 id)
     {
-        return _session.Locations.AllLocationsChecked.Contains(id + SonicHeroesDefinitions.AllIdsStartOffset);
+        return Session.Locations.AllLocationsChecked.Contains(id + SonicHeroesDefinitions.AllIdsStartOffset);
     }
     
     
@@ -235,19 +226,12 @@ public class ArchipelagoHandler
     {
         var startId = start + SonicHeroesDefinitions.AllIdsStartOffset;
         var endId = end + SonicHeroesDefinitions.AllIdsStartOffset;
-        return _session.Locations.AllLocationsChecked.Count(loc => loc >= startId && loc < endId);
+        return Session.Locations.AllLocationsChecked.Count(loc => loc >= startId && loc < endId);
     }
-
     
-    public void Save()
+    
+    public void Save(string taskName)
     {
-        try
-        {
-            Mod.SaveDataHandler?.SaveGame(Seed, Slot);
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine(e);
-        }
+        Mod.SaveDataHandler.SaveGame(Seed, Slot, taskName);
     }
 }

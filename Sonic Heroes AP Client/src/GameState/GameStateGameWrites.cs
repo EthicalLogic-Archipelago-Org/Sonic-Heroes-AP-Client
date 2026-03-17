@@ -4,35 +4,89 @@ using System.Runtime.InteropServices;
 using Reloaded.Memory;
 using Reloaded.Memory.Interfaces;
 using Sonic_Heroes_AP_Client.Definitions;
+using Sonic_Heroes_AP_Client.Logging;
 
 namespace Sonic_Heroes_AP_Client.GameState;
 
 public static class GameStateGameWrites
 {
     [DllImport("SHAP-NativeCaller.dll", CallingConvention = CallingConvention.Cdecl)]
-    public static extern int ModifyLives(int moduleBase, int amount);
+    public static extern int SHAPNativeModifyLives(int moduleBase, int amount);
     
     [DllImport("SHAP-NativeCaller.dll", CallingConvention = CallingConvention.Cdecl)]
-    public static extern int RestartLevel(int moduleBase);
+    public static extern int SHAPNativeRestartLevel(int moduleBase);
     
     [DllImport("SHAP-NativeCaller.dll", CallingConvention = CallingConvention.Cdecl)]
-    public static extern int GiveShield(int moduleBase);
-    
-    public static void SetRingCount(int amount)
+    public static extern int SHAPNativeGiveShield(int moduleBase);
+
+
+
+    public static void ModifyLives(int moduleBase, int amount, string taskName)
     {
-        unsafe
+        LoggingHandler.LogMessage($"ModifyLives 0x{moduleBase:x} {amount}", taskName, LogLevel.SuperDebug);
+        try
         {
-            *(int*)(Mod.ModuleBase + 0x5DD70C) = amount;
+            SHAPNativeModifyLives(moduleBase, amount);
+        }
+        catch (Exception e)
+        {
+            LoggingHandler.LogMessage($"Error Modifying Lives:\n{e}", taskName, LogLevel.Error);
+        }
+    }
+    
+    public static void RestartLevel(int moduleBase, string taskName)
+    {
+        LoggingHandler.LogMessage($"Restart Level 0x{moduleBase:x}", taskName, LogLevel.SuperDebug);
+        try
+        {
+            SHAPNativeRestartLevel(moduleBase);
+        }
+        catch (Exception e)
+        {
+            LoggingHandler.LogMessage($"Error Restarting Level:\n{e}", taskName, LogLevel.Error);
         }
     }
     
     
-    public static int GetRingCount()
+    public static void GiveShield(int moduleBase, string taskName)
     {
-        unsafe
+        LoggingHandler.LogMessage($"Give Shield 0x{moduleBase:x}", taskName, LogLevel.SuperDebug);
+        try
+        {
+            SHAPNativeGiveShield(moduleBase);
+        }
+        catch (Exception e)
+        {
+            LoggingHandler.LogMessage($"Error Giving Shield:\n{e}", taskName, LogLevel.Error);
+        }
+    }
+    
+    
+    public static unsafe void SetRingCount(int amount, string taskName)
+    {
+        try
+        {
+            *(int*)(Mod.ModuleBase + 0x5DD70C) = amount;
+        }
+        catch (Exception e)
+        {
+            LoggingHandler.LogMessage($"{e}", taskName, LogLevel.Error);
+        }
+    }
+    
+    
+    public static unsafe int GetRingCount(string taskName)
+    {
+        try
         {
             return *(int*)(Mod.ModuleBase + 0x5DD70C);
         }
+        catch (Exception e)
+        {
+            LoggingHandler.LogMessage($"{e}", taskName, LogLevel.Error);
+        }
+
+        return 0;
     }
 
 
@@ -83,11 +137,11 @@ public static class GameStateGameWrites
     }
     
     
-    public static unsafe void SetBonusKey(bool value)
+    public static unsafe void SetBonusKey(bool value, string taskName)
     {
         try
         {
-            if (!GameStateHandler.InGame(true))
+            if (!GameStateHandler.InGame(taskName, true))
                 return;
             
             //Bonus Key Byte
@@ -115,12 +169,13 @@ public static class GameStateGameWrites
 
             *(uint*)uiStackAddress = baseAddress;
         }
-        catch (Exception ex)
+        catch (Exception e)
         {
-            Console.WriteLine(ex);
+            LoggingHandler.LogMessage($"{e}", taskName, LogLevel.Error);
         }
     }
-    public static unsafe void SetCurrentAct(Act act)
+    
+    public static unsafe void SetCurrentAct(Act act, string taskName)
     {
         try
         {
@@ -129,7 +184,7 @@ public static class GameStateGameWrites
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
+            LoggingHandler.LogMessage($"{e}", taskName, LogLevel.Error);
         }
     }
     
@@ -137,19 +192,13 @@ public static class GameStateGameWrites
     /// <summary>
     /// Kills the player.
     /// </summary>
-    public static void Kill()
+    public static void Kill(string taskName)
     {
-        try
-        {
-            if (!GameStateHandler.InGame()) 
-                return;
-            ModifyLives((int)Mod.ModuleBase, -1);
-            Console.WriteLine(RestartLevel((int)Mod.ModuleBase));
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine(e);
-        }
+        if (!GameStateHandler.InGame(taskName)) 
+            return;
+        LoggingHandler.LogMessage("Killing Player", taskName, LogLevel.GameAction);
+        ModifyLives((int)Mod.ModuleBase, -1, taskName);
+        RestartLevel((int)Mod.ModuleBase, taskName);
     }
     
     

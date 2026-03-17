@@ -9,6 +9,7 @@ using Reloaded.Mod.Interfaces;
 using Sonic_Heroes_AP_Client.AbilityAndCharacter;
 using Sonic_Heroes_AP_Client.Archipelago;
 using Sonic_Heroes_AP_Client.Configuration;
+using Sonic_Heroes_AP_Client.Definitions;
 using Sonic_Heroes_AP_Client.GameState;
 using Sonic_Heroes_AP_Client.Hooks;
 using Sonic_Heroes_AP_Client.LevelSelect;
@@ -17,6 +18,7 @@ using Sonic_Heroes_AP_Client.Logging;
 using Sonic_Heroes_AP_Client.MusicShuffle;
 using Sonic_Heroes_AP_Client.Sanity.Checkpoints;
 using Sonic_Heroes_AP_Client.SaveData;
+using Sonic_Heroes_AP_Client.Tasks;
 using Sonic_Heroes_AP_Client.Template;
 using Sonic_Heroes_AP_Client.UI;
 
@@ -28,13 +30,20 @@ namespace Sonic_Heroes_AP_Client;
 /// </summary>
 public class Mod: ModBase
 {
+    #if DEBUG
     /// <summary>
     /// Flag for debug prints and testing.
     /// Should NOT be enabled in prod.
     /// </summary>
-    public static bool IsDebug = false;
-
-    public static bool DebugHostYaml = false;
+    public const bool IsDebug = true;
+    #else
+    /// <summary>
+    /// Flag for debug prints and testing.
+    /// Should NOT be enabled in prod.
+    /// </summary>
+    public const bool IsDebug = false;
+    #endif
+    
     
     private readonly IModLoader _modLoader;
     
@@ -64,13 +73,6 @@ public class Mod: ModBase
     /// Should be 0x400000 in all cases.
     /// </summary>
     public static UIntPtr ModuleBase = 0x400000;
-    
-    
-    /// <summary>
-    /// Pointer to the Start of the Spawn Data.
-    /// Should be ModuleBase + 0x3C2FC8 in all cases
-    /// </summary>
-    public static uint SpawnDataStartAddr;
 
 
     public static DXHook? DxHook;
@@ -85,6 +87,30 @@ public class Mod: ModBase
     public static LevelSelectManager LevelSelectManager;
     public static UserInterface UserInterface;
     
+    
+    //tasks here
+    //main task/thread exists as well (obv)
+    
+    public static Task ConnectionTask = new (Tasks.ConnectionTask.APConnectionTask);
+    public static Task CheckReceivedItemsTask = new (ReceivedItemsTask.CheckReceivedItemsTask);
+    public static Task CheckedLocationsTask = new (Tasks.CheckedLocationsTask.CheckedLocationsAPTask);
+    public static Task StealthTrapTask = new (TrapTask.StealthTrapTask);
+    public static Task FreezeTrapTask = new (TrapTask.FreezeTrapTask);
+    public static Task CharmyTrapTask = new (TrapTask.CharmyTrapTask);
+    public static Task PositionMappingTask = new (Tasks.ConnectionTask.APConnectionTask);
+    
+    //Imgui (Level, Trap, logger windows)
+    //mod config changed
+    //mod configuration updated
+    //mod logger writeline
+    //controller OnInput
+    //ErrorReceived
+    //OnMessageReceived
+    //OnSocketClosed
+    //PacketReceived
+    //ItemReceived
+    
+    
 
 
     /// <summary>
@@ -93,148 +119,111 @@ public class Mod: ModBase
     /// <param name="context">Information passed in to the mod.</param>
     public Mod(ModContext context)
     {
-        try
-        {
-            _modLoader = context.ModLoader;
-            _hooks = context.Hooks;
-            Logger = context.Logger;
-            Logger.OnWriteLine += LoggingHandler.OnModLoggerWriteLine;
-            _owner = context.Owner;
-            ModConfig = context.ModConfig;
-            Configuration = context.Configuration;
-            CheckInvalidConfigValues();
-            _controllerHook = _modLoader.GetController<IControllerHook>();
-            
-            SDK.Init(_hooks);
-            ModuleBase = (UIntPtr)Process.GetCurrentProcess().MainModule!.BaseAddress;
-            SpawnDataStartAddr = (uint)(ModuleBase + 0x3C2FC8);
-            
-            Controller = new Controller.Controller(_controllerHook, 0);
-            
-            ArchipelagoHandler = new ArchipelagoHandler(Configuration.Server, Configuration.Port, Configuration.Slot, Configuration.Password);
-            context.Configuration.ConfigurationUpdated += OnModConfigChange;
-            
-            //Save Data After 
-            SaveDataHandler = new SaveDataHandler();
-            
-            //LevelSelect must be before SlotData
-            LevelSelectManager = new LevelSelectManager();
+        const string taskName = "Main Task";
+        _modLoader = context.ModLoader;
+        _hooks = context.Hooks;
+        Logger = context.Logger;
+        Logger.OnWriteLine += LoggingHandler.OnModLoggerWriteLine;
+        _owner = context.Owner;
+        ModConfig = context.ModConfig;
+        Configuration = context.Configuration;
+        
+        _controllerHook = _modLoader.GetController<IControllerHook>();
+        
+        SDK.Init(_hooks);
+        ModuleBase = (UIntPtr)Process.GetCurrentProcess().MainModule!.BaseAddress;
+        LevelSpawnData.SpawnDataStartAddr = (uint)(ModuleBase + 0x3C2FC8);
+        
+        Controller = new Controller.Controller(_controllerHook, 0);
+        
+        ArchipelagoHandler = new ArchipelagoHandler(Configuration.Server, Configuration.Port, Configuration.Slot, Configuration.Password);
+        context.Configuration.ConfigurationUpdated += OnModConfigChange;
+        
+        //Save Data After 
+        SaveDataHandler = new SaveDataHandler();
+        
+        //LevelSelect must be before SlotData
+        LevelSelectManager = new LevelSelectManager();
 
-            //UI can be last
-            UserInterface = new UserInterface();
-            
-            FunctionHooks = new FunctionHooks();
+        //UI can be last
+        UserInterface = new UserInterface();
+        
+        FunctionHooks = new FunctionHooks();
 
-            //connection stuff here
-            var t = new Thread(start: () =>
-            {
-                while (true)
-                {
-                    if (!ArchipelagoHandler.IsConnecting && !ArchipelagoHandler.IsConnected)
-                    {
-                        ArchipelagoHandler.CreateSession();
-                        ArchipelagoHandler.InitConnect();
-                    }
-                    Thread.Sleep(2500);
-                }
-            });
-            t.Start();
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine(e);
-        }
+        CheckInvalidConfigValues(taskName);
+        //connection stuff here
+        ConnectionTask.Start();
     }
     
-    public static void InitOnConnect()
+    public static void InitOnConnect(string taskName)
     {
-        try
+        LoggingHandler.LogMessage($"InitOnConnect Start", taskName, LogLevel.SuperDebug);
+        if (_hooks != null)
         {
-            if (_hooks != null)
-            {
-                FunctionHooks.SetUpFunctionHooks(_hooks);
-                GameStateGameWrites.RemoveRingCapOnScatteredRingSpawn(true);
-            } 
-            //GameStateGameWrites.Change999RingsCap(true);
-            AbilityCharacterManager.InitConnect();
-            LevelSelectManager.InitConnect();
-            LevelSpawnUnlockHandler.InitConnect();
-            LevelSelectGameWrites.ModifyInstructions();
-            CheckpointGameWrites.SetCheckPointPriorityWrite(true);
-            GameStateGameWrites.SetRingLoss(Configuration.RingLoss);
-            //Logger.WriteLine($"[{ModConfig.ModId}] Initialized", Color.Blue);
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine(e);
-        }
+            FunctionHooks.SetUpFunctionHooks(_hooks);
+            GameStateGameWrites.RemoveRingCapOnScatteredRingSpawn(true);
+        } 
+        //GameStateGameWrites.Change999RingsCap(true);
+        LoggingHandler.LogMessage($"InitOnConnect Before AbilityCharacter", taskName, LogLevel.SuperDebug);
+        AbilityCharacterManager.InitConnect(taskName);
+        LoggingHandler.LogMessage($"InitOnConnect Before LevelSelectManager", taskName, LogLevel.SuperDebug);
+        LevelSelectManager.InitConnect(taskName);
+        LoggingHandler.LogMessage($"InitOnConnect Before LevelSpawnUnlockHandler", taskName, LogLevel.SuperDebug);
+        LevelSpawnUnlockHandler.InitConnect(taskName);
+        LoggingHandler.LogMessage($"InitOnConnect Before LevelSelectGameWrites", taskName, LogLevel.SuperDebug);
+        LevelSelectGameWrites.ModifyInstructions(taskName);
+        LoggingHandler.LogMessage($"InitOnConnect Before CheckpointGameWrites", taskName, LogLevel.SuperDebug);
+        CheckpointGameWrites.SetCheckPointPriorityWrite(true);
+        LoggingHandler.LogMessage($"InitOnConnect Before GameStateGameWrites", taskName, LogLevel.SuperDebug);
+        if (Configuration == null)
+            return;
+        GameStateGameWrites.SetRingLoss(Configuration.RingLoss);
+        LoggingHandler.LogMessage($"InitOnConnect End", taskName, LogLevel.SuperDebug);
     }
 
     public static bool CheckCurrentModVersionWithValue(string version)
     {
-        try
-        {
-            var modVersion = ModConfig.ModVersion.Split(".");
-            var otherVersion = version.Split(".");
-            
-            return modVersion[0] == otherVersion[0] && modVersion[1] == otherVersion[1];
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine(e);
-        }
-        return false;
+        var modVersion = ModConfig.ModVersion.Split(".");
+        var otherVersion = version.Split(".");
+        return modVersion[0] == otherVersion[0] && modVersion[1] == otherVersion[1];
     }
 
-    public static void CheckDebugStatusChange()
+    public static void CheckDebugStatusChange(string taskName)
     {
-        try
-        {
-            if (Configuration.DebugConfig && DebugHostYaml)
-            {
-                Console.WriteLine($"Setting Debug Status to True");
-                IsDebug = true;
-                return;
-            }
-                
-            Console.WriteLine($"Setting Debug Status to False");
-            IsDebug = false;
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine(e);
-        }
+        LevelSelectManager.LevelSelectAllLevelsAvailableWrite = IsDebug;
     }
     
     public void OnModConfigChange(IUpdatableConfigurable x)
     {
-        try
+        const string taskName = "ModConfigChange";
+        if (ArchipelagoHandler.Seed == null)
         {
-            if (ArchipelagoHandler.Seed == null)
-                return;
-            CheckInvalidConfigValues();
-            CheckDebugStatusChange();
-            //Console.WriteLine($"Mod Config Changed. Seed is: {Seed}");
-            MusicShuffleHandler.Shuffle(int.Parse(ArchipelagoHandler.Seed[..9]));
+            LoggingHandler.LogMessage($"Seed is Null in OnModConfigChange", taskName, LogLevel.Error);
+            return;
+        }
             
-            //Console.WriteLine($"Mod Config Changed. Deathlink is now: {Mod.Configuration.TagOptions.DeathLink}");
-            ArchipelagoHandler.CheckTags();
-            GameStateGameWrites.SetRingLoss(Configuration.RingLoss);
-        }
-        catch (Exception e)
+        if (Configuration == null)
         {
-            Console.WriteLine(e);
+            LoggingHandler.LogMessage($"Mod Configuration is Null in OnModConfigChange", taskName, LogLevel.Error);
+            return;
         }
+            
+        
+        CheckInvalidConfigValues(taskName);
+        MusicShuffleHandler.Shuffle(int.Parse(ArchipelagoHandler.Seed[..9]), taskName);
+        
+        ArchipelagoHandler.CheckTags(taskName);
+        GameStateGameWrites.SetRingLoss(Configuration.RingLoss);
     }
 
-    public void CheckInvalidConfigValues()
+    public void CheckInvalidConfigValues(string taskName)
     {
         if (Configuration == null)
             return;
-
+        CheckDebugStatusChange(taskName);
         if (Configuration.ScatteredRingsCap > Configuration.RingLoss && Configuration.RingLoss != 19)
         {
-            Console.WriteLine($"Scattered Rings Cap: {Configuration.ScatteredRingsCap} is above Ring Loss: {Configuration.RingLoss}");
+            LoggingHandler.LogMessage($"Scattered Rings Cap: {Configuration.ScatteredRingsCap} is above Ring Loss: {Configuration.RingLoss}", taskName, LogLevel.Error);
             Configuration.ScatteredRingsCap = Configuration.RingLoss;
         }
     }
@@ -243,7 +232,7 @@ public class Mod: ModBase
     public override void ConfigurationUpdated(Config configuration)
     {
         Configuration = configuration;
-        Logger.WriteLine($"[{ModConfig.ModId}] Config Updated: Applying");
+        LoggingHandler.LogMessage($"[{ModConfig.ModId}] Config Updated: Applying", "ModConfigurationUpdated", LogLevel.APAction);
     }
     #endregion
 

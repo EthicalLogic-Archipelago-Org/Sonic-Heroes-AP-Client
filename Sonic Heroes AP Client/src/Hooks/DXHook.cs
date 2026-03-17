@@ -9,6 +9,8 @@ using Reloaded.Imgui.Hook.Direct3D9.Definitions;
 using Reloaded.Imgui.Hook.Misc;
 using SharpDX;
 using SharpDX.Direct3D9;
+using Sonic_Heroes_AP_Client.Definitions;
+using Sonic_Heroes_AP_Client.Logging;
 
 namespace Sonic_Heroes_AP_Client.Hooks;
 
@@ -39,7 +41,7 @@ public class DXHook
         
         Textures.Clear();
         
-        Console.WriteLine($"[DXHook] New D3D9 Device Created! Pointer: {device}");
+        LoggingHandler.LogMessage($"[DXHook] New D3D9 Device Created! Pointer: {device}", "DIRECTXHOOK", LogLevel.APAction);
         
         _device = CppObject.FromPointer<Device>(device);
         using var stream = Assembly.GetExecutingAssembly()

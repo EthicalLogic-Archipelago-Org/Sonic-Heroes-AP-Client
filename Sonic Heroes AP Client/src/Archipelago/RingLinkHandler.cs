@@ -6,95 +6,94 @@ using Archipelago.MultiClient.Net.Packets;
 using Newtonsoft.Json.Linq;
 using Sonic_Heroes_AP_Client.Definitions;
 using Sonic_Heroes_AP_Client.GameState;
+using Sonic_Heroes_AP_Client.Logging;
 using Sonic_Heroes_AP_Client.Sound;
 
 namespace Sonic_Heroes_AP_Client.Archipelago;
 
 public static class RingLinkHandler
 {
-    public static string lastRing = "The Big Bang";
+    public static string LastRing = "The Big Bang";
     
-    public static bool IsRingLinkEnabled()
+    public static bool IsRingLinkEnabled(string taskName)
     {
-        try
+        if (Mod.Configuration == null)
         {
-            return Mod.Configuration!.RingLink;
+            LoggingHandler.LogMessage($"Mod Configuration is Null in IsRingLinkEnabled", taskName, LogLevel.Error);
+            return false;
         }
-        catch (Exception e)
-        {
-            Console.WriteLine(e);
-        }
-        return false;
+        return Mod.Configuration.RingLink;
     }
 
-    public static bool IsRingLinkOverlord()
+    public static bool IsRingLinkOverlord(string taskName)
     {
-        try
+        if (Mod.Configuration == null)
         {
-            return Mod.Configuration.RingLinkOverlord;
+            LoggingHandler.LogMessage($"Mod Configuration is Null in IsRingLinkOverlord", taskName, LogLevel.Error);
+            return false;
         }
-        catch (Exception e)
-        {
-            Console.WriteLine(e);
-        }
-        return false;
+        return Mod.Configuration.RingLinkOverlord;
     }
     
-    public static void SendRingPacket(int amount)
+    public static void SendRingPacket(int amount, string taskName)
     {
-        try
+        BouncePacket packet = new BouncePacket();
+        var now = DateTime.Now;
+        packet.Tags =
+        [
+            "RingLink",
+        ];
+        packet.Data = new Dictionary<string, JToken>
         {
-            BouncePacket packet = new BouncePacket();
-            var now = DateTime.Now;
-            packet.Tags = new List<string>();
-            packet.Tags.Add("RingLink");
-            packet.Data = new Dictionary<string, JToken>();
-            packet.Data.Add("time", now.ToUnixTimeStamp());
-            packet.Data.Add("source", Mod.ArchipelagoHandler.SlotInstance);
-            packet.Data.Add("amount", amount);
-            Mod.ArchipelagoHandler._session.Socket.SendPacket(packet);
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine(e);
-        }
+            { "time", now.ToUnixTimeStamp() },
+            { "source", Mod.ArchipelagoHandler.SlotInstance },
+            { "amount", amount },
+        };
+        Mod.ArchipelagoHandler.Session.Socket.SendPacket(packet);
     }
     
     
-    public static void HandleRingLink(string source, string amountStr)
+    public static void HandleRingLink(string source, string amountStr, string taskName)
     {
         try
         {
-            if (!IsRingLinkEnabled())
+            if (!IsRingLinkEnabled(taskName))
                 return;
-            if (!IsRingLinkOverlord() && GameStateHandler.GetCurrentLevel() == LevelId.MetalOverlord)
+            if (!IsRingLinkOverlord(taskName) && GameStateHandler.GetCurrentLevel(taskName) == LevelId.MetalOverlord)
                 return;
             if (source == Mod.ArchipelagoHandler.SlotInstance.ToString(CultureInfo.InvariantCulture))
                 return;
             if (!int.TryParse(amountStr, out var amount))
                 return;
-            var ringCount = GameStateGameWrites.GetRingCount();
+
+            if (Mod.Configuration == null)
+            {
+                LoggingHandler.LogMessage($"Mod Configuration is Null in HandleRingLink", taskName, LogLevel.Error);
+                return;
+            }
+            
+            var ringCount = GameStateGameWrites.GetRingCount(taskName);
             var newAmount = Math.Max(Math.Min(ringCount + amount, 999), 0);
-            if (GameStateHandler.InGame() && Mod.Configuration!.PlaySounds)
+            if (GameStateHandler.InGame(taskName) && Mod.Configuration.PlaySounds)
             {
                 switch (amount)
                 {
                     case 1:
-                        SoundHandler.PlaySound((int)Mod.ModuleBase, 0x1004);
+                        SoundHandler.PlaySound((int)Mod.ModuleBase, 0x1004, taskName);
                         break;
                     case > 1:
-                        SoundHandler.PlaySound((int)Mod.ModuleBase, 0x1033);
+                        SoundHandler.PlaySound((int)Mod.ModuleBase, 0x1033, taskName);
                         break;
                     case < 0:
-                        SoundHandler.PlaySound((int)Mod.ModuleBase, 0x1005);
+                        SoundHandler.PlaySound((int)Mod.ModuleBase, 0x1005, taskName);
                         break;
                 }
             }
-            GameStateGameWrites.SetRingCount(newAmount);
+            GameStateGameWrites.SetRingCount(newAmount, taskName);
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
+            LoggingHandler.LogMessage($"{e}", taskName, LogLevel.Error);
         }
     }
 }

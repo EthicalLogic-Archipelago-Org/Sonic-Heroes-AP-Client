@@ -2,6 +2,8 @@
 
 using Reloaded.Memory;
 using Reloaded.Memory.Interfaces;
+using Sonic_Heroes_AP_Client.Definitions;
+using Sonic_Heroes_AP_Client.Logging;
 
 namespace Sonic_Heroes_AP_Client.LevelSelect;
 
@@ -22,18 +24,11 @@ public static class LevelSelectGameWrites
 
 
 
-    public static void ReplaceStorySuperHardAndTutorialWithLevelSelect()
+    public static void ReplaceStorySuperHardAndTutorialWithLevelSelect(string taskName)
     {
-        try
-        {
-            Memory.Instance.SafeWrite(StoryModeSwitchCaseJumpAddr, LevelSelectSwitchCaseJumpInstruction);
-            Memory.Instance.SafeWrite(SuperHardModeStoryModeSwitchCaseJumpAddr, LevelSelectSwitchCaseJumpInstruction);
-            Memory.Instance.SafeWrite(TutorialStoryModeSwitchCaseJumpAddr, LevelSelectSwitchCaseJumpInstruction);
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine(e);
-        }
+        Memory.Instance.SafeWrite(StoryModeSwitchCaseJumpAddr, LevelSelectSwitchCaseJumpInstruction);
+        Memory.Instance.SafeWrite(SuperHardModeStoryModeSwitchCaseJumpAddr, LevelSelectSwitchCaseJumpInstruction);
+        Memory.Instance.SafeWrite(TutorialStoryModeSwitchCaseJumpAddr, LevelSelectSwitchCaseJumpInstruction);
     }
     
     
@@ -42,9 +37,9 @@ public static class LevelSelectGameWrites
     /// Allows access to Level Select without having a beaten Level.
     /// Also removes the Level Select Emblem count from updating (it is updated by changing the count in Redirect Save Data instead)
     /// </summary>
-    public static void ModifyInstructions()
+    public static void ModifyInstructions(string taskName)
     {
-        ReplaceStorySuperHardAndTutorialWithLevelSelect();
+        ReplaceStorySuperHardAndTutorialWithLevelSelect(taskName);
         
         // Makes all menu options display visually
         Memory.Instance.SafeWrite(Mod.ModuleBase + 0x504A3, new byte[] { 0x90, 0x90 });

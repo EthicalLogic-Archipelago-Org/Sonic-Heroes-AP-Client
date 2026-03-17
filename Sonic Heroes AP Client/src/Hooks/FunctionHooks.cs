@@ -12,6 +12,7 @@ using Sonic_Heroes_AP_Client.Archipelago;
 using Sonic_Heroes_AP_Client.Definitions;
 using Sonic_Heroes_AP_Client.GameState;
 using Sonic_Heroes_AP_Client.LevelSpawnPosition;
+using Sonic_Heroes_AP_Client.Logging;
 using Sonic_Heroes_AP_Client.MusicShuffle;
 using Sonic_Heroes_AP_Client.Sanity;
 using Sonic_Heroes_AP_Client.Sanity.BingoChip;
@@ -24,6 +25,8 @@ namespace Sonic_Heroes_AP_Client.Hooks;
 
 public class FunctionHooks
 {
+    private const string TaskName = "GameThread";
+    
     private static List<IAsmHook> _asmHooks;
     
     private static IReverseWrapper<CompleteLevel> _reverseWrapOnCompleteLevel;
@@ -632,7 +635,7 @@ public class FunctionHooks
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
+            LoggingHandler.LogMessage($"{e}", TaskName, LogLevel.Error);
         }
     }
     
@@ -642,16 +645,17 @@ public class FunctionHooks
     public delegate int HintRingActivated(int hintRingPtr);
     private static unsafe int OnHintRingActivated(int edi)
     {
+        LoggingHandler.LogMessage($"HintRingActivated Start edi: 0x{edi:X}", TaskName, LogLevel.SuperDebug);
         try
         {
-            //Console.WriteLine($"HintRing Activated");
             //var staticPtr = *(int*)(edi + 0x2C);
-            //Console.WriteLine($"StaticPtr: 0x{staticPtr:x}");
+            //LoggingHandler.LogMessage($"StaticPtr: 0x{staticPtr:x}", TaskName, LogLevel.SuperDebug);
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
+            LoggingHandler.LogMessage($"{e}", TaskName, LogLevel.Error);
         }
+        LoggingHandler.LogMessage($"HintRingActivated Start", TaskName, LogLevel.SuperDebug);
         return 1;
     }
     
@@ -661,17 +665,18 @@ public class FunctionHooks
     public delegate int ItemBaloonPickUp(int itemBaloonPtr);
     private static unsafe int OnItemBaloonPickUp(int edx)
     {
+        LoggingHandler.LogMessage($"ItemBaloonPickUp Start edx: 0x{edx:X}", TaskName, LogLevel.SuperDebug);
         //Balloon has 1 L because that is how the game stores it
         try
         {
-            //Console.WriteLine($"ItemBalloon Collected");
             //var staticPtr = *(int*)(edx + 0x2C);
-            //Console.WriteLine($"StaticPtr: 0x{staticPtr:x}");
+            //LoggingHandler.LogMessage($"StaticPtr: 0x{staticPtr:x}", TaskName, LogLevel.SuperDebug);
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
+            LoggingHandler.LogMessage($"{e}", TaskName, LogLevel.Error);
         }
+        LoggingHandler.LogMessage($"ItemBaloonPickUp End", TaskName, LogLevel.SuperDebug);
         return 1;
     }
     
@@ -680,16 +685,17 @@ public class FunctionHooks
     public delegate int ItemBoxPickUp(int itemBoxPtr);
     private static unsafe int OnItemBoxPickUp(int edi)
     {
+        LoggingHandler.LogMessage($"ItemBoxPickUp Start edi: 0x{edi:X}", TaskName, LogLevel.SuperDebug);
         try
         {
-            //Console.WriteLine($"ItemBox Collected");
             //var staticPtr = *(int*)(edi + 0x2C);
-            //Console.WriteLine($"StaticPtr: 0x{staticPtr:x}");
+            //LoggingHandler.LogMessage($"StaticPtr: 0x{staticPtr:x}", TaskName, LogLevel.SuperDebug);
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
+            LoggingHandler.LogMessage($"{e}", TaskName, LogLevel.Error);
         }
+        LoggingHandler.LogMessage($"ItemBoxPickUp End", TaskName, LogLevel.SuperDebug);
         return 1;
     }
     
@@ -698,20 +704,33 @@ public class FunctionHooks
     public delegate int PowerAttackGiveSFAMeter();
     private static unsafe int OnPowerAttackGiveSFAMeter()
     {
+        LoggingHandler.LogMessage($"PowerAttackGiveSFAMeter Start", TaskName, LogLevel.SuperDebug);
         try
         {
-            if (!GameStateHandler.InGame())
+            if (!GameStateHandler.InGame(TaskName))
+            {
+                LoggingHandler.LogMessage($"PowerAttackGiveSFAMeter End (Not InGame)", TaskName, LogLevel.SuperDebug);
                 return 0;
+            }
+                
 
-            var team = (Team)GameStateHandler.GetCurrentStory()!;
-            var level = (LevelId)GameStateHandler.GetCurrentLevel()!;
+            var team = (Team)GameStateHandler.GetCurrentStory(TaskName)!;
+            var level = (LevelId)GameStateHandler.GetCurrentLevel(TaskName)!;
 
             if (!SonicHeroesDefinitions.LevelIdToRegion.TryGetValue(level, out var region))
+            {
+                LoggingHandler.LogMessage($"PowerAttackGiveSFAMeter End (Level not In Region)", TaskName, LogLevel.SuperDebug);
                 return 0;
-            
+            }
+                
+
             if (Mod.SaveDataHandler.CustomSaveData!.UnlockSaveData[team].AbilityUnlocks[region][Ability.PowerAttack])
+            {
+                LoggingHandler.LogMessage($"PowerAttackGiveSFAMeter End (Have Power Attack)", TaskName, LogLevel.SuperDebug);
                 //do nothing if have power attack
                 return 0;
+            }
+                
 
             var teamBlastPtr = (float*)(Mod.ModuleBase + 0x5DD72C);
 
@@ -719,8 +738,9 @@ public class FunctionHooks
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
+            LoggingHandler.LogMessage($"{e}", TaskName, LogLevel.Error);
         }
+        LoggingHandler.LogMessage($"PowerAttackGiveSFAMeter End (Dont Have Power Attack)", TaskName, LogLevel.SuperDebug);
         return 0;
     }
     
@@ -729,16 +749,17 @@ public class FunctionHooks
     public delegate int EggHammerKilled(int enemyPtr);
     private static unsafe int OnEggHammerKilled(int esi)
     {
+        LoggingHandler.LogMessage($"EggHammerKilled Start esi: 0x{esi:X}", TaskName, LogLevel.SuperDebug);
         try
         {
-            //Console.WriteLine($"Egg Hammer Killed");
-            var staticPtr = *(int*)(esi + 0x2C);
-            //Console.WriteLine($"StaticPtr: 0x{staticPtr:x}");
+            //var staticPtr = *(int*)(esi + 0x2C);
+            //LoggingHandler.LogMessage($"StaticPtr: 0x{staticPtr:x}", TaskName, LogLevel.SuperDebug);
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
+            LoggingHandler.LogMessage($"{e}", TaskName, LogLevel.Error);
         }
+        LoggingHandler.LogMessage($"EggHammerKilled Start esi: 0x{esi:X}", TaskName, LogLevel.SuperDebug);
         return 1;
     }
     
@@ -747,16 +768,17 @@ public class FunctionHooks
     public delegate int E2000Killed(int enemyPtr);
     private static unsafe int OnE2000Killed(int esi)
     {
+        LoggingHandler.LogMessage($"E2000Killed Start esi: 0x{esi:X}", TaskName, LogLevel.SuperDebug);
         try
         {
-            //Console.WriteLine($"E2000 Killed");
-            var staticPtr = *(int*)(esi + 0x2C);
-            //Console.WriteLine($"StaticPtr: 0x{staticPtr:x}");
+            //var staticPtr = *(int*)(esi + 0x2C);
+            //LoggingHandler.LogMessage($"StaticPtr: 0x{staticPtr:x}", TaskName, LogLevel.SuperDebug);
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
+            LoggingHandler.LogMessage($"{e}", TaskName, LogLevel.Error);
         }
+        LoggingHandler.LogMessage($"E2000Killed End", TaskName, LogLevel.SuperDebug);
         return 1;
     }
     
@@ -765,16 +787,17 @@ public class FunctionHooks
     public delegate int EnemyDestroyMyself(int enemyPtr);
     private static unsafe int OnEnemyDestroyMyself(int esi)
     {
+        LoggingHandler.LogMessage($"EnemyDestroyMyself Start esi: 0x{esi:X}", TaskName, LogLevel.SuperDebug);
         try
         {
-            //Console.WriteLine($"OnEnemyDestroyMyself");
-            var staticPtr = *(int*)(esi + 0x2C);
-            //Console.WriteLine($"StaticPtr: 0x{staticPtr:x}");
+            //var staticPtr = *(int*)(esi + 0x2C);
+            //LoggingHandler.LogMessage($"StaticPtr: 0x{staticPtr:x}", TaskName, LogLevel.SuperDebug);
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
+            LoggingHandler.LogMessage($"{e}", TaskName, LogLevel.Error);
         }
+        LoggingHandler.LogMessage($"EnemyDestroyMyself End", TaskName, LogLevel.SuperDebug);
         return 1;
     }
     
@@ -783,41 +806,41 @@ public class FunctionHooks
     public delegate int PickUpRing(int ringIndex, int ringSubstancePtr);
     private static unsafe int OnPickUpRing(int ecx, int esi)
     {
+        LoggingHandler.LogMessage($"PickUpRing Start ecx: {ecx} esi: 0x{esi:X}", TaskName, LogLevel.SuperDebug);
         try
         {
-            //Console.WriteLine($"OnPickUpRing: Ring Index: {ecx}");
-            
             var heapPtr = *(int*)(esi + 0xD8);
-            //Console.WriteLine($"HeapPtr: 0x{heapPtr:x}");
+            //LoggingHandler.LogMessage($"HeapPtr: 0x{heapPtr:x}", TaskName, LogLevel.SuperDebug);
             
             var ringGroupType = *(byte*)(heapPtr + 0x29);
-            //Console.WriteLine($"RingGroupType: {ringGroupType}");
+            //LoggingHandler.LogMessage($"RingGroupType: {ringGroupType}", TaskName, LogLevel.SuperDebug);
             
             var numRingsTotal = *(byte*)(heapPtr + 0x28);
-            //Console.WriteLine($"NumRingsTotal: {numRingsTotal}");
+            //LoggingHandler.LogMessage($"NumRingsTotal: {numRingsTotal}", TaskName, LogLevel.SuperDebug);
 
             if (ringGroupType == 4)
             {
-                //Console.WriteLine($"I think this is a scattered ring group.");
+                LoggingHandler.LogMessage($"PickUpRing End (Scattered Ring Group)", TaskName, LogLevel.SuperDebug);
                 return 1;
             }
             
             //var linkedListStartPtr = *(int*)(heapPtr + 0x4C);
             //esi points to current entry
             //list is list of TObjRingSubstance
-            //Console.WriteLine($"LinkedListStartPtr: 0x{linkedListStartPtr:x}");
+            //LoggingHandler.LogMessage($"LinkedListStartPtr: 0x{linkedListStartPtr:x}", TaskName, LogLevel.SuperDebug);
             
             var staticPtr = *(int*)(heapPtr + 0x54);
-            //Console.WriteLine($"StaticPtr: 0x{staticPtr:x}");
+            //LoggingHandler.LogMessage($"StaticPtr: 0x{staticPtr:x}", TaskName, LogLevel.SuperDebug);
             
             var staticRingCount =  *(byte*)(*(int*)(staticPtr + 0x2C) + 0x2);
-            //Console.WriteLine($"StaticRingCount: {staticRingCount}");
+            //LoggingHandler.LogMessage($"StaticRingCount: {staticRingCount}", TaskName, LogLevel.SuperDebug);
             
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
+            LoggingHandler.LogMessage($"{e}", TaskName, LogLevel.Error);
         }
+        LoggingHandler.LogMessage($"PickUpRing End", TaskName, LogLevel.SuperDebug);
         return 1;
     }
     
@@ -828,15 +851,20 @@ public class FunctionHooks
     public delegate int ScatteredRingConstructor(int stackPtr);
     private static unsafe int OnScatteredRingConstructor(int esp)
     {
+        LoggingHandler.LogMessage($"ScatteredRingConstructor Start: esp: 0x{esp:X}", TaskName, LogLevel.SuperDebug);
         try
         {
             //0x24 is stack offset from pushing registers (to preserve them)
-            if (!GameStateHandler.InGame())
+            if (!GameStateHandler.InGame(TaskName))
+            {
+                LoggingHandler.LogMessage($"ScatteredRingConstructor End (not InGame)", TaskName, LogLevel.SuperDebug);
                 return 1;
+            }
+                
             //Mod.Logger.WriteLine($"OnScatteredRing Hook ESP: 0x{esp:x}", Color.LightGreen);
             
             var ringSpawnCount = *(int*)(esp + 0x3C + 0x24);
-            //Mod.Logger.WriteLine($"RingSpawnCount: {ringSpawnCount}, ScatteredRingsCap: {Mod.Configuration.ScatteredRingsCap}", Color.LightGreen);
+            LoggingHandler.LogMessage($"RingSpawnCount: {ringSpawnCount}, ScatteredRingsCap: {Mod.Configuration.ScatteredRingsCap}", TaskName, LogLevel.Debug);
             if (ringSpawnCount > Mod.Configuration.ScatteredRingsCap)
             {
                 Memory.Instance.SafeWrite((UIntPtr)(esp + 0x3C + 0x24), BitConverter.GetBytes(Mod.Configuration.ScatteredRingsCap));
@@ -844,8 +872,9 @@ public class FunctionHooks
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
+            LoggingHandler.LogMessage($"{e}", TaskName, LogLevel.Error);
         }
+        LoggingHandler.LogMessage($"ScatteredRingConstructor End", TaskName, LogLevel.SuperDebug);
         return 1;
     }
     
@@ -855,31 +884,35 @@ public class FunctionHooks
     public delegate int ChangeModeToFlying(int flyingCharObjPtr);
     private static int OnChangeModeToFlying(int eax)
     {
+        LoggingHandler.LogMessage($"ChangeModeToFlying Start: eax: 0x{eax:X}", TaskName, LogLevel.SuperDebug);
         try
         {
-            //Console.WriteLine($"ChangeModeToFlying 0x{eax:x}");
-            if (!GameStateHandler.InGame(true))
+            if (!GameStateHandler.InGame(TaskName))
+            {
+                LoggingHandler.LogMessage($"ChangeModeToFlying End", TaskName, LogLevel.SuperDebug);
                 return 1;
+            }
 
-            var team = GameStateHandler.GetCurrentStory();
-            var level = GameStateHandler.GetCurrentLevel();
-            
-            
-            //Console.WriteLine($"Team: {team}, Level: {level}");
+            var team = GameStateHandler.GetCurrentStory(TaskName);
+            var level = GameStateHandler.GetCurrentLevel(TaskName);
 
             if (!SonicHeroesDefinitions.LevelIdToRegion.TryGetValue((LevelId)level!, out var region))
+            {
+                LoggingHandler.LogMessage($"ChangeModeToFlying End", TaskName, LogLevel.SuperDebug);
                 return 1;
+            }
+                
 
-            var canFly = AbilityCharacterManager.CanFly((Team)team!, region);
+            var canFly = AbilityCharacterManager.CanFly((Team)team!, region, TaskName);
             
             if (!canFly)
                 Memory.Instance.SafeWrite((UIntPtr)(eax + 0x994), BitConverter.GetBytes(AbilityCharacterGameWrites.LockedFlightMeterValue));
-            //Console.WriteLine($"Region: {region} CanFly: {canFly}");
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
+            LoggingHandler.LogMessage($"{e}", TaskName, LogLevel.Error);
         }
+        LoggingHandler.LogMessage($"ChangeModeToFlying End", TaskName, LogLevel.SuperDebug);
         return 0;
     }
     
@@ -891,20 +924,21 @@ public class FunctionHooks
     public delegate int ChangeActInLevelSelect();
     private static unsafe int OnChangeActInLevelSelect()
     {
+        LoggingHandler.LogMessage($"ChangeActInLevelSelect Start", TaskName, LogLevel.SuperDebug);
         try
         {
             var levelSelectPtr = *(IntPtr*)(Mod.ModuleBase + 0x6777B4);
             var actIndex = *(int*)(levelSelectPtr + 0x2BC);
             Mod.LevelSelectManager.ActSelectedInLevelSelect = (Act)actIndex;
             
-            LevelSpawnUnlockHandler.SelectActFromLevelSelectCallback();
-            //LevelSpawnUnlockHandler.SpawnPosIndex = 0;
-            //Console.WriteLine($"Setting Act Selected in Level Select to {Mod.LevelSelectManager.ActSelectedInLevelSelect}");
+            LevelSpawnUnlockHandler.SelectActFromLevelSelectCallback(TaskName);
+            LoggingHandler.LogMessage($"Setting Act Selected in Level Select to {Mod.LevelSelectManager.ActSelectedInLevelSelect}", TaskName, LogLevel.Debug);
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
+            LoggingHandler.LogMessage($"{e}", TaskName, LogLevel.Error);
         }
+        LoggingHandler.LogMessage($"ChangeActInLevelSelect End", TaskName, LogLevel.SuperDebug);
         return 1;
     }
     
@@ -914,16 +948,11 @@ public class FunctionHooks
     public delegate int SetActInLevelSelectToZero();
     private static int OnSetActInLevelSelectToZero()
     {
-        try
-        {
-            Mod.LevelSelectManager.ActSelectedInLevelSelect = Act.Act1;
-            LevelSpawnUnlockHandler.SelectActFromLevelSelectCallback();
-            //Console.WriteLine($"Setting Act Selected in Level Select to {Mod.LevelSelectManager.ActSelectedInLevelSelect}");
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine(e);
-        }
+        LoggingHandler.LogMessage($"SetActInLevelSelectToZero Start", TaskName, LogLevel.SuperDebug);
+        Mod.LevelSelectManager.ActSelectedInLevelSelect = Act.Act1;
+        LevelSpawnUnlockHandler.SelectActFromLevelSelectCallback(TaskName);
+        LoggingHandler.LogMessage($"Setting Act Selected in Level Select to {Mod.LevelSelectManager.ActSelectedInLevelSelect}", TaskName, LogLevel.Debug);
+        LoggingHandler.LogMessage($"SetActInLevelSelectToZero End", TaskName, LogLevel.SuperDebug);
         return 1;
     }
     
@@ -932,60 +961,62 @@ public class FunctionHooks
     public delegate int CompleteLevel(int isMission2, int levelIndex, int rank, int story);
     public static int OnCompleteLevel(int ecx, int edx, int ebx, int esi)
     {
+        LoggingHandler.LogMessage($"CompleteLevel Start", TaskName, LogLevel.SuperDebug);
         try
         {
             var isMission2 = ecx; 
             var levelIndex = edx;
             var team = (Team)esi;
             var rank = (Rank)ebx;
-            var apHandler = Mod.ArchipelagoHandler!;
+            var apHandler = Mod.ArchipelagoHandler;
             var slotData = apHandler.SlotData;
 
             //Chaotix Rail Canyon
-            if (levelIndex == 36)
-                levelIndex = 8;
-            
-            //Console.WriteLine($"OnCompleteLevel Here. IsAct2: {isMission2},  LevelIndex: {levelIndex}, Rank: {rank}, Story: {story}");
-            
-            
-            if (levelIndex > 25)
-                return 0;
-            
-            //SeaGate is 25
-            //maybe do special handling here
-            
-            //this will never actually run btw (SeaGate uses different hook)
-            if ((LevelId)levelIndex == LevelId.SeaGate && Mod.LevelSelectManager.FinalBoss is FinalBoss.SeaGate) 
+            if (levelIndex == (int)LevelId.ChaotixRailCanyon)
+                levelIndex = (int)LevelId.RailCanyon;
+
+            if (!Enum.IsDefined(typeof(LevelId), levelIndex))
             {
-                apHandler.CheckLocation(SonicHeroesDefinitions.MetalMadnessId);
-                LoggerWindow.Log("Victory!");
-                apHandler.Release();
+                LoggingHandler.LogMessage($"OnCompleteLevel End LevelIndex: {levelIndex} is not Defined in Enum", TaskName, LogLevel.Error);
                 return 1;
             }
+            
+            LoggingHandler.LogMessage($"OnCompleteLevel Here. IsAct2: {isMission2},  LevelIndex: {(LevelId)levelIndex}, Rank: {rank}, Team: {team}", TaskName, LogLevel.APAction);
+
+            if (levelIndex > 24)
+            {
+                LoggingHandler.LogMessage($"CompleteLevel End LevelIndex: {levelIndex} is > MetalOverlord", TaskName, LogLevel.Error);
+                return 0;
+            }
+                
+            
+            //SeaGate is 25
+            //will never actually run this function
 
             if ((LevelId)levelIndex == LevelId.MetalOverlord)
             {
                 if (Mod.LevelSelectManager.FinalBoss is FinalBoss.MetalMadness or FinalBoss.MetalOverlord) 
                 {
                     apHandler.CheckLocation(SonicHeroesDefinitions.MetalMadnessId);
-                    LoggerWindow.Log("Victory!");
+                    LoggingHandler.LogMessage($"Victory", TaskName, LogLevel.APAction);
                     apHandler.Release();
                 }
+                LoggingHandler.LogMessage($"CompleteLevel End (MetalOverlord)", TaskName, LogLevel.SuperDebug);
                 return 1;
             }
             
             
             if (rank <= slotData.RequiredRank) 
             {
-                LoggerWindow.Log("Did not reach the required rank.");
-                Console.WriteLine($"Did not reach the required rank. {rank} is not the required {slotData.RequiredRank}");
+                LoggingHandler.LogMessage($"Did not reach the required rank. {rank} is not the required {slotData.RequiredRank}", TaskName, LogLevel.APAction);
+                //LoggingHandler.LogMessage($"CompleteLevel End (Required Rank)", TaskName, LogLevel.SuperDebug);
                 return 0;
             }
             
             var locationId = 0xA0 + (int)team * 42 + (levelIndex - 2) * 2 + isMission2;
 
             if (team is Team.Sonic && isMission2 == 1 &&
-                (bool)Mod.LevelSelectManager.IsThisTeamEnabled(Team.SuperHardMode)!)
+                (bool)Mod.LevelSelectManager.IsThisTeamEnabled(Team.SuperHardMode, TaskName)!)
             {
                 team = Team.SuperHardMode;
                 locationId = SonicHeroesDefinitions.SuperHardModeId + (levelIndex - 2);
@@ -994,17 +1025,17 @@ public class FunctionHooks
             {
                 //check team enabled (not including Sonic Bosses)
                 if ((team is not Team.Sonic || levelIndex <= (int)LevelId.FinalFortress) 
-                    && !(bool)Mod.LevelSelectManager.IsThisTeamEnabled(team)!)
+                    && !(bool)Mod.LevelSelectManager.IsThisTeamEnabled(team, TaskName)!)
                     return 0;
                 
                 //check team enabled on Sonic Bosses (as SuperHard is an option)
                 if (team is Team.Sonic && levelIndex >= (int)LevelId.EggHawk &&
-                    !(bool)Mod.LevelSelectManager.IsThisTeamEnabled(team)! &&
-                    !(bool)Mod.LevelSelectManager.IsThisTeamEnabled(Team.SuperHardMode)!)
+                    !(bool)Mod.LevelSelectManager.IsThisTeamEnabled(team, TaskName)! &&
+                    !(bool)Mod.LevelSelectManager.IsThisTeamEnabled(Team.SuperHardMode, TaskName)!)
                     return 0;
                 
                 //check if Act is enabled (if not Boss)
-                if (levelIndex < (int)LevelId.EggHawk && !Mod.LevelSelectManager.IsThisTeamActEnabled(team, (Act)isMission2))
+                if (levelIndex < (int)LevelId.EggHawk && !Mod.LevelSelectManager.IsThisTeamActEnabled(team, (Act)isMission2, TaskName))
                     return 0;
             }
             
@@ -1016,12 +1047,12 @@ public class FunctionHooks
                     {
                         Mod.LevelSelectManager.GateData[gateIndex + 1].IsUnlocked = true;
                         //if (!Mod.LevelSelectManager.IsThisBossCompletedYet((LevelId)levelIndex))
-                        Mod.LevelSelectManager.RecalculateOpenLevels();
+                        Mod.LevelSelectManager.RecalculateOpenLevels(TaskName);
                     }
-                    Mod.ArchipelagoHandler?.Save();
+                    Mod.ArchipelagoHandler?.Save(TaskName);
                     locationId = 0xA0 + (levelIndex - 2) * 2;
 
-                    foreach (var tempTeam in Enum.GetValues<Team>().Where(x => (bool)Mod.LevelSelectManager.IsThisTeamEnabled(x)!))
+                    foreach (var tempTeam in Enum.GetValues<Team>().Where(x => (bool)Mod.LevelSelectManager.IsThisTeamEnabled(x, TaskName)!))
                     {
                         if (tempTeam == Team.SuperHardMode)
                             apHandler.CheckLocation(locationId + 42 * (int)Team.Sonic);
@@ -1030,12 +1061,13 @@ public class FunctionHooks
                     }
                         
                 }
+                LoggingHandler.LogMessage($"CompleteLevel End (Boss Level)", TaskName, LogLevel.SuperDebug);
                 return 1;
             }
-
-            //Console.WriteLine($"Checking Mission Completion Location Here: Id = {(SonicHeroesDefinitions.AllIdsOffset + locationId):X}");
+            
+            LoggingHandler.LogMessage($"Checking Mission Completion Location Here: Id = 0x{(SonicHeroesDefinitions.AllIdsStartOffset + locationId):X}", TaskName, LogLevel.Debug);
             //Mod.SaveDataHandler.CustomSaveData.LevelsGoaled[story][(LevelId)levelIndex] = true;
-            LevelSpawnUnlockHandler.BonusStageUnlockCallback(team, (LevelId)levelIndex, goal: true);
+            LevelSpawnUnlockHandler.BonusStageUnlockCallback(team, (LevelId)levelIndex, TaskName, goal: true);
 
             var isLevelNotCompletedYet = false;
 
@@ -1049,13 +1081,14 @@ public class FunctionHooks
             {
                 isLevelNotCompletedYet = !apHandler.IsLocationChecked(locationId);
             }
-            Mod.LevelSelectManager.RecalculateOpenLevels(team, isLevelNotCompletedYet);
+            Mod.LevelSelectManager.RecalculateOpenLevels(TaskName, team, isLevelNotCompletedYet);
             apHandler.CheckLocation(locationId);
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
+            LoggingHandler.LogMessage($"{e}", TaskName, LogLevel.Error);
         }
+        LoggingHandler.LogMessage($"CompleteLevel End (Regular Level)", TaskName, LogLevel.SuperDebug);
         return 1;
     }
     
@@ -1065,14 +1098,9 @@ public class FunctionHooks
     public delegate int GoLevelSelect();
     private static int OnGoLevelSelect()
     {
-        try
-        {
-            Mod.LevelSelectManager.RecalculateOpenLevels();
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine(e);
-        }
+        LoggingHandler.LogMessage($"GoLevelSelect Start", TaskName, LogLevel.SuperDebug);
+        Mod.LevelSelectManager.RecalculateOpenLevels(TaskName);
+        LoggingHandler.LogMessage($"GoLevelSelect End", TaskName, LogLevel.SuperDebug);
         return 1;
     }
     
@@ -1082,18 +1110,15 @@ public class FunctionHooks
     public delegate int SetRings(int amount);
     private static int OnSetRings(int amount)
     {
-        try
+        LoggingHandler.LogMessage($"SetRings Start Amount: {amount}", TaskName, LogLevel.SuperDebug);
+        if (!RingLinkHandler.IsRingLinkEnabled(TaskName))
         {
-            if (!RingLinkHandler.IsRingLinkEnabled()) 
-                return 0;
-            if (RingLinkHandler.IsRingLinkOverlord() || GameStateHandler.GetCurrentLevel() != LevelId.MetalOverlord)
-                RingLinkHandler.SendRingPacket(amount);
+            LoggingHandler.LogMessage($"SetRings End (no Ringlink)", TaskName, LogLevel.SuperDebug);
             return 0;
         }
-        catch (Exception e)
-        {
-            Console.WriteLine(e);
-        }
+        if (RingLinkHandler.IsRingLinkOverlord(TaskName) || GameStateHandler.GetCurrentLevel(TaskName) != LevelId.MetalOverlord)
+            RingLinkHandler.SendRingPacket(amount, TaskName);
+        LoggingHandler.LogMessage($"SetRings End (with RingLink)", TaskName, LogLevel.SuperDebug);
         return 0;
     }
     
@@ -1102,21 +1127,17 @@ public class FunctionHooks
     public delegate int Die();
     private static int OnDie()
     {
-        try
+        LoggingHandler.LogMessage($"Die Start", TaskName, LogLevel.SuperDebug);
+        TrapHandler.DisableStealthTrap(TaskName);
+        if (DeathLinkHandler.SomeoneElseDied)
         {
-            TrapHandler.DisableStealthTrap();
-            if (DeathLinkHandler.SomeoneElseDied)
-            {
-                DeathLinkHandler.SomeoneElseDied = false;
-                return 0;
-            }
-            if (DeathLinkHandler.IsDeathLinkEnabled())
-                DeathLinkHandler.SendDeath();
+            DeathLinkHandler.SomeoneElseDied = false;
+            LoggingHandler.LogMessage($"Die End (No DeathLink)", TaskName, LogLevel.SuperDebug);
+            return 0;
         }
-        catch (Exception e)
-        {
-            Console.WriteLine(e);
-        }
+        if (DeathLinkHandler.IsDeathLinkEnabled(TaskName))
+            DeathLinkHandler.SendDeath(TaskName);
+        LoggingHandler.LogMessage($"Die End (with DeathLink", TaskName, LogLevel.SuperDebug);
         return 0;
     }
     
@@ -1124,49 +1145,41 @@ public class FunctionHooks
     [Function(new FunctionAttribute.Register[] { FunctionAttribute.Register.ecx },
         FunctionAttribute.Register.eax, FunctionAttribute.StackCleanup.Callee)]
     public delegate int IncrementCount(int newCount);
-    private static int OnIncrementCount(int newCount)
+    private static int OnIncrementCount(int ecx)
     {
-        try
-        {
-            ObjSanityHandler.HandleCountIncreased(newCount);
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine(e);
-        }
+        LoggingHandler.LogMessage($"IncrementCount Start ecx: {ecx}", TaskName, LogLevel.SuperDebug);
+        ObjSanityHandler.HandleCountIncreased(ecx, TaskName);
+        LoggingHandler.LogMessage($"IncrementCount End", TaskName, LogLevel.SuperDebug);
         return 0;
     }
     
     [Function(new FunctionAttribute.Register[] { FunctionAttribute.Register.ebx },
         FunctionAttribute.Register.eax, FunctionAttribute.StackCleanup.Callee)]
     public delegate int IncrementEnemyCount(int newCount);
-    private static int OnMoveEnemyCount(int newCount)
+    private static int OnMoveEnemyCount(int ebx)
     {
-        try
-        {
-            ObjSanityHandler.CheckEnemyCount(newCount);
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine(e);
-        }
+        LoggingHandler.LogMessage($"IncrementEnemyCount Start NewCount: {ebx}", TaskName, LogLevel.SuperDebug);
+        ObjSanityHandler.CheckEnemyCount(ebx, TaskName);
+        LoggingHandler.LogMessage($"IncrementEnemyCount End", TaskName, LogLevel.SuperDebug);
         return 0;
     }
     
     [Function(new FunctionAttribute.Register[] { FunctionAttribute.Register.eax },
         FunctionAttribute.Register.eax, FunctionAttribute.StackCleanup.Callee)]
     public delegate int IncrementBSCapsuleCount(int ptr);
-    private static unsafe int OnIncrementBSCapsuleCount(int ptr)
+    private static unsafe int OnIncrementBSCapsuleCount(int eax)
     {
+        LoggingHandler.LogMessage($"IncrementBSCapsuleCount Start eax: 0x{eax:X}", TaskName, LogLevel.SuperDebug);
         try
         {
-            var newCount = *(int*)(ptr + 0x23C);
-            ObjSanityHandler.HandleBSCapsuleCountIncreased(newCount);
+            var newCount = *(int*)(eax + 0x23C);
+            ObjSanityHandler.HandleBSCapsuleCountIncreased(newCount, TaskName);
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
+            LoggingHandler.LogMessage($"{e}", TaskName, LogLevel.Error);
         }
+        LoggingHandler.LogMessage($"IncrementBSCapsuleCount End", TaskName, LogLevel.SuperDebug);
         return 0;
     }
     
@@ -1174,16 +1187,11 @@ public class FunctionHooks
     [Function(new FunctionAttribute.Register[] { FunctionAttribute.Register.edx },
         FunctionAttribute.Register.eax, FunctionAttribute.StackCleanup.Callee)]
     public delegate int IncrementGoldBeetleCount(int newCount);
-    private static int OnIncrementGoldBeetleCount(int newCount)
+    private static int OnIncrementGoldBeetleCount(int edx)
     {
-        try
-        {
-            ObjSanityHandler.HandleGoldBeetleCountIncreased(newCount);
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine(e);
-        }
+        LoggingHandler.LogMessage($"IncrementGoldBeetleCount Start edx: {edx}", TaskName, LogLevel.SuperDebug);
+        ObjSanityHandler.HandleGoldBeetleCountIncreased(edx, TaskName);
+        LoggingHandler.LogMessage($"IncrementGoldBeetleCount End", TaskName, LogLevel.SuperDebug);
         return 0;
     }
     
@@ -1193,32 +1201,29 @@ public class FunctionHooks
     public delegate int AssignRings();
     private static unsafe int OnCheckRings()
     {
+        LoggingHandler.LogMessage($"AssignRings Start", TaskName, LogLevel.SuperDebug);
         try
         {
             var newCount = *(int*)(Mod.ModuleBase + 0x5DD70C);
-            ObjSanityHandler.CheckRingSanity(newCount);
+            ObjSanityHandler.CheckRingSanity(newCount, TaskName);
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
+            LoggingHandler.LogMessage($"{e}", TaskName, LogLevel.Error);
         }
+        LoggingHandler.LogMessage($"AssignRings End", TaskName, LogLevel.SuperDebug);
         return 0;
     }
     
     [Function(new FunctionAttribute.Register[] { FunctionAttribute.Register.eax },
         FunctionAttribute.Register.eax, FunctionAttribute.StackCleanup.Callee)]
     public delegate int CompleteEmeraldStage(int emeraldAddressOffset);
-    private static int OnCompleteEmeraldStage(int emeraldAddressOffset)
+    private static int OnCompleteEmeraldStage(int eax)
     {
-        try
-        {
-            var locationId = SonicHeroesDefinitions.EmeraldStartId + (emeraldAddressOffset - 21) / 3;
-            Mod.ArchipelagoHandler!.CheckLocation(locationId);
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine(e);
-        }
+        LoggingHandler.LogMessage($"CompleteEmeraldStage Start: eax: {eax}", TaskName, LogLevel.SuperDebug);
+        var locationId = SonicHeroesDefinitions.EmeraldStartId + (eax - 21) / 3;
+        Mod.ArchipelagoHandler.CheckLocation(locationId);
+        LoggingHandler.LogMessage($"CompleteEmeraldStage End", TaskName, LogLevel.SuperDebug);
         return 0;
     }
     
@@ -1228,16 +1233,11 @@ public class FunctionHooks
     public delegate int StartCompleteStage();
     private static int OnStartCompleteStage()
     {
-        try
-        {
-            ObjSanityHandler.CheckEnemyCount(100);
-            ObjSanityHandler.CheckRingSanity(500);
-            GameStateGameWrites.SetBonusKey(false);
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine(e);
-        }
+        LoggingHandler.LogMessage($"StartCompleteStage Start", TaskName, LogLevel.SuperDebug);
+        ObjSanityHandler.CheckEnemyCount(100, TaskName);
+        ObjSanityHandler.CheckRingSanity(500, TaskName);
+        GameStateGameWrites.SetBonusKey(false, TaskName);
+        LoggingHandler.LogMessage($"StartCompleteStage End", TaskName, LogLevel.SuperDebug);
         return 0;
     }
     
@@ -1246,37 +1246,32 @@ public class FunctionHooks
     public delegate int SetStateInGame();
     private static int OnSetStateInGame()
     {
-        try
+        LoggingHandler.LogMessage($"SetStateInGame Start", TaskName, LogLevel.SuperDebug);
+        ItemHandler.HandleCachedItems(TaskName);
+        AbilityCharacterManager.PollUpdates(TaskName);
+
+        if (GameStateHandler.GetCurrentAct(TaskName) != Act.Act3)
         {
-            ItemHandler.HandleCachedItems();
-            AbilityCharacterManager.PollUpdates();
-        
-            if (GameStateHandler.GetCurrentAct() != Act.Act3) 
-                return 1;
-            GameStateGameWrites.SetCurrentAct(Act.Act2);
-            //GameStateGameWrites.SetBonusKey(true);
+            LoggingHandler.LogMessage($"SetStateInGame End", TaskName, LogLevel.SuperDebug);
+            return 1;
         }
-        catch (Exception e)
-        {
-            Console.WriteLine(e);
-        }
+            
+        LoggingHandler.LogMessage($"Setting Current Act from Act3 (SuperHard) to Act 2", TaskName, LogLevel.Debug);
+        GameStateGameWrites.SetCurrentAct(Act.Act2, TaskName);
+        //GameStateGameWrites.SetBonusKey(true);
+        LoggingHandler.LogMessage($"SetStateInGame End", TaskName, LogLevel.SuperDebug);
         return 1;
     }
     
     
     [Function(new FunctionAttribute.Register[] { FunctionAttribute.Register.edx}, 
         FunctionAttribute.Register.eax, FunctionAttribute.StackCleanup.Callee)]
-    public delegate int GetBonusKey(int edx);
+    public delegate int GetBonusKey(int pointer);
     private static int OnGetBonusKey(int edx)
     {
-        try
-        {
-            KeySanityHandler.HandleKeySanity(edx);
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine(e);
-        }
+        LoggingHandler.LogMessage($"GetBonusKey Start edx: 0x{edx:X}", TaskName, LogLevel.SuperDebug);
+        KeySanityHandler.HandleKeySanity(edx, TaskName);
+        LoggingHandler.LogMessage($"GetBonusKey End", TaskName, LogLevel.SuperDebug);
         return 0;
     }
     
@@ -1286,15 +1281,9 @@ public class FunctionHooks
     public delegate int GetCheckPoint(int priority, int pointer);
     private static int OnGetCheckPoint(int ecx, int edx)
     {
-        try
-        {
-            CheckpointSanityHandler.HandleCheckPointSanity(ecx, edx);
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine(e);
-        }
-        //Mod.LevelSpawnHandler.SpawnTeamHere(2);
+        LoggingHandler.LogMessage($"GetCheckPoint Start ecx: {ecx} edx: 0x{edx:X}", TaskName, LogLevel.SuperDebug);
+        CheckpointSanityHandler.HandleCheckPointSanity(ecx, edx, TaskName);
+        LoggingHandler.LogMessage($"GetCheckPoint End", TaskName, LogLevel.SuperDebug);
         return 0;
     }
     
@@ -1303,16 +1292,11 @@ public class FunctionHooks
     public delegate int SetAct();
     private static int OnSetAct()
     {
-        try
-        {
-            //CURRENT LEVEL IS NOT VALID HERE
-            //STAGE OBJS ARE NOT LOADED IN MEMORY YET
-            LevelSpawnUnlockHandler.SpawnPosCallbackChangeLevel();
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine(e);
-        }
+        //CURRENT LEVEL IS NOT VALID HERE
+        //STAGE OBJS ARE NOT LOADED IN MEMORY YET
+        LoggingHandler.LogMessage($"SetAct Start", TaskName, LogLevel.SuperDebug);
+        LevelSpawnUnlockHandler.SpawnPosCallbackChangeLevel(TaskName);
+        LoggingHandler.LogMessage($"SetAct End", TaskName, LogLevel.SuperDebug);
         return 0;
     }
     
@@ -1321,14 +1305,7 @@ public class FunctionHooks
     public delegate int SetObjStateSpawned(int esi);
     private static int OnObjSetStateSpawned(int esi)
     {
-        try
-        {
-            //StageObjHandler.OnObjSetStateSpawned(esi);
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine(e);
-        }
+        //StageObjHandler.OnObjSetStateSpawned(esi);
         return 0;
     }
     
@@ -1337,15 +1314,9 @@ public class FunctionHooks
     public delegate int GoSelectActFromSelectLevel();
     private static int OnGoSelectActFromSelectLevel()
     {
-        try
-        {
-            //Console.WriteLine("GoSelectActFromSelectLevel");
-            LevelSpawnUnlockHandler.SelectActFromLevelSelectCallback();
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine(e);
-        }
+        LoggingHandler.LogMessage($"GoSelectActFromSelectLevel Start", TaskName, LogLevel.SuperDebug);
+        LevelSpawnUnlockHandler.SelectActFromLevelSelectCallback(TaskName);
+        LoggingHandler.LogMessage($"GoSelectActFromSelectLevel End", TaskName, LogLevel.SuperDebug);
         return 0;
     }
     
@@ -1355,16 +1326,10 @@ public class FunctionHooks
     public delegate int GoSelectLevelFromSelectAct();
     private static int OnGoSelectLevelFromSelectAct()
     {
-        try
-        {
-            //Console.WriteLine("GoSelectLevelFromSelectAct");
-            LevelSpawnUnlockHandler.ShouldCheckForInput = false;
-            LevelSpawnUnlockHandler.SpawnPosIndex = 0;
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine(e);
-        }
+        LoggingHandler.LogMessage($"GoSelectLevelFromSelectAct Start", TaskName, LogLevel.SuperDebug);
+        LevelSpawnUnlockHandler.ShouldCheckForInput = false;
+        LevelSpawnUnlockHandler.SpawnPosIndex = 0;
+        LoggingHandler.LogMessage($"GoSelectLevelFromSelectAct End", TaskName, LogLevel.SuperDebug);
         return 0;
     }
     
@@ -1374,17 +1339,11 @@ public class FunctionHooks
     public delegate int GoToGameFromLevelSelect();
     private static int OnGoToGameFromLevelSelect()
     {
-        try
-        {
-            //Console.WriteLine($"GoToGameFromLevelSelect. Spawn Index: {Mod.LevelSpawnHandler!.SpawnPosIndex}");
-            LevelSpawnUnlockHandler.ShouldCheckForInput = false;
-            LevelSpawnUnlockHandler.GoToGameSpawnPosCallback();
-            //Mod.LevelSpawnHandler!.SpawnPosIndex = 0;
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine(e);
-        }
+        LoggingHandler.LogMessage($"GoToGameFromLevelSelect Start", TaskName, LogLevel.SuperDebug);
+        //LoggingHandler.LogMessage($"GoToGameFromLevelSelect. Spawn Index: {Mod.LevelSpawnHandler!.SpawnPosIndex}", TaskName, LogLevel.Debug);
+        LevelSpawnUnlockHandler.ShouldCheckForInput = false;
+        LevelSpawnUnlockHandler.GoToGameSpawnPosCallback(TaskName);
+        LoggingHandler.LogMessage($"GoToGameFromLevelSelect End", TaskName, LogLevel.SuperDebug);
         return 0;
     }
     
@@ -1394,63 +1353,61 @@ public class FunctionHooks
     public delegate int GoCharUncaptureState(int esi);
     private static int OnGoCharUncaptureState(int esi)
     {
-        try
-        {
-            AbilityCharacterManager.PollUpdates();
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine(e);
-        }
+        LoggingHandler.LogMessage($"OnGoCharUncaptureState Start esi: 0x{esi:X}", TaskName, LogLevel.SuperDebug);
+        AbilityCharacterManager.PollUpdates(TaskName);
+        LoggingHandler.LogMessage($"OnGoCharUncaptureState End", TaskName, LogLevel.SuperDebug);
         return 0;
     }
     
     
     [Function(new FunctionAttribute.Register[] { FunctionAttribute.Register.esi }, 
         FunctionAttribute.Register.eax, FunctionAttribute.StackCleanup.Callee)]
-    public delegate int GoPlayerChangeModeWait(int esi);
+    public delegate int GoPlayerChangeModeWait(int charPtr);
     private static int OnGoPlayerChangeModeWait(int esi)
     {
-        try
-        {
-            AbilityCharacterManager.PollUpdates();
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine(e);
-        }
+        LoggingHandler.LogMessage($"OnGoPlayerChangeModeWait Start esi: 0x{esi:X}", TaskName, LogLevel.SuperDebug);
+        AbilityCharacterManager.PollUpdates(TaskName);
+        LoggingHandler.LogMessage($"OnGoPlayerChangeModeWait End", TaskName, LogLevel.SuperDebug);
         return 0;
     }
     
     
     [Function(new FunctionAttribute.Register[] { FunctionAttribute.Register.edx }, 
         FunctionAttribute.Register.eax, FunctionAttribute.StackCleanup.Callee)]
-    public delegate int AddLevel(int edx);
+    public delegate int AddLevel(int formationChar);
     private static int OnAddLevel(int edx)
     {
-        try
-        {
-            //ecx team pointer
-            //edx is formation char
-            //Console.WriteLine($"Adding level edx (ebp) is 0x{edx:x}");
+        //ecx team pointer
+        //edx is formation char
+        LoggingHandler.LogMessage($"AddLevel Start: edx (ebp) is 0x{edx:x}", TaskName, LogLevel.SuperDebug);
 
-            var team = GameStateHandler.GetCurrentStory();
-            var level = GameStateHandler.GetCurrentLevel();
-            var act = GameStateHandler.GetCurrentAct();
-        
-            //handle region
-            if (!SonicHeroesDefinitions.LevelIdToRegion.ContainsKey((LevelId)level!))
-            {
-                Console.WriteLine($"Add Level Function run in level {level} that is not in LevelIdToRegion");
-                return 0;
-            }
-            var region = SonicHeroesDefinitions.LevelIdToRegion[(LevelId)level];
-            AbilityCharacterManager.HandleLevelUp((Team)team!, region, (FormationChar)edx);
-        }
-        catch (Exception e)
+        var team = GameStateHandler.GetCurrentStory(TaskName);
+        var level = GameStateHandler.GetCurrentLevel(TaskName);
+        //var act = GameStateHandler.GetCurrentAct(TaskName);
+
+        if (team == null || level == null)
         {
-            Console.WriteLine(e);
+            LoggingHandler.LogMessage($"OnAddLevel Team: {team} or Level: {level} is null", TaskName, LogLevel.Error);
+            return 0;
         }
+    
+        //handle region
+        if (!SonicHeroesDefinitions.LevelIdToRegion.ContainsKey((LevelId)level))
+        {
+            LoggingHandler.LogMessage($"Add Level Function run in level {level} that is not in LevelIdToRegion", TaskName, LogLevel.SuperDebug);
+            return 0;
+        }
+        var region = SonicHeroesDefinitions.LevelIdToRegion[(LevelId)level];
+        
+
+        if (!Enum.IsDefined(typeof(FormationChar), edx))
+        {
+            LoggingHandler.LogMessage($"Formation Character: {edx} does not exist", TaskName, LogLevel.Error);
+            return 0;
+        }
+        
+        AbilityCharacterManager.HandleLevelUp((Team)team, region, (FormationChar)edx, TaskName);
+        LoggingHandler.LogMessage($"AddLevel End", TaskName, LogLevel.SuperDebug);
         return 0;
     }
     
@@ -1459,15 +1416,10 @@ public class FunctionHooks
     public delegate int InitSetGenerator();
     private static int OnInitSetGenerator()
     {
-        try
-        {
-            StageObjHandler.HandleInitSetGenerator();
-            AbilityCharacterManager.PollUpdates();
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine(e);
-        }
+        LoggingHandler.LogMessage($"OnInitSetGenerator Start", TaskName, LogLevel.SuperDebug);
+        StageObjHandler.HandleInitSetGenerator(TaskName);
+        AbilityCharacterManager.PollUpdates(TaskName);
+        LoggingHandler.LogMessage($"OnInitSetGenerator Finished", TaskName, LogLevel.SuperDebug);
         return 0;
     }
     
@@ -1477,16 +1429,6 @@ public class FunctionHooks
     public delegate int SetTeamInitialPosition();
     private static int OnSetTeamInitialPosition()
     {
-        try
-        {
-            //Console.WriteLine($"SetTeamInitialPosition()");
-            //Mod.LevelSpawnHandler!.SpawnPosIndex = 0;
-            //Mod.AbilityUnlockHandler!.PollUpdates();
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine(e);
-        }
         return 0;
     }
     
@@ -1495,15 +1437,9 @@ public class FunctionHooks
     public delegate int GetBingoChip(int esi);
     private static int OnGetBingoChip(int esi)
     {
-        try
-        {
-            //Console.WriteLine($"GetBingoChip: 0x{esi:x}");
-            BingoChipSanityHandler.HandleBingoChip(esi);
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine(e);
-        }
+        LoggingHandler.LogMessage($"GetBingoChip: esi: 0x{esi:X}", TaskName, LogLevel.SuperDebug);
+        BingoChipSanityHandler.HandleBingoChip(esi, TaskName);
+        LoggingHandler.LogMessage($"GetBingoChip Finished", TaskName, LogLevel.SuperDebug);
         return 0;
     }
     
@@ -1511,35 +1447,11 @@ public class FunctionHooks
     [Function(new FunctionAttribute.Register[] { FunctionAttribute.Register.ecx, FunctionAttribute.Register.edx, FunctionAttribute.Register.esi }, 
         FunctionAttribute.Register.eax, FunctionAttribute.StackCleanup.Callee)]
     public delegate int BGMSetFileName(int ecx, int edx, int esi);
-    private static unsafe int OnBGMSetFileName(int ecx, int edx, int esi)
+    private static int OnBGMSetFileName(int ecx, int edx, int esi)
     {
-        try
-        {
-
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine(e);
-        }
         return 0;
-        //Console.WriteLine($"OnBGMSetFileName: ECX (EAX): 0x{ecx:x} EDX: 0x{edx:x} ESI: 0x{esi:x}");
-        if (!Mod.Configuration!.MusicShuffle)
-            return 0;
-        var length = ecx - esi;
-        List<byte> originalName = [];
-        for (int i = 0; i < length - 1; i++)
-            originalName.Add(*(byte*)(edx + esi + i));
+        //LoggingHandler.LogMessage($"OnBGMSetFileName: ECX (EAX): 0x{ecx:x} EDX: 0x{edx:x} ESI: 0x{esi:x}", TaskName, LogLevel.Debug);
 
-        var originalNameString = Encoding.ASCII.GetString(originalName.ToArray());
-        var success = MusicShuffleHandler.Map.TryGetValue(originalNameString, out var newName);
-        newName += '\0';
-        if (!success) 
-            return 0;
-        var newNameBytes = Encoding.ASCII.GetBytes(newName.ToArray());
-        for (var i = 0; i < newName.Length; i++)
-            *(byte*)(edx + esi + i) = newNameBytes[i];
-        
-        return 0;
     }
     
     
@@ -1549,45 +1461,46 @@ public class FunctionHooks
 
     private static int OnBGMGetDVDRootPath(int esi)
     {
-        try
+        LoggingHandler.LogMessage($"OnBGMGetDVDRootPath Start esi: 0x{esi:x}", TaskName, LogLevel.SuperDebug);
+        if (Mod.Configuration == null)
         {
-            //Console.WriteLine($"OnBGMGetDVDRootPath(esi): 0x{esi:x}");
-            if (!Mod.Configuration!.MusicShuffle)
-                return 0;
-            //Console.WriteLine($"OnBGMGetDVDRootPath(esi): Check Passed");
-            MusicShuffleHandler.HandleBGMFilePathHook(esi);
+            LoggingHandler.LogMessage($"Mod Configuration is Null on BGMGetDVDRootPath Hook", TaskName, LogLevel.Error);
+            return 0;
         }
-        catch (Exception e)
-        {
-            Console.WriteLine(e);
-        }
+        if (!Mod.Configuration.MusicShuffle)
+            return 0;
+        //LoggingHandler.LogMessage($"OnBGMGetDVDRootPath(esi): Check Passed", TaskName, LogLevel.Debug);
+        MusicShuffleHandler.HandleBGMFilePathHook(esi, TaskName);
+        LoggingHandler.LogMessage($"OnBGMGetDVDRootPath Finished", TaskName, LogLevel.SuperDebug);
         return 0;
     }
     
     
     
-    //TObjResultConstructStart
     [Function(new FunctionAttribute.Register[] { },
         FunctionAttribute.Register.eax, FunctionAttribute.StackCleanup.Callee)]
     public delegate int TObjResultConstructStart();
     private static int OnTObjResultConstructStart()
     {
-        try
+        LoggingHandler.LogMessage($"OnTObjResultConstructStart Start", TaskName, LogLevel.SuperDebug);
+        LevelId? level = GameStateHandler.GetCurrentLevel(TaskName);
+
+        if (level == null)
         {
-            if (GameStateHandler.GetCurrentLevel() == LevelId.SeaGate)
+            LoggingHandler.LogMessage($"Null Level in OnTObjResultConstructStart", TaskName, LogLevel.Error);
+            return 0;
+        }
+        
+        LoggingHandler.LogMessage($"OnTObjResultConstructStart with Level: {level}", TaskName, LogLevel.SuperDebug);
+        if (level == LevelId.SeaGate)
+        {
+            if (Mod.LevelSelectManager.FinalBoss is FinalBoss.SeaGate)
             {
-                Console.WriteLine($"I think that you just finished Sea Gate.");
-                if (Mod.LevelSelectManager.FinalBoss is FinalBoss.SeaGate)
-                {
-                    Mod.ArchipelagoHandler.CheckLocation(SonicHeroesDefinitions.MetalMadnessId);
-                    Mod.ArchipelagoHandler.Release();
-                }
+                Mod.ArchipelagoHandler.CheckLocation(SonicHeroesDefinitions.MetalMadnessId);
+                Mod.ArchipelagoHandler.Release();
             }
         }
-        catch (Exception e)
-        {
-            Console.WriteLine(e);
-        }
+        LoggingHandler.LogMessage($"OnTObjResultConstructStart End", TaskName, LogLevel.SuperDebug);
         return 0;
     }
 }

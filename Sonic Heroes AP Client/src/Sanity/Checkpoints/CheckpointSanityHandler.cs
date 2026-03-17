@@ -4,6 +4,7 @@ using System.Numerics;
 using Sonic_Heroes_AP_Client.Definitions;
 using Sonic_Heroes_AP_Client.GameState;
 using Sonic_Heroes_AP_Client.LevelSpawnPosition;
+using Sonic_Heroes_AP_Client.Logging;
 using Sonic_Heroes_AP_Client.UI;
 
 namespace Sonic_Heroes_AP_Client.Sanity.Checkpoints;
@@ -11,14 +12,14 @@ namespace Sonic_Heroes_AP_Client.Sanity.Checkpoints;
 public static class CheckpointSanityHandler
 {
     
-    public static unsafe void HandleCheckPointSanity(int priority, int pointer)
+    public static unsafe void HandleCheckPointSanity(int priority, int pointer, string taskName)
     {
         try
         {
             //var prevPriority = *(int*)(Mod.ModuleBase + 0x5DD6F4);
-            var level = GameStateHandler.GetCurrentLevel();
-            var team = GameStateHandler.GetCurrentStory();
-            var act = GameStateHandler.GetCurrentAct();
+            var level = GameStateHandler.GetCurrentLevel(taskName);
+            var team = GameStateHandler.GetCurrentStory(taskName);
+            var act = GameStateHandler.GetCurrentAct(taskName);
             
             //edge case here
             if (team is Team.Sonic or Team.Dark && level is LevelId.FrogForest && priority == 6)
@@ -39,8 +40,7 @@ public static class CheckpointSanityHandler
             {
                 var log =
                     $"NO Checkpoints FOUND FOR TEAM LEVEL ACT Priority: {team} {level} {act} {priority} :::: coords are: {checkPointPos}";
-                Console.WriteLine(log);
-                LoggerWindow.Log(log);
+                LoggingHandler.LogMessage(log, taskName, LogLevel.Error);
             }
             else
             {
@@ -53,26 +53,24 @@ public static class CheckpointSanityHandler
                     if (distance < 100f || matchingcheckpoints.Count() == 1)
                     {
                         var log = $"Got Team {team} {level} {act} Checkpoint #{checkpointsinlevel.IndexOf(matchingcheckpoints[i]) + 1}";
-                        
-                        Console.WriteLine(log);
-                        //Logger.Log(log);
+                        LoggingHandler.LogMessage(log, taskName, LogLevel.APAction);
 
-                        LevelSpawnUnlockHandler.UnlockSpecificSpawnData((Team)team!, (LevelId)level!, checkpointsinlevel.IndexOf(matchingcheckpoints[i]) + 1);
+                        LevelSpawnUnlockHandler.UnlockSpecificSpawnData((Team)team!, (LevelId)level!, checkpointsinlevel.IndexOf(matchingcheckpoints[i]) + 1, taskName);
 
 
                         if (team is Team.SuperHardMode)
                         {
-                            if (!(bool)Mod.LevelSelectManager.IsThisSanityEnabled((Team)team, SanityType.CheckpointSanity)!)
+                            if (!(bool)Mod.LevelSelectManager.IsThisSanityEnabled((Team)team, SanityType.CheckpointSanity, taskName)!)
                                 return;
                             
                             Mod.ArchipelagoHandler.CheckLocation(SonicHeroesDefinitions.CheckpointAct2StartId + CheckpointData.AllCheckpoints.IndexOf(matchingcheckpoints[i]));
                         }
                         else
                         {
-                            if (!(bool)Mod.LevelSelectManager.IsThisSanityEnabled((Team)team, SanityType.CheckpointSanity)! && !(bool)Mod.LevelSelectManager.IsThisSanityEnabled((Team)team, SanityType.CheckpointSanity, true)!)
+                            if (!(bool)Mod.LevelSelectManager.IsThisSanityEnabled((Team)team, SanityType.CheckpointSanity, taskName)! && !(bool)Mod.LevelSelectManager.IsThisSanityEnabled((Team)team, SanityType.CheckpointSanity, taskName, true)!)
                                 return;
                             if ((bool)Mod.LevelSelectManager.IsThisSanityEnabled((Team)team,
-                                    SanityType.CheckpointSanity)!)
+                                    SanityType.CheckpointSanity, taskName)!)
                                 //1 set
                                 Mod.ArchipelagoHandler.CheckLocation(SonicHeroesDefinitions.CheckpointNoActStartId + CheckpointData.AllCheckpoints.IndexOf(matchingcheckpoints[i]));
                             else if (act is Act.Act1)
@@ -86,15 +84,14 @@ public static class CheckpointSanityHandler
                     {
                         var log =
                             $"No Matching Checkpoint Found: {team} {level} {act} {priority} with coords: {checkPointPos}. Smallest Distance is {minDistance}";
-                        Console.WriteLine(log);
-                        LoggerWindow.Log(log);
+                        LoggingHandler.LogMessage(log, taskName, LogLevel.APAction);
                     }
                 }
             }
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
+            LoggingHandler.LogMessage($"{e}", taskName, LogLevel.Error);
         }
     }
 }

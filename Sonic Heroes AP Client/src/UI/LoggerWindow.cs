@@ -6,7 +6,9 @@ using System.Text.RegularExpressions;
 using Archipelago.MultiClient.Net.Converters;
 using DearImguiSharp;
 using Reloaded.Imgui.Hook;
+using Sonic_Heroes_AP_Client.Definitions;
 using Sonic_Heroes_AP_Client.GameState;
+using Sonic_Heroes_AP_Client.Logging;
 
 namespace Sonic_Heroes_AP_Client.UI;
 
@@ -105,8 +107,13 @@ public partial class LoggerWindow
     }
 
     private DateTime _timeSinceLastUpdate;
-    public unsafe void Draw(float outerWidth, float outerHeight, float uiScale)
+    public unsafe void Draw(float outerWidth, float outerHeight, float uiScale, string taskName)
     {
+        if (Mod.Configuration == null)
+        {
+            LoggingHandler.LogMessage($"Mod Configuration is null in LoggerWindow Draw", taskName, LogLevel.Error);
+            return;
+        }
         if (DateTime.Now.Subtract(_timeSinceLastUpdate).TotalMilliseconds >= Mod.Configuration.LogMessageDelay)
         {
             UpdateVisibleMessages();
@@ -116,7 +123,7 @@ public partial class LoggerWindow
         var windowWidth = 0.27f * outerWidth;
         var windowHeight = 0.6f * outerHeight;
         var padding = 0.01f * outerHeight;
-        var lifeCountOffset = GameStateHandler.InGame() ? 0.25f * outerHeight : 0.1f * outerHeight;
+        var lifeCountOffset = GameStateHandler.InGame(taskName) ? 0.25f * outerHeight : 0.1f * outerHeight;
         //var lifeCountOffset = 0.25f *  outerHeight;
         var logPos = new ImVec2.__Internal {
             x = padding, 
@@ -276,11 +283,11 @@ public partial class LoggerWindow
         VisibleMessages.Add(message);
     }
 
-    public static void Log(string text)
+    public static void Log(string text, string taskName)
     {
         if (!ImguiHook.Initialized)
         {
-            Console.WriteLine(text);
+            LoggingHandler.LogMessage($"ImguiHook not initialized (LoggerWindow): {text}", taskName, LogLevel.Error);
             return;
         }
         var message = new LogMessage(text, DateTime.Now.ToUnixTimeStamp());

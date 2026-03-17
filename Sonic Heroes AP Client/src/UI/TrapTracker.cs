@@ -21,12 +21,12 @@ public class TrapTracker
     private float _targetWindowPosX;
     private float _hiddenWindowPosX;
     
-    public unsafe void Draw(float outerWidth, float outerHeight, float uiScale)
+    public unsafe void Draw(float outerWidth, float outerHeight, float uiScale, string taskName)
     {
-        if (!GameStateHandler.InGame(true))
+        if (!GameStateHandler.InGame(taskName, true))
             return;
         
-        _animationProgress = TrapHandler.IsAnyTrapRunning() ? Math.Min(1f, _animationProgress + _animationSpeed) : Math.Max(0f, _animationProgress - _animationSpeed);
+        _animationProgress = TrapHandler.IsAnyTrapRunning(taskName) ? Math.Min(1f, _animationProgress + _animationSpeed) : Math.Max(0f, _animationProgress - _animationSpeed);
         
         if (_animationProgress <= 0f)
             return;
@@ -84,7 +84,7 @@ public class TrapTracker
         ImGui.__Internal.ImDrawListAddTextVec2(
             ImGui.__Internal.GetWindowDrawList(), 
             pos, 
-            TrapHandler.NoSwapTrapRunning ? enabledColor : disabledColor, 
+            TrapHandler.IsNoSwapRunning(taskName) ? enabledColor : disabledColor, 
             "NO-SWAP", null);
         
         ImGui.__Internal.CalcTextSize((IntPtr) (&textSize), $"CHARMY", null, false, -1.0f);
