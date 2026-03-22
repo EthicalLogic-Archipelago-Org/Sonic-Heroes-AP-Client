@@ -54,6 +54,7 @@ public static class ItemGameWrites
     /// <param name="value">0 for none, 1 for stealth, 2 for frog stealth</param>
     public static unsafe void SetStealth(byte value, string taskName)
     {
+        LoggingHandler.LogMessage($"Setting Stealth to 0x{value:X}", taskName, LogLevel.Debug);
         try
         {
             var baseAddr = *(int*)(Mod.ModuleBase + 0x6777E4);

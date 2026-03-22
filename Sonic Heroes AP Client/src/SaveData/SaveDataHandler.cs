@@ -45,10 +45,10 @@ public class SaveDataHandler
             try
             {
                 LoggingHandler.LogMessage($"Save File Exists Here: {Path.GetFullPath(filePath)}", taskName, LogLevel.Info);
-                
                 var data = JsonConvert.DeserializeObject<CustomSaveData>(File.ReadAllText(filePath));
                 CustomSaveData = data ?? throw new Exception("AHHHHHHHHHHHHH");
                 //Logger.Log("Save loaded successfully!");
+                LoggingHandler.LogMessage($"Save Data Loaded Here", taskName, LogLevel.Info);
 
                 if (!Mod.CheckCurrentModVersionWithValue(CustomSaveData.ModVersion))
                 {
@@ -111,20 +111,27 @@ public class SaveDataHandler
     
     public void SaveGame(string seed, string slot, string taskName)
     {
-        LoggingHandler.LogMessage($"Start of SaveGame", taskName, LogLevel.SuperDebug);
-        var filePath = $"./Saves/{seed}{slot}.json";
-
-        CustomSaveData.ModVersion = Mod.ModConfig.ModVersion;
-        
-        var json = JsonConvert.SerializeObject(CustomSaveData, Formatting.Indented);
-
-        lock (Lock)
+        try
         {
-            LoggingHandler.LogMessage($"Writing to Save File: {Path.GetFullPath(filePath)}", taskName, LogLevel.APAction);
-            File.WriteAllText(filePath, json);
+            LoggingHandler.LogMessage($"Start of SaveGame", taskName, LogLevel.SuperDebug);
+            var filePath = $"./Saves/{seed}{slot}.json";
+
+            CustomSaveData.ModVersion = Mod.ModConfig.ModVersion;
+        
+            var json = JsonConvert.SerializeObject(CustomSaveData, Formatting.Indented);
+
+            lock (Lock)
+            {
+                LoggingHandler.LogMessage($"Writing to Save File: {Path.GetFullPath(filePath)}", taskName, LogLevel.APAction);
+                File.WriteAllText(filePath, json);
+            }
+            redirectEmblemCount[0] = CustomSaveData.Emblems;
+            LoggingHandler.LogMessage($"End of SaveGame", taskName, LogLevel.SuperDebug);
         }
-        redirectEmblemCount[0] = CustomSaveData!.Emblems;
-        LoggingHandler.LogMessage($"End of SaveGame", taskName, LogLevel.SuperDebug);
+        catch (Exception e)
+        {
+            LoggingHandler.LogMessage($"{e}", taskName, LogLevel.Error);
+        }
     }
     
     public unsafe void WriteLevelUnlockToRedirectSaveData(LevelId level, bool isBoss, Team? story, bool value)

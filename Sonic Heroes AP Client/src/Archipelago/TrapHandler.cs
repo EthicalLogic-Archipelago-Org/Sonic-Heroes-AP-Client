@@ -1,7 +1,9 @@
 
 using Sonic_Heroes_AP_Client.Definitions;
+using Sonic_Heroes_AP_Client.GameState;
 using Sonic_Heroes_AP_Client.Logging;
 using Sonic_Heroes_AP_Client.Sound;
+using Sonic_Heroes_AP_Client.Tasks;
 
 namespace Sonic_Heroes_AP_Client.Archipelago;
 
@@ -23,9 +25,9 @@ public static class TrapHandler
     /// Duration of Charmy Trap in number of voice lines.
     /// </summary>
     public const int CharmyTrapDuration = 4;
-
-    public static bool StealthTrapRunning = false;
-    public static byte PreviousStealth = 0x0;
+    
+    
+    public static byte ExpectedStealthForLevel = 0x0;
     public static int RemainingStealthDuration = 0;
     
     public static bool FreezeTrapRunning => PreviousFreeze != FreezeType.NoFreeze;
@@ -49,11 +51,17 @@ public static class TrapHandler
 
     public static bool IsAnyTrapRunning(string taskName)
     {
-        return StealthTrapRunning || FreezeTrapRunning || IsNoSwapRunning(taskName) || CharmyTrapRunning;
+        return IsStealthTrapRunning(taskName) || FreezeTrapRunning || IsNoSwapRunning(taskName) || CharmyTrapRunning;
+    }
+
+    public static bool IsStealthTrapRunning(string taskName)
+    {
+        return Interlocked.CompareExchange(ref RemainingStealthDuration, 0, 0) > 0;
+        //return GetStealth(taskName) != ExpectedStealthForLevel; //need to keep in mind Stealth Levels
     }
 
     //Stealth
-    private static unsafe byte GetStealth(string taskName)
+    public static unsafe byte GetStealth(string taskName)
     {
         try
         {
@@ -78,12 +86,19 @@ public static class TrapHandler
             if (Mod.Configuration.PlaySounds)
                 SoundHandler.PlaySound((int)Mod.ModuleBase, 0xE00D, taskName);
         }
-        
-        Interlocked.Add(ref RemainingStealthDuration, StealthTrapDuration);
-        if (Mod.StealthTrapTask.Status != TaskStatus.Running)
+
+        //this check is pointless as this only runs from HandleInGame item
+        if (!GameStateHandler.InGame(taskName))
         {
-            PreviousStealth = GetStealth(taskName);
+            LoggingHandler.LogMessage($"HandleStealthTrap Not In Game", taskName, LogLevel.Debug);
+            return;
+        }
+        bool stealthRunning = IsStealthTrapRunning(taskName);   //check before adding duration
+        Interlocked.Add(ref RemainingStealthDuration, StealthTrapDuration);
+        if (!stealthRunning)
+        {
             LoggingHandler.LogMessage($"Stealth Trap Task not running, starting now.", taskName, LogLevel.SuperDebug);
+            Mod.StealthTrapTask = new Task(TrapTask.StealthTrapTask);
             Mod.StealthTrapTask.Start();
             return;
         }
@@ -93,20 +108,23 @@ public static class TrapHandler
 
     public static void DisableStealthTrap(string taskName)
     {
-        if (!StealthTrapRunning)
-            return;
+        if (Interlocked.Exchange(ref RemainingStealthDuration, 0) > 0)
+        {
+            if (Mod.Configuration != null && Mod.Configuration.PlaySounds) 
+                SoundHandler.PlaySound((int)Mod.ModuleBase, 0xE00E, taskName);
 
-        Interlocked.Exchange(ref RemainingStealthDuration, 0);
-        ItemGameWrites.SetStealth(PreviousStealth, taskName);
-        StealthTrapRunning = false;
+            if (!GameStateHandler.InGame(taskName, true))
+            {
+                LoggingHandler.LogMessage($"Disabling Stealth Trap when in Menu, aborting.", taskName, LogLevel.Debug);
+                return;
+            }
+            LoggingHandler.LogMessage($"Disabling Stealth Trap but Setting Stealth Value to 0x{ExpectedStealthForLevel:X}", taskName, LogLevel.SuperDebug);
+            ItemGameWrites.SetStealth(ExpectedStealthForLevel, taskName);
+        }
         if (Mod.Configuration == null)
         {
             LoggingHandler.LogMessage($"Mod Configuration is Null in DisableStealthTrap", taskName, LogLevel.Error);
-            return;
         }
-        if (Mod.Configuration.PlaySounds)
-            SoundHandler.PlaySound((int)Mod.ModuleBase, 0xE00E, taskName);
-        
     }
     
     //Freeze
@@ -133,6 +151,7 @@ public static class TrapHandler
         if (Mod.FreezeTrapTask.Status != TaskStatus.Running)
         {
             LoggingHandler.LogMessage($"Freeze Trap Task not running, starting now.", taskName, LogLevel.SuperDebug);
+            Mod.FreezeTrapTask = new Task(TrapTask.FreezeTrapTask);
             Mod.FreezeTrapTask.Start();
             return;
         }
@@ -168,6 +187,7 @@ public static class TrapHandler
         if (Mod.CharmyTrapTask.Status != TaskStatus.Running)
         {
             LoggingHandler.LogMessage($"Charmy Trap Task not running, starting now.", taskName, LogLevel.SuperDebug);
+            Mod.CharmyTrapTask = new Task(TrapTask.CharmyTrapTask);
             Mod.CharmyTrapTask.Start();
             return;
         }

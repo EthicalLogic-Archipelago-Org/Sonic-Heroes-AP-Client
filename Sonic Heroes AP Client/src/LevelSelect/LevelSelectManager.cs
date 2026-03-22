@@ -75,7 +75,8 @@ public class LevelSelectManager
     {
         try
         {
-            Mod.SaveDataHandler!.SaveData->EmblemCount = (byte)Mod.SaveDataHandler.CustomSaveData.Emblems;
+            //Mod.SaveDataHandler.SaveData->EmblemCount = (byte)Mod.SaveDataHandler.CustomSaveData.Emblems;
+            LoggingHandler.LogMessage($"Recalc Save Data Ptr: 0x{(UIntPtr)Mod.SaveDataHandler.SaveData:X}, {Mod.SaveDataHandler.CustomSaveData.Emblems}", taskName, LogLevel.SuperDebug);
             
             //Gate Unlocking
             //foreach (var gate in GateData.Where(gate => Mod.SaveDataHandler.CustomSaveData.GateBossComplete[gate.Index]))
@@ -238,6 +239,7 @@ public class LevelSelectManager
     /// <returns>Null if invalid (like Both Acts for SuperHard). True or False otherwise.</returns>
     public bool? IsThisTeamEnabled(Team team, string taskName, bool bothActs = false)
     {
+        //LoggingHandler.LogMessage($"IsThisTeamEnabled: Team {team} BothActs: {bothActs}", taskName, LogLevel.SuperDebug, 3);
         if (team is not Team.SuperHardMode || !bothActs)
             return bothActs
                 ? IsThisTeamActEnabled(team, Act.Act1, taskName) && IsThisTeamActEnabled(team, Act.Act2, taskName)

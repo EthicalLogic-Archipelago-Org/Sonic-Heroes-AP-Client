@@ -23,7 +23,7 @@ using Sonic_Heroes_AP_Client.UI;
 
 namespace Sonic_Heroes_AP_Client.Hooks;
 
-public class FunctionHooks
+public static class FunctionHooks
 {
     private const string TaskName = "GameThread";
     
@@ -72,7 +72,7 @@ public class FunctionHooks
     
     
     
-    public void SetUpFunctionHooks(IReloadedHooks hooks)
+    public static void SetUpFunctionHooks(IReloadedHooks hooks)
     {
         try
         {
@@ -1417,6 +1417,8 @@ public class FunctionHooks
     private static int OnInitSetGenerator()
     {
         LoggingHandler.LogMessage($"OnInitSetGenerator Start", TaskName, LogLevel.SuperDebug);
+        TrapHandler.ExpectedStealthForLevel = TrapHandler.GetStealth(TaskName);
+        LoggingHandler.LogMessage($"Setting ExpectedStealth to 0x{TrapHandler.ExpectedStealthForLevel:X}", TaskName, LogLevel.SuperDebug);
         StageObjHandler.HandleInitSetGenerator(TaskName);
         AbilityCharacterManager.PollUpdates(TaskName);
         LoggingHandler.LogMessage($"OnInitSetGenerator Finished", TaskName, LogLevel.SuperDebug);

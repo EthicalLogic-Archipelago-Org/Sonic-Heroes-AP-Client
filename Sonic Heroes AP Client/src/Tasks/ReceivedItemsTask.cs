@@ -12,8 +12,11 @@ public static class ReceivedItemsTask
         LoggingHandler.LogMessage($"ReceivedItemsTask Started", taskName, LogLevel.SuperDebug);
         while (true)
         {
+            //LoggingHandler.LogMessage($"ReceivedItems: {ItemHandler.ReceivedItems} : {ItemHandler.ReceivedItems.Count}", taskName, LogLevel.SuperDebug);
             if (ItemHandler.ReceivedItems.TryDequeue(out var itemTuple))
+            {
                 ItemHandler.HandleItem(itemTuple.Item1, itemTuple.Item2, taskName);
+            }
             else
             {
                 Thread.Sleep(100);

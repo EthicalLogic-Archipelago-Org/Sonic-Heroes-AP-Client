@@ -62,9 +62,97 @@ public class ArchipelagoHandler
     
     public void InitConnect(string taskName)
     {
-        IsConnecting = true;
-        IsConnected = Connect(taskName);
+        try
+        {
+            ConnectAsync(taskName);
+        }
+        catch (Exception e)
+        {
+            LoggingHandler.LogMessage($"{e}", taskName, LogLevel.Error);
+        }
+    }
+
+    private async void ConnectAsync(string taskName)
+    {
+        LoginResult result;
+        try
+        {
+            LoggingHandler.LogMessage($"ConnectAsync Start", taskName, LogLevel.Debug);
+            IsConnecting = true;
+            RoomInfoPacket connectAsyncResult = await Session.ConnectAsync();
+            Seed = connectAsyncResult.SeedName;
+
+        }
+        catch (Exception e)
+        {
+            LoggingHandler.LogMessage($"{e}", taskName, LogLevel.Error);
+            IsConnecting = false;
+            return;
+        }
+
+        try
+        {
+            LoggingHandler.LogMessage($"Seed: {Seed} Slot: {Slot}", taskName, LogLevel.APAction);
+            LoginResult loginAsyncResult = await Session.LoginAsync(
+                 game: GameName,
+                 name: Slot,
+                 itemsHandlingFlags: ItemsHandlingFlags.AllItems,
+                 version: new Version(1, 0, 0),
+                 tags: [],
+                 password: Password);
+            result = loginAsyncResult;
+        }
+        catch (Exception e)
+        {
+            //LoggingHandler.LogMessage($"{e}", taskName, LogLevel.Error);
+            LoggingHandler.LogMessage($"LoginAsync Async Failed\n{e}", taskName, LogLevel.Error);
+            result = new LoginFailure(e.GetBaseException().Message);
+            HandleLoginFailure(taskName, (LoginFailure)result);
+            IsConnecting = false;
+            return;
+        }
+
+        try
+        {
+            if (result.Successful)
+            {
+                HandleLoginSuccess(taskName, result);
+            }
+            else
+            {
+                HandleLoginFailure(taskName, (LoginFailure)result);
+            }
+        }
+        catch (Exception e)
+        {
+            LoggingHandler.LogMessage($"{e}", taskName, LogLevel.Error);
+        }
         IsConnecting = false;
+    }
+
+
+    private async void HandleLoginFailure(string taskName, LoginFailure failure)
+    {
+        //var result = 
+        var errorMessage = $"Failed to Connect to {Server}:{Port} as {Slot}:";
+        errorMessage = failure.Errors.Aggregate(errorMessage, (current, error) => current + $"\n    {error}");
+        errorMessage = failure.ErrorCodes.Aggregate(errorMessage, (current, error) => current + $"\n    {error}");
+        LoggingHandler.LogMessage($"LoginAsync Async Failed: {errorMessage}\nAttempting reconnect...", taskName, LogLevel.Error);
+        
+    }
+
+    private async void HandleLoginSuccess(string taskName, LoginResult result)
+    {
+        LoggingHandler.LogMessage($"LoginAsync Async Successful", taskName, LogLevel.SuperDebug);
+        Mod.SaveDataHandler.LoadSaveData(Seed, Slot, taskName);
+        if (Mod.Configuration != null && Mod.Configuration.MusicShuffle)
+            MusicShuffleHandler.Shuffle(int.Parse(Seed[..9]), taskName);
+        _loginSuccessful = (LoginSuccessful)result;
+        SlotData = new SlotData(_loginSuccessful.SlotData, taskName);
+        Mod.InitOnConnect(taskName);
+        Mod.CheckReceivedItemsTask.Start();
+        Mod.CheckedLocationsTask.Start();
+        IsConnected = true;
     }
     
 
@@ -76,6 +164,7 @@ public class ArchipelagoHandler
         {
             //Yes I am aware that this is async (this is in a Task that is separate from Game Thread)
             RoomInfoPacket connectAsyncResult = Session.ConnectAsync().Result;
+            
             Seed = connectAsyncResult.SeedName;
             
             LoggingHandler.LogMessage($"Seed: {Seed} Slot: {Slot}", taskName, LogLevel.APAction);

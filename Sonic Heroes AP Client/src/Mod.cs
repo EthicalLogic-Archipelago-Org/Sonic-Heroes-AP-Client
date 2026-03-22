@@ -82,7 +82,7 @@ public class Mod: ModBase
     //vars for mod classes here:
     public static ArchipelagoHandler ArchipelagoHandler;
     public static Controller.Controller? Controller;
-    public static FunctionHooks FunctionHooks;
+    //public static FunctionHooks FunctionHooks;
     public static SaveDataHandler SaveDataHandler;
     public static LevelSelectManager LevelSelectManager;
     public static UserInterface UserInterface;
@@ -97,7 +97,7 @@ public class Mod: ModBase
     public static Task StealthTrapTask = new (TrapTask.StealthTrapTask);
     public static Task FreezeTrapTask = new (TrapTask.FreezeTrapTask);
     public static Task CharmyTrapTask = new (TrapTask.CharmyTrapTask);
-    public static Task PositionMappingTask = new (Tasks.ConnectionTask.APConnectionTask);
+    //public static Task PositionMappingTask = new (Tasks.ConnectionTask.APConnectionTask);
     
     //Imgui (Level, Trap, logger windows)
     //mod config changed
@@ -136,6 +136,7 @@ public class Mod: ModBase
         
         Controller = new Controller.Controller(_controllerHook, 0);
         
+        
         ArchipelagoHandler = new ArchipelagoHandler(Configuration.Server, Configuration.Port, Configuration.Slot, Configuration.Password);
         context.Configuration.ConfigurationUpdated += OnModConfigChange;
         
@@ -148,7 +149,7 @@ public class Mod: ModBase
         //UI can be last
         UserInterface = new UserInterface();
         
-        FunctionHooks = new FunctionHooks();
+        //FunctionHooks = new FunctionHooks();
 
         CheckInvalidConfigValues(taskName);
         //connection stuff here
@@ -160,8 +161,11 @@ public class Mod: ModBase
         LoggingHandler.LogMessage($"InitOnConnect Start", taskName, LogLevel.SuperDebug);
         if (_hooks != null)
         {
+            LoggingHandler.LogMessage($"InitOnConnect Before Function Hooks", taskName, LogLevel.SuperDebug);
             FunctionHooks.SetUpFunctionHooks(_hooks);
+            LoggingHandler.LogMessage($"InitOnConnect After Function Hooks", taskName, LogLevel.SuperDebug);
             GameStateGameWrites.RemoveRingCapOnScatteredRingSpawn(true);
+            LoggingHandler.LogMessage($"InitOnConnect After Remove Ring Cap", taskName, LogLevel.SuperDebug);
         } 
         //GameStateGameWrites.Change999RingsCap(true);
         LoggingHandler.LogMessage($"InitOnConnect Before AbilityCharacter", taskName, LogLevel.SuperDebug);

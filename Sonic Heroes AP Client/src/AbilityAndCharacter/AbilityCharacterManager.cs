@@ -13,36 +13,44 @@ public static class AbilityCharacterManager
 
     public static void InitConnect(string taskName)
     {
-        //Unlock Jump and PowerAttack for enabled teams (and all abilities for regions > sky)
-        foreach (var team in Enum.GetValues<Team>().Where(x => (bool)Mod.LevelSelectManager.IsThisTeamEnabled(x, taskName)!))
+        try
         {
-            UnlockAbilityForAllRegions(team, Ability.Jump, taskName);
-            UnlockAbilityForAllRegions(team, Ability.PowerAttack,  taskName);
-            foreach (var region in Enum.GetValues<Region>().Where(reg => reg > Region.Sky))
-            {
-                UnlockAllAbilitiesForRegion(team, region,  taskName);
-            }
+            //Unlock Jump and PowerAttack for enabled teams (and all abilities for regions > sky)
+             foreach (var team in Enum.GetValues<Team>().Where(x => (bool)Mod.LevelSelectManager.IsThisTeamEnabled(x, taskName)!))
+             {
+                 //UnlockAbilityForAllRegions(team, Ability.Jump, taskName);            //moved to APWorld Precollected
+                 //UnlockAbilityForAllRegions(team, Ability.PowerAttack,  taskName);    //moved to APWorld Precollected
+                 foreach (var region in Enum.GetValues<Region>().Where(reg => reg > Region.Sky))
+                 {
+                     UnlockAllAbilitiesForRegion(team, region,  taskName);
+                 }
+             }
+     
+             //Unlock speed char for all other teams (to avoid death loop)
+             foreach (var team in Enum.GetValues<Team>().Where(x => x is not Team.Sonic))
+             {
+                 SetCharUnlock(team, FormationChar.Speed, true, taskName);
+             }
+             
+             
+             if (Mod.ArchipelagoHandler.SlotData.EntireRunUnlockType is EntireRunUnlockType.LegacyLevelGates)
+             {
+                 //Unlock All Characters and Abilities
+                 foreach (var team in Enum.GetValues<Team>().Where(x => (bool)Mod.LevelSelectManager.IsThisTeamEnabled(x, taskName)!))
+                 {
+                     SetCharUnlock(team, FormationChar.Speed, true, taskName);
+                     SetCharUnlock(team, FormationChar.Power, true, taskName);
+                     SetCharUnlock(team, FormationChar.Flying, true, taskName);
+                     UnlockAllAbilitiesForAllRegionsForTeam(team, taskName);
+                     HandleAbilityUnlockCheck(team, Region.Ocean, taskName, true);
+                 }
+             }
         }
-
-        //Unlock speed char for all other teams (to avoid death loop)
-        foreach (var team in Enum.GetValues<Team>().Where(x => x is not Team.Sonic))
+        catch (Exception e)
         {
-            SetCharUnlock(team, FormationChar.Speed, true, taskName);
+            LoggingHandler.LogMessage($"{e}", taskName, LogLevel.Error);
         }
         
-        
-        if (Mod.ArchipelagoHandler.SlotData.EntireRunUnlockType is EntireRunUnlockType.LegacyLevelGates)
-        {
-            //Unlock All Characters and Abilities
-            foreach (var team in Enum.GetValues<Team>().Where(x => (bool)Mod.LevelSelectManager.IsThisTeamEnabled(x, taskName)!))
-            {
-                SetCharUnlock(team, FormationChar.Speed, true, taskName);
-                SetCharUnlock(team, FormationChar.Power, true, taskName);
-                SetCharUnlock(team, FormationChar.Flying, true, taskName);
-                UnlockAllAbilitiesForAllRegionsForTeam(team, taskName);
-                HandleAbilityUnlockCheck(team, Region.Ocean, taskName, true);
-            }
-        }
     }
     
     

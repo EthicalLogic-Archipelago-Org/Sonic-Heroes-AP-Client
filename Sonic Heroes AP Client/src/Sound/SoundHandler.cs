@@ -8,18 +8,17 @@ namespace Sonic_Heroes_AP_Client.Sound;
 public static class SoundHandler
 {
     [DllImport("SHAP-NativeCaller.dll", CallingConvention = CallingConvention.Cdecl)]
-    public static extern int SHAPNativePlaySound(int moduleBase, int soundId);
+    public static extern int PlaySound(int moduleBase, int soundId);
     
     [DllImport("SHAP-NativeCaller.dll", CallingConvention = CallingConvention.Cdecl)]
-    public static extern int SHAPNativePlayAFSSound(int moduleBase, int soundId);
-
+    public static extern int PlayAFSSound(int moduleBase, int soundId);
+    
 
     public static void PlaySound(int moduleBase, int soundId, string taskName)
     {
-        LoggingHandler.LogMessage($"Playing Sound: 0x{soundId:x}", taskName, LogLevel.SuperDebug);
         try
         {
-            SHAPNativePlaySound(moduleBase, soundId);
+            PlaySound(moduleBase, soundId);
         }
         catch (Exception e)
         {
@@ -32,7 +31,7 @@ public static class SoundHandler
         LoggingHandler.LogMessage($"Playing Sound Bank: 0x{soundId:x}", taskName, LogLevel.SuperDebug);
         try
         {
-            SHAPNativePlayAFSSound(moduleBase, soundId);
+            PlayAFSSound(moduleBase, soundId);
         }
         catch (Exception e)
         {

@@ -400,9 +400,9 @@ public static class MusicShuffleData
     {
         (Path.Combine(ShadowMusicFolder, "sng_Battle2.adx"), MusicType.Jingle),                 //2p battlemode player 2 intro
         (Path.Combine(ShadowMusicFolder, "sng_Battle1.adx"), MusicType.Jingle),                 //2p battlemode player 1 intro
-        (Path.Combine(ShadowMusicFolder, "sng_E1001.adx"), MusicType.MenuMusic),
+        (Path.Combine(ShadowMusicFolder, "sng_E1001.adx"), MusicType.Ignored),
         (Path.Combine(ShadowMusicFolder, "sng_E4101.adx"), MusicType.Ignored),
-        (Path.Combine(ShadowMusicFolder, "sng_E4201.adx"), MusicType.LongJingle),
+        (Path.Combine(ShadowMusicFolder, "sng_E4201.adx"), MusicType.LongJingle),               //I AM THE EGGMAN JINGLE
         (Path.Combine(ShadowMusicFolder, "sng_E5024.adx"), MusicType.Ignored),
         (Path.Combine(ShadowMusicFolder, "sng_E5204.adx"), MusicType.Ignored),
         (Path.Combine(ShadowMusicFolder, "sng_E8003.adx"), MusicType.Ignored),

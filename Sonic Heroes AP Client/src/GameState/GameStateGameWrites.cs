@@ -11,22 +11,20 @@ namespace Sonic_Heroes_AP_Client.GameState;
 public static class GameStateGameWrites
 {
     [DllImport("SHAP-NativeCaller.dll", CallingConvention = CallingConvention.Cdecl)]
-    public static extern int SHAPNativeModifyLives(int moduleBase, int amount);
+    public static extern int ModifyLives(int moduleBase, int amount);
     
     [DllImport("SHAP-NativeCaller.dll", CallingConvention = CallingConvention.Cdecl)]
-    public static extern int SHAPNativeRestartLevel(int moduleBase);
+    public static extern int RestartLevel(int moduleBase);
     
     [DllImport("SHAP-NativeCaller.dll", CallingConvention = CallingConvention.Cdecl)]
-    public static extern int SHAPNativeGiveShield(int moduleBase);
-
-
-
+    public static extern int GiveShield(int moduleBase);
+    
     public static void ModifyLives(int moduleBase, int amount, string taskName)
     {
         LoggingHandler.LogMessage($"ModifyLives 0x{moduleBase:x} {amount}", taskName, LogLevel.SuperDebug);
         try
         {
-            SHAPNativeModifyLives(moduleBase, amount);
+            ModifyLives(moduleBase, amount);
         }
         catch (Exception e)
         {
@@ -39,7 +37,7 @@ public static class GameStateGameWrites
         LoggingHandler.LogMessage($"Restart Level 0x{moduleBase:x}", taskName, LogLevel.SuperDebug);
         try
         {
-            SHAPNativeRestartLevel(moduleBase);
+            RestartLevel(moduleBase);
         }
         catch (Exception e)
         {
@@ -53,7 +51,7 @@ public static class GameStateGameWrites
         LoggingHandler.LogMessage($"Give Shield 0x{moduleBase:x}", taskName, LogLevel.SuperDebug);
         try
         {
-            SHAPNativeGiveShield(moduleBase);
+            GiveShield(moduleBase);
         }
         catch (Exception e)
         {

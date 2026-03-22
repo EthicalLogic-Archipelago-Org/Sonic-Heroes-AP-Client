@@ -10,15 +10,14 @@ public static class ConnectionTask
     public static void APConnectionTask()
     {
         const string taskName = "APConnectionTask";
+        Mod.ArchipelagoHandler.CreateSession(taskName);
         while (true)
         {
             if (!ArchipelagoHandler.IsConnecting && !ArchipelagoHandler.IsConnected)
             {
                 //LoggingHandler.LogMessage(message: $"", source: $"", level: LogLevel.Debug, task: taskName);
-                
-                Mod.ArchipelagoHandler.CreateSession(taskName);
                 Mod.ArchipelagoHandler.InitConnect(taskName);
-                LoggingHandler.LogMessage($"Connection Task Finished in : {taskName}", taskName, LogLevel.SuperDebug);
+                //LoggingHandler.LogMessage($"Connection Task Finished in : {taskName}", taskName, LogLevel.SuperDebug);
             }
             Thread.Sleep(2500);
         }

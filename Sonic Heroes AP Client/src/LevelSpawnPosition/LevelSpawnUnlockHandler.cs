@@ -36,18 +36,26 @@ public static class LevelSpawnUnlockHandler
 
     public static void InitConnect(string taskName)
     {
-        foreach (var team in Enum.GetValues<Team>().Where(t => (bool)Mod.LevelSelectManager.IsThisTeamEnabled(t, taskName)!))
+        try
         {
-            //starting spawn pos here
-            UnlockSpawnPosForAllLevelsForTeam(team, 0, taskName);
+            foreach (var team in Enum.GetValues<Team>().Where(t => (bool)Mod.LevelSelectManager.IsThisTeamEnabled(t, taskName)!))
+            {
+                //starting spawn pos here
+                UnlockSpawnPosForAllLevelsForTeam(team, 0, taskName);
+            }
+            if (!Mod.IsDebug)
+                return;
+            foreach (var team in Enum.GetValues<Team>())
+            {
+                UnlockAllSpawnDataForTeam(team, taskName);
+            }
+            Mod.ArchipelagoHandler.Save(taskName);
         }
-        if (!Mod.IsDebug)
-            return;
-        foreach (var team in Enum.GetValues<Team>())
+        catch (Exception e)
         {
-            UnlockAllSpawnDataForTeam(team, taskName);
+            LoggingHandler.LogMessage($"{e}", taskName, LogLevel.Error);
         }
-        Mod.ArchipelagoHandler.Save(taskName);
+        
     }
 
     public static void UnlockAllSpawnDataForTeam(Team team, string taskName)

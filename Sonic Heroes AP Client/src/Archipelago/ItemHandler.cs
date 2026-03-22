@@ -48,54 +48,83 @@ public static class ItemHandler
     
     public static void HandleItem(int index, ItemInfo item, string taskName)
     {
-        if (Mod.SaveDataHandler.CustomSaveData == null)
+        try
         {
-            LoggingHandler.LogMessage($"Custom Save Data is Null in Handle Item", taskName, LogLevel.Error);
-            return;
-        }
-        
-        if (index < Mod.SaveDataHandler.CustomSaveData.LastItemIndex)
-        {
-            LoggingHandler.LogMessage($"Item #{index}: {item.ItemName} dropped due to index being lower than Save Data index: {Mod.SaveDataHandler.CustomSaveData.LastItemIndex}", taskName, LogLevel.SuperDebug);
-            return;
-        }
-        
-        LoggingHandler.LogMessage($"Handle Item Start", taskName, LogLevel.SuperDebug);
-                
-        Mod.SaveDataHandler.CustomSaveData.LastItemIndex++;
-        var handled = false;
-        
-        var itemName = item.ItemName;
-        
-        //check for items here
-        CheckPlayableCharItemName(itemName, ref handled, taskName);
-        CheckEmeraldItemName(itemName, ref handled, taskName);
-        CheckEmblemItemName(itemName, ref handled, taskName);
-        CheckAbilityItemName(itemName, ref handled, taskName);
-        CheckStageObjItemName(itemName, ref handled, taskName);
-
-        if (handled)
-        {
-            LoggingHandler.LogMessage($"Item Handled in HandleItem", taskName, LogLevel.SuperDebug);
-            Mod.LevelSelectManager.RecalculateOpenLevels(taskName: taskName);
-            Mod.ArchipelagoHandler!.Save(taskName);
-            return;
-        }
-
-        if (item.ItemId - SonicHeroesDefinitions.AllIdsStartOffset < (long)FillerSHItem.ExtraLife)
-        {
-            LoggingHandler.LogMessage($"Item not handled but ID is not in Filler items. \nHOW DID WE GET HERE? Item: {itemName}", taskName, LogLevel.Error);
-            return;
-        }
+            if (Mod.SaveDataHandler.CustomSaveData == null)
+            {
+                LoggingHandler.LogMessage($"Custom Save Data is Null in Handle Item", taskName, LogLevel.Error);
+                return;
+            }
             
-        
-        //have filler item here
-        if (!GameStateHandler.InGame(taskName))
-        {
-            CachedInGameItems.Enqueue((FillerSHItem)item.ItemId);
-            return;
+            if (index < Mod.SaveDataHandler.CustomSaveData.LastItemIndex)
+            {
+                LoggingHandler.LogMessage($"Item #{index}: {item.ItemName} dropped due to index being lower than Save Data index: {Mod.SaveDataHandler.CustomSaveData.LastItemIndex}", taskName, LogLevel.SuperDebug);
+                return;
+            }
+            
+            LoggingHandler.LogMessage($"Handle Item Start", taskName, LogLevel.SuperDebug);
+                    
+            Mod.SaveDataHandler.CustomSaveData.LastItemIndex++;
+            var handled = false;
+            
+            var itemName = item.ItemName;
+            
+            LoggingHandler.LogMessage($"Handle Item Start : Name: {itemName} Index: {Mod.SaveDataHandler.CustomSaveData.LastItemIndex}", taskName, LogLevel.SuperDebug);
+
+            if (itemName.Contains("Emblem"))
+            {
+                LoggingHandler.LogMessage($"Dropping Emblem Please send help.", taskName, LogLevel.SuperDebug);
+                //return;
+            }
+
+            if (itemName == null)
+            {
+                LoggingHandler.LogMessage($"ItemName is null for some reason", taskName, LogLevel.Error);
+            }
+            
+            //check for items here
+            LoggingHandler.LogMessage($"Handle Item Before Playable Char: {handled}", taskName, LogLevel.SuperDebug);
+            CheckPlayableCharItemName(itemName, ref handled, taskName);
+            LoggingHandler.LogMessage($"Handle Item Before Emerald: {handled}", taskName, LogLevel.SuperDebug);
+            CheckEmeraldItemName(itemName, ref handled, taskName);
+            LoggingHandler.LogMessage($"Handle Item Before Emblem: {handled}", taskName, LogLevel.SuperDebug);
+            CheckEmblemItemName(itemName, ref handled, taskName);
+            LoggingHandler.LogMessage($"Handle Item Before Ability: {handled}", taskName, LogLevel.SuperDebug);
+            CheckAbilityItemName(itemName, ref handled, taskName);
+            LoggingHandler.LogMessage($"Handle Item Before StageObj: {handled}", taskName, LogLevel.SuperDebug);
+            CheckStageObjItemName(itemName, ref handled, taskName);
+            
+
+            if (handled)
+            {
+                LoggingHandler.LogMessage($"Item Handled in HandleItem", taskName, LogLevel.SuperDebug);
+                Mod.LevelSelectManager.RecalculateOpenLevels(taskName: taskName);
+                Mod.ArchipelagoHandler.Save(taskName);
+                return;
+            }
+
+            if (item.ItemId - SonicHeroesDefinitions.AllIdsStartOffset < (long)FillerSHItem.ExtraLife)
+            {
+                LoggingHandler.LogMessage($"Item not handled but ID is not in Filler items. \nHOW DID WE GET HERE? Item: {itemName}", taskName, LogLevel.Error);
+                return;
+            }
+                
+            
+            //have filler item here
+            if (!GameStateHandler.InGame(taskName))
+            {
+                LoggingHandler.LogMessage($"Enqueuing Item: {itemName} to CachedInGameItems", taskName, LogLevel.SuperDebug);
+                CachedInGameItems.Enqueue((FillerSHItem)(item.ItemId - SonicHeroesDefinitions.AllIdsStartOffset));
+                return;
+            }
+            
+            LoggingHandler.LogMessage($"Handling InGame Item Directly {itemName}", taskName, LogLevel.SuperDebug);
+            HandleInGameItem((FillerSHItem)(item.ItemId - SonicHeroesDefinitions.AllIdsStartOffset), taskName);
         }
-        HandleInGameItem((FillerSHItem)item.ItemId, taskName);
+        catch (Exception e)
+        {
+            LoggingHandler.LogMessage($"{e}", taskName, LogLevel.Error);
+        }
     }
     
     public static void HandleCachedItems(string taskName)
@@ -258,25 +287,35 @@ public static class ItemHandler
 
     public static void CheckEmblemItemName(string itemName, ref bool handled, string taskName)
     {
-        if (handled)
-            return;
-        if (!itemName.Contains("Emblem"))
-            return;
-        if (Mod.SaveDataHandler.CustomSaveData == null)
+        try
         {
-            LoggingHandler.LogMessage($"Custom Save Data is Null in Check Emblem Item", taskName, LogLevel.Error);
-            return;
+            if (handled)
+                return;
+            if (!itemName.Contains("Emblem"))
+                return;
+            if (Mod.SaveDataHandler.CustomSaveData == null)
+            {
+                LoggingHandler.LogMessage($"Custom Save Data is Null in Check Emblem Item", taskName, LogLevel.Error);
+                return;
+            }
+            if (Mod.Configuration == null)
+            {
+                LoggingHandler.LogMessage($"Mod Configuration is Null in Handle Item", taskName, LogLevel.Error);
+                return;
+            }
+            LoggingHandler.LogMessage($"Got Emblem: {itemName}", taskName, LogLevel.APAction);
+            Mod.SaveDataHandler.CustomSaveData.Emblems++;
+            if (Mod.Configuration.PlaySounds)
+            {
+                SoundHandler.PlaySound((int)Mod.ModuleBase, 0xE016, taskName);
+            }
+                
+            handled = true;
         }
-        if (Mod.Configuration == null)
+        catch (Exception e)
         {
-            LoggingHandler.LogMessage($"Mod Configuration is Null in Handle Item", taskName, LogLevel.Error);
-            return;
+            LoggingHandler.LogMessage($"{e}", taskName, LogLevel.APAction);
         }
-        LoggingHandler.LogMessage($"Got Emblem: {itemName}", taskName, LogLevel.APAction);
-        Mod.SaveDataHandler.CustomSaveData.Emblems++;
-        if (Mod.Configuration.PlaySounds)
-            SoundHandler.PlaySound((int)Mod.ModuleBase, 0xE016, taskName);
-        handled = true;
     }
 
     public static void CheckAbilityItemName(string itemName, ref bool handled, string taskName)

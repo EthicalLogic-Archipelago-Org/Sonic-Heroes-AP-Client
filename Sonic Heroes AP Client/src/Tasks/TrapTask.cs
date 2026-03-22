@@ -13,9 +13,8 @@ public static class TrapTask
     public static void StealthTrapTask()
     {
         const string taskName = "StealthTrapTask";
-        
         ItemGameWrites.SetStealth(1, taskName);
-        while (Interlocked.CompareExchange(ref TrapHandler.RemainingStealthDuration, 0, 0) > 0) 
+        while (Interlocked.CompareExchange(ref TrapHandler.RemainingStealthDuration, 0, 0) > 1) //check for > 0 in disable Stealth Trap so this must be 1
         {
             Thread.Sleep(50);
             Interlocked.Decrement(ref TrapHandler.RemainingStealthDuration);

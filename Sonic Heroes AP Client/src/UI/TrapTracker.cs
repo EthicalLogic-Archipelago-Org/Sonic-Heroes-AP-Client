@@ -64,7 +64,7 @@ public class TrapTracker
         ImGui.__Internal.ImDrawListAddTextVec2(
             ImGui.__Internal.GetWindowDrawList(), 
             pos, 
-            TrapHandler.StealthTrapRunning ? enabledColor : disabledColor, 
+            TrapHandler.IsStealthTrapRunning(taskName) ? enabledColor : disabledColor, 
             "STEALTH", null);
         
         ImGui.__Internal.CalcTextSize((IntPtr) (&textSize), $"FREEZE", null, false, -1.0f);
