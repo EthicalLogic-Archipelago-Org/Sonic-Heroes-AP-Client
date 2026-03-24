@@ -1,8 +1,8 @@
 {
   "ModId": "sonicheroes.archipelago.client",
   "ModName": "Sonic Heroes Archipelago Client",
-  "ModAuthor": "xMcacutt, EthicalLogic",
-  "ModVersion": "2.1.3",
+  "ModAuthor": "EthicalLogic, xMcacutt",
+  "ModVersion": "2.2.0",
   "ModDescription": "Archipelago.gg implementation of Sonic Heroes",
   "ModDll": "Sonic_Heroes_AP_Client.dll",
   "ModIcon": "icon.png",

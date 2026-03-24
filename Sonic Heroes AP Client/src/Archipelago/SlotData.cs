@@ -60,12 +60,21 @@ public class SlotData
             apworldversion = slotDict["APWorldVersion"].ToString();
         }
 
-        if (!Mod.CheckCurrentModVersionWithValue(apworldversion!))
+        try
         {
-            var versionErrorMsg = $"Your Mod and APWorld versions are incompatible. Your Mod version is: {Mod.ModConfig.ModVersion} and your APWorld version is: {apworldversion}";
-            LoggingHandler.LogMessage(versionErrorMsg, taskName, LogLevel.Error);
-            throw new ModVersionConflictException(versionErrorMsg, taskName);
+            if (!Mod.CheckCurrentModVersionWithValue(apworldversion!))
+            {
+                var versionErrorMsg = $"Your Mod and APWorld versions are incompatible. Your Mod version is: {Mod.ModConfig.ModVersion} and your APWorld version is: {apworldversion}";
+                LoggingHandler.LogMessage(versionErrorMsg, taskName, LogLevel.Error);
+                throw new ModVersionConflictException(versionErrorMsg, taskName);
+            }
         }
+        catch (Exception e)
+        {
+            LoggingHandler.LogMessage($"{e}", taskName, LogLevel.Error);
+        }
+
+        
         LoggingHandler.LogMessage($"Slot Data Version Check Passed", taskName, LogLevel.SuperDebug);
         var gateLevelCounts = ((JArray)slotDict["GateLevelCounts"]).ToObject<int[]>();
         var gateEmblemCosts = ((JArray)slotDict["GateEmblemCosts"]).ToObject<int[]>();
