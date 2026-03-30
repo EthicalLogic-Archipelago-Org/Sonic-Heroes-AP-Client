@@ -85,6 +85,7 @@
 
 ### Refactors
 - Significant Refactor of Logging to allow for using Reloaded's logging
+- Recompile of SHAP Native Caller (cross-compile from Linux to Windows)
 - Debug Flag moved to Build Type (Release/Debug)
 - Add LaserFence to StageObjsToMessWith
 - Use LastOrDefault for ability and stage obj item name matching

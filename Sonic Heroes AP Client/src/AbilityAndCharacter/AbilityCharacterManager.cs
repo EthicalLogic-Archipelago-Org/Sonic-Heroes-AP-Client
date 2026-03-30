@@ -224,6 +224,7 @@ public static class AbilityCharacterManager
         }
         else
         {
+            // TODO use UnlockAbilityForRegion Here to unify handling
             Mod.SaveDataHandler.CustomSaveData.UnlockSaveData[(Team)team].AbilityUnlocks[(Region)region][(Ability)ability] = !Mod.IsDebug || !Mod.SaveDataHandler.CustomSaveData.UnlockSaveData[(Team)team].AbilityUnlocks[(Region)region][(Ability)ability];
             PollUpdates(taskName);
         }

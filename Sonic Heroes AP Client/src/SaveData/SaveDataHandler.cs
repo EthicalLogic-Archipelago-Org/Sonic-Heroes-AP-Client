@@ -122,7 +122,7 @@ public class SaveDataHandler
 
             lock (Lock)
             {
-                LoggingHandler.LogMessage($"Writing to Save File: {Path.GetFullPath(filePath)}", taskName, LogLevel.APAction);
+                LoggingHandler.LogMessage($"Writing to Save File: {Path.GetFullPath(filePath)}", taskName, LogLevel.Debug);
                 File.WriteAllText(filePath, json);
             }
             redirectEmblemCount[0] = CustomSaveData.Emblems;

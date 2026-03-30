@@ -84,7 +84,7 @@ public static class LevelSpawnUnlockHandler
     {
         try
         {
-            foreach (var pair in Mod.SaveDataHandler.CustomSaveData!.SpawnDataUnlocks[team].Where(pair => index < pair.Value.Count - 1 && index > 0))
+            foreach (var pair in Mod.SaveDataHandler.CustomSaveData!.SpawnDataUnlocks[team].Where(pair => index < pair.Value.Count - 1))
             {
                 pair.Value[index] = true;
             }
@@ -422,7 +422,7 @@ public static class LevelSpawnUnlockHandler
             var unlockedSpawnEntries = GetUnlockedSpawnData(team, level, taskName);
             
             if (unlockedSpawnEntries.Count < 1) 
-                return "Start of Level";
+                return "NO UNLOCKED SPAWNS PLEASE REPORT THIS";
             
             
             if (SpawnPosIndex == 0)

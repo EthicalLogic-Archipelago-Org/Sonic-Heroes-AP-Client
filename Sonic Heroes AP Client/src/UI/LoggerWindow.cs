@@ -287,7 +287,7 @@ public partial class LoggerWindow
     {
         if (!ImguiHook.Initialized)
         {
-            LoggingHandler.LogMessage($"ImguiHook not initialized (LoggerWindow): {text}", taskName, LogLevel.Error);
+            //LoggingHandler.LogMessage($"ImguiHook not initialized (LoggerWindow): {text}", taskName, LogLevel.Error);
             return;
         }
         var message = new LogMessage(text, DateTime.Now.ToUnixTimeStamp());
