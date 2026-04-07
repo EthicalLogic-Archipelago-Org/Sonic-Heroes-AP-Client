@@ -1,5 +1,23 @@
 # Sonic Heroes Archipelago Changelog
 
+===================================================
+===================================================
+
+## Version 2.2.1 (Mod)
+
+### Fixes
+- Fix Deathlink Processing from same slot (and move log after check)
+- Fix Dark Bullet Station Checkpoint 1 and 2 Spawn Pos
+- Fix Chaotix Ocean Palace Checkpoint 2 Spawn Pos
+- Fix Unlocking Start of Level Spawn Position
+- Fix Infinite Logging Loop (Imgui Hook not Initialized)
+
+
+### Improvements
+- Lowered Log Level of various messages to Debug (to reduce spam)
+- Lower Save Message to Debug instead of ApAction
+
+
 
 ===================================================
 ===================================================
