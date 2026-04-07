@@ -101,7 +101,7 @@ public static class LevelSpawnUnlockHandler
         {
             if (index > Mod.SaveDataHandler.CustomSaveData!.SpawnDataUnlocks[team][level].Count - 1 || index < 0)
             {
-                LoggingHandler.LogMessage($"Index {index} Team {team} Level {level} is out of range in UnlockSpawnPosForTeamAndLevel", taskName, LogLevel.Error);
+                LoggingHandler.LogMessage($"Index {index} Team {team} Level {level} is out of range in UnlockSpawnPosForTeamAndLevel", taskName, LogLevel.Debug);
                 return;
             }
             Mod.SaveDataHandler.CustomSaveData!.SpawnDataUnlocks[team][level][index] = true;

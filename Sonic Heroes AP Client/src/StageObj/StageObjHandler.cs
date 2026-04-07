@@ -298,7 +298,7 @@ public static class StageObjHandler
 
                     var renderDistance =
                         Mod.ArchipelagoHandler.SlotData.RemoveCasinoParkVIPTableLaserGate ? (byte)0x00 : (byte)0xA;
-                    LoggingHandler.LogMessage($"Setting Casino Park Sonic VIP Table Laser Gate to 0x{renderDistance:X}", taskName, LogLevel.Info);
+                    LoggingHandler.LogMessage($"Setting Casino Park Sonic VIP Table Laser Gate to 0x{renderDistance:X}", taskName, LogLevel.Debug);
                     foreach (var laserAddr in foundAddrs[StageObjTypes.LaserFence])
                     {
                         var tempObj = (ObjSpawnData*) new IntPtr(laserAddr);
@@ -311,7 +311,7 @@ public static class StageObjHandler
                     //Rail Canyon Sonic
                     //A9151C
                     //change to 12620
-                    LoggingHandler.LogMessage($"Rail Canyon Sonic Bonus Key 3 moving down", taskName, LogLevel.Info);
+                    LoggingHandler.LogMessage($"Rail Canyon Sonic Bonus Key 3 moving down", taskName, LogLevel.Debug);
                     foreach (var keyAddr in foundAddrs[StageObjTypes.BonusKey])
                     {
                         //-55567.08f, 12762.00f, -20100.07f <- is normally here
@@ -348,7 +348,7 @@ public static class StageObjHandler
 
                 case LevelId.HangCastle:
                 {
-                    LoggingHandler.LogMessage($"Hang Castle Sonic Bonus Key 3 moving down", taskName, LogLevel.Info);
+                    LoggingHandler.LogMessage($"Hang Castle Sonic Bonus Key 3 moving down", taskName, LogLevel.Debug);
                     foreach (var keyAddr in foundAddrs[StageObjTypes.BonusKey])
                     {
                         //10700.52f, -1595.80f, -13541.10f <- is normally here
@@ -370,7 +370,7 @@ public static class StageObjHandler
                     //A8A8D8 (coords)
                     //15420.056f, -8739.9f, -39680.32f
                     //change to 15420.056f, -8878f, -39730f
-                    LoggingHandler.LogMessage($"Mystic Mansion Sonic Bonus Key 3 moving down", taskName, LogLevel.Error);
+                    LoggingHandler.LogMessage($"Mystic Mansion Sonic Bonus Key 3 moving down", taskName, LogLevel.Debug);
                     foreach (var keyAddr in foundAddrs[StageObjTypes.BonusKey])
                     {
                         //15420.056f, -8739.9f, -39680.32f <- is normally here
@@ -392,7 +392,7 @@ public static class StageObjHandler
                     //A8945C
                     //change to 5400 (y)
                     
-                    LoggingHandler.LogMessage($"Final Fortress Sonic Bonus Key 2 moving down", taskName, LogLevel.Error);
+                    LoggingHandler.LogMessage($"Final Fortress Sonic Bonus Key 2 moving down", taskName, LogLevel.Debug);
                     foreach (var keyAddr in foundAddrs[StageObjTypes.BonusKey])
                     {
                         //2250.01f, 5552.00f, 33690.04f <- is normally here
@@ -415,7 +415,7 @@ public static class StageObjHandler
                     
                     foreach (var switchAddr in foundAddrs[StageObjTypes.SelfDestructSwitch])
                     {
-                        LoggingHandler.LogMessage($"Final Fortress Sonic {stringValue} SelfDestruct Switch at Address 0x{switchAddr:x}", taskName, LogLevel.Error);
+                        LoggingHandler.LogMessage($"Final Fortress Sonic {stringValue} SelfDestruct Switch at Address 0x{switchAddr:x}", taskName, LogLevel.Debug);
                         var tempObj = (ObjSpawnData*) new IntPtr(switchAddr);
                         tempObj->RenderDistance = renderValue;
                     }

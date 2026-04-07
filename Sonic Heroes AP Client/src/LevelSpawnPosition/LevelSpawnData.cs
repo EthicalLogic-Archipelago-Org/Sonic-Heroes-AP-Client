@@ -295,7 +295,8 @@ public static class LevelSpawnData
                     LevelId.BulletStation, 
                     [
                         new LevelSpawnEntry(-772, 2571.5f, 1122, isdefault:true, mode:SpawnMode.Rail),
-                        new LevelSpawnEntry(-150.017f, 2030f, 8022.626f),
+                        new LevelSpawnEntry(-1720.75f, 2625.04f, -2540.59f),
+                        new LevelSpawnEntry(49830.38f, 1910, -6180.549f),
                         new LevelSpawnEntry(83079.46f, 910, -8556.479f),
                         new LevelSpawnEntry(115500.4f, 194, -7139.779f),
                         new LevelSpawnEntry(99600.2f, 1000, -6942.058f),
@@ -574,7 +575,7 @@ public static class LevelSpawnData
                     [
                         new LevelSpawnEntry(750, 1050, -7050, isdefault:true),
                         new LevelSpawnEntry(750, 810, -10302),
-                        new LevelSpawnEntry(480.06f, 175, -18730),
+                        new LevelSpawnEntry(-480.01f, 175, -18763.65f),
                         new LevelSpawnEntry(-9999, -9999, -9999, bonusstage: true),
                     ]
                 },

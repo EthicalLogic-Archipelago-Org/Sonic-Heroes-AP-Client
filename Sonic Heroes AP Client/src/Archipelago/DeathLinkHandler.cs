@@ -98,9 +98,10 @@ public static class DeathLinkHandler
             return;
         
         //LoggerWindow.Log($"{cause}");
+        if (source == Mod.ArchipelagoHandler.Slot)
+            return;
         LoggingHandler.LogMessage($"{cause}", taskName, LogLevel.APAction);
-        //if (source == Mod.ArchipelagoHandler.Slot)
-            //return;
+        
         if (!GameStateHandler.InGame(taskName))
             return;
         //Need to check if InGame here otherwise SomeoneElseDied is set to true

@@ -666,7 +666,7 @@ public static class CheckpointData
         //2398.8208 75 -24800.24
         new(Team.Chaotix, LevelId.OceanPalace, 2),
         //coords swapped with 1
-        //-480.06 175 -18730
+        //-480.01 175 -18763.65
         //new(Team.Chaotix, LevelId.OceanPalace, 3),
         //flower warps past
         //2100 50 -31690.03
