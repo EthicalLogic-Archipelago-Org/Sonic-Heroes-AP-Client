@@ -1,5 +1,14 @@
 # Sonic Heroes Archipelago Changelog
 
+
+===================================================
+===================================================
+
+## Version 2.2.2 (Mod)
+
+### Fixes
+- Fix Unlocking Characters and Abilities for non-enabled teams on Ability and Character Unlocks Run Type
+
 ===================================================
 ===================================================
 
