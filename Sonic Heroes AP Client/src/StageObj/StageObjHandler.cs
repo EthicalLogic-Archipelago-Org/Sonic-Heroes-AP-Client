@@ -14,11 +14,8 @@ public static class StageObjHandler
 {
     public static void ForceUnlockAllStageObjs(Team? team, Region? region, string taskName)
     {
-        foreach (var obj in StageObjData.StageObjsToMessWith)
-        {
-            UnlockStageObjItemCallback(obj, team, region, taskName, true);
-            //Mod.SaveDataHandler!.CustomSaveData!.StageObjSpawnSaveData[(Team)team][obj] = true;
-        }
+        UnlockStageObjItemCallback(null, team, region, taskName, true);
+        //Mod.SaveDataHandler!.CustomSaveData!.StageObjSpawnSaveData[(Team)team][obj] = true;
     }
     
     public static void UnlockStageObjItemCallback(StageObjTypes? stageObjTypes, Team? team, Region? region, string taskName, bool forceunlock = false)
@@ -37,83 +34,55 @@ public static class StageObjHandler
                 UnlockStageObjItemCallback(stageObjTypes, t, region, taskName, forceunlock);
             }
         }
-        // TODO If Region becomes important for Stage Objs, Uncomment below 
-        
-        // else if (region is null)
-        // {
-        //     foreach (var r in Enum.GetValues<Region>())
-        //     {
-        //         UnlockStageObjItemCallback(stageObjTypes, team, r);
-        //     }
-        // }
+        else if (region is null)
+        {
+            UnlockStageObjForTeamRegion((StageObjTypes)stageObjTypes, (Team)team, Region.SpecialStage, taskName, forceunlock);
+            // foreach (var r in Enum.GetValues<Region>())
+            // {
+            //     UnlockStageObjItemCallback(stageObjTypes, team, r, taskName, forceunlock);
+            // }
+        }
         else
         {
-            if (Mod.SaveDataHandler.CustomSaveData == null)
-            {
-                LoggingHandler.LogMessage($"Custom Save Data is Null in UnlockStageObjItemCallback", taskName, LogLevel.Error);
-                return;
-            }
-            var currState = Mod.SaveDataHandler.CustomSaveData.StageObjSpawnSaveData[(Team)team][(StageObjTypes)stageObjTypes];
-            if (forceunlock)
-                currState = false;
-            LoggingHandler.LogMessage($"StageObjItemReceived. Obj: {(StageObjTypes)stageObjTypes} Team: {(Team)team} Region: {region ?? Region.SpecialStage} currState: {currState} newState: {!currState} forceunlock: {forceunlock}", taskName, LogLevel.SuperDebug);
-            if (!Mod.IsDebug)
-                currState = false;
-            Mod.SaveDataHandler.CustomSaveData.StageObjSpawnSaveData[(Team)team][(StageObjTypes)stageObjTypes] = !currState;
-            StageObjsPollUpdates((StageObjTypes)stageObjTypes, (Team)team, region, !currState, taskName);
+            UnlockStageObjForTeamRegion((StageObjTypes)stageObjTypes, (Team)team, (Region)region, taskName, forceunlock);
         }
     }
-    
-    
-    public static unsafe void StageObjsPollUpdates(StageObjTypes stageObjTypes, Team team, Region? region, bool unlock, string taskName)
+
+    public static void UnlockStageObjForTeamRegion(StageObjTypes stageObjTypes, Team team, Region region,
+        string taskName, bool forceunlock = false)
+    {
+        if (Mod.SaveDataHandler.CustomSaveData == null)
+        {
+            LoggingHandler.LogMessage($"Custom Save Data is Null in UnlockStageObjForTeamRegion", taskName, LogLevel.Error);
+            return;
+        }
+        
+        var currState = IsStageObjUnlockedForTeamRegion(stageObjTypes, team, region, taskName);
+        if (forceunlock || !Mod.IsDebug)
+            currState = false;
+        LoggingHandler.LogMessage($"StageObjItemReceived. Obj: {stageObjTypes} Team: {team} Region: {region} currState: {currState} newState: {!currState} forceunlock: {forceunlock}", taskName, LogLevel.SuperDebug);
+        Mod.SaveDataHandler.CustomSaveData.StageObjSpawnSaveData[team][stageObjTypes] = !currState;
+        StageObjHandleChangingUnlockStatusSingle(stageObjTypes, team, region, taskName);
+    }
+
+    public static bool IsStageObjUnlockedForTeamRegion(StageObjTypes stageObjTypes, Team team, Region region, string taskName)
+    {
+        if (Mod.SaveDataHandler.CustomSaveData == null)
+        {
+            LoggingHandler.LogMessage($"Custom Save Data null in IsStageObjUnlocked", taskName, LogLevel.Error);
+            return true;
+        }
+        return Mod.SaveDataHandler.CustomSaveData.StageObjSpawnSaveData[team][stageObjTypes];
+    }
+
+
+    public static void StageObjHandleChangingUnlockStatusSingle(StageObjTypes stageObjTypes, Team team, Region? region, string taskName)
     {
         try
         {
-            if (!GameStateHandler.InGame(taskName))
-                return;
-
-            if (!ArchipelagoHandler.IsConnected)
-                return;
-            
-            Team? teamInGame = GameStateHandler.GetCurrentStory(taskName);
-            Act? act = GameStateHandler.GetCurrentAct(taskName);
-            LevelId? levelId = GameStateHandler.GetCurrentLevel(taskName);
-            
-            if (teamInGame == null || levelId == null || act == null)
-                return;
-            if (team != teamInGame)
-                return;
-
-            if (!SonicHeroesDefinitions.LevelIdToRegion.ContainsKey((LevelId)levelId))
+            foreach (var spawnData in GetInLevelObjsOfType(stageObjTypes, taskName))
             {
-                LoggingHandler.LogMessage($"LevelId {levelId} does not exist in Region Mapping", taskName, LogLevel.Error);
-                return;
-            }
-            
-            //TODO If Region becomes important on StageObjs, handle checking here
-            //Region regionInGame = SonicHeroesDefinitions.LevelIdToRegion[(LevelId)levelId];
-            //if (region != regionInGame)
-                //return;
-                
-            if (Mod.SaveDataHandler.CustomSaveData == null)
-            {
-                LoggingHandler.LogMessage($"Custom Save Data is Null in StageObjPollUpdates", taskName, LogLevel.Error);
-                return;
-            }
-            
-            var foundAddrs = GetAddrsOfObjInTable([stageObjTypes], taskName);
-            
-            var renderDistance = unlock ? (byte)0x20 : (byte)0x00;
-            
-            if (stageObjTypes is StageObjTypes.SelfDestructSwitch)
-                //check for speed char here
-                if (!Mod.SaveDataHandler.CustomSaveData.UnlockSaveData[(Team)teamInGame].CharsUnlocked[FormationChar.Speed])
-                    renderDistance = 0x00;
-
-            foreach (var addr in foundAddrs[stageObjTypes])
-            {
-                var tempObj = (ObjSpawnData*) new IntPtr(addr);
-                tempObj->RenderDistance = renderDistance;
+                spawnData.SpawnOrDespawnObj(IsStageObjUnlockedForTeamRegion(stageObjTypes, team, region ?? Region.SpecialStage, taskName), taskName);
             }
         }
         catch (Exception e)
@@ -123,9 +92,8 @@ public static class StageObjHandler
     }
     
     
-    public static unsafe void HandleObjSpawningWhenReceivingCharItem(Team team, FormationChar formationChar, bool unlock, string taskName)
+    public static void HandleObjSpawningWhenReceivingCharItem(Team team, FormationChar formationChar, bool unlock, string taskName)
     {
-
         if (!GameStateHandler.InGame(taskName,true))
             return;
         
@@ -138,14 +106,6 @@ public static class StageObjHandler
         if (team != teamInGame)
             return;
         
-        var foundAddrs = GetAddrsOfObjInTable(StageObjData.StageObjsWithSpecialHandlingWhenReceivingCharItem, taskName);
-        
-        if (Mod.SaveDataHandler.CustomSaveData == null)
-        {
-            LoggingHandler.LogMessage($"Custom Save Data is Null in HandleObjSpawningWhenReceivingCharItem", taskName, LogLevel.Error);
-            return;
-        }
-
         try
         {
             if (formationChar is FormationChar.Speed && team is Team.Sonic)
@@ -155,13 +115,12 @@ public static class StageObjHandler
                 {
                     //UnSpawn Self Destruct Switches if no Sonic
                     var stringValue = unlock ? "Respawning" : "Despawning";
-                    var selfDestructSwitchItem = Mod.SaveDataHandler.CustomSaveData.StageObjSpawnSaveData[team][StageObjTypes.SelfDestructSwitch];
-                    var renderValue = unlock && selfDestructSwitchItem ? (byte)0x0F : (byte)0x00;
-                    foreach (var switchAddr in foundAddrs[StageObjTypes.SelfDestructSwitch])
+                    var selfDestructSwitchItem = IsStageObjUnlockedForTeamRegion(StageObjTypes.SelfDestructSwitch, team, Region.Sky, taskName);
+
+                    foreach (var selfDestructSwitch in GetInLevelObjsOfType(StageObjTypes.SelfDestructSwitch, taskName))
                     {
-                        LoggingHandler.LogMessage($"Final Fortress Sonic {stringValue} SelfDestruct Switch at Address 0x{switchAddr:x}", taskName, LogLevel.SuperDebug);
-                        var tempObj = (ObjSpawnData*) new IntPtr(switchAddr);
-                        tempObj->RenderDistance = renderValue;
+                        LoggingHandler.LogMessage($"Final Fortress Sonic {stringValue} SelfDestruct Switch at Address 0x{selfDestructSwitch.GetPtrToSpawnData(taskName):X}", taskName, LogLevel.Debug);
+                        selfDestructSwitch.SpawnOrDespawnObj(unlock && selfDestructSwitchItem, taskName);
                     }
                 }
             }
@@ -171,71 +130,102 @@ public static class StageObjHandler
             LoggingHandler.LogMessage($"{e}", taskName, LogLevel.Error);
         }
     }
-    
-    
-    public static unsafe Dictionary<StageObjTypes, List<IntPtr>> GetAddrsOfObjInTable(List<StageObjTypes> objTypesList, string taskName)
-    {
-        try
-        {
-            //each OBJ is 0x40 bytes
-            IntPtr currentObjPtr = StageObjData.StartOfStageObjTable;
 
-            Dictionary<StageObjTypes, List<IntPtr>> foundAddrs = objTypesList.ToDictionary(x => x, _ => new List<IntPtr>());
 
-            var numObjs = 0;
-
-            while (true)
-            {
-                ObjSpawnData* tempObj = (ObjSpawnData*) new IntPtr(currentObjPtr);
-
-                if (!Enum.IsDefined(typeof(StageObjTypes), tempObj->ObjId))
-                {
-                    LoggingHandler.LogMessage($"This OBJID does not exist in table: 0x{tempObj->ObjId:x}. The Addr is: 0x{currentObjPtr:x}", taskName, LogLevel.Error);
-                    break;
-                }
-
-                if ((StageObjTypes)tempObj->ObjId is StageObjTypes.None)
-                {
-                    LoggingHandler.LogMessage($"Table should end here: 0x{currentObjPtr:x}", taskName, LogLevel.SuperDebug);
-                    break;
-                }
-                
-                numObjs++;
-                if (objTypesList.Contains((StageObjTypes)tempObj->ObjId))
-                {
-                    foundAddrs[(StageObjTypes)tempObj->ObjId].Add(currentObjPtr);
-                }
-                currentObjPtr += 0x40;
-            }
-            LoggingHandler.LogMessage($"Found {numObjs} StageObjects", taskName, LogLevel.SuperDebug);
-            
-            return foundAddrs;
-        }
-        catch (Exception e)
-        {
-            LoggingHandler.LogMessage($"{e}", taskName, LogLevel.Error);
-            return [];
-        }
-    }
-    
-    
     public static void HandleInitSetGenerator(string taskName)
     {
         //Obj Table is loaded into memory already
         //look into making changes to Objs like coords and the like
+        BackupStageObjTable(taskName);
 
         Team? team = GameStateHandler.GetCurrentStory(taskName);
         LevelId? level = GameStateHandler.GetCurrentLevel(taskName);
         Act? act = GameStateHandler.GetCurrentAct(taskName);
 
         if (team == null || level == null || act == null)
+        {
+            LoggingHandler.LogMessage($"Null in HandleInitSetGenerator. team: {team} level: {level} act: {act}", taskName, LogLevel.Debug);
             return;
+        }
         
         HandleStageObjs((Team)team, (LevelId)level, (Act)act, taskName);
     }
+
+
+    public static void BackupStageObjTable(string taskName)
+    {
+        try
+        {
+            StageObjData.BackupStageObjSpawnData.Clear();
+            
+            UIntPtr currentObjPtr = StageObjData.StartOfStageObjTable;
+            var numObjs = 0;
+
+            while (true)
+            {
+                //find obj type (without mapping struct)
+                //if good init obj (pass to factory) (factory should case switch type and init obj)
+                //save copy of obj data to List/dict/w.e
+                //change data in game mem if needed (unspawn/change coords/etc)
+
+                StageObjSpawnData? spawnData = StageObjSpawnDataFactory.CreateSpawnData(currentObjPtr);
+
+                if (spawnData == null)
+                {
+                    LoggingHandler.LogMessage($"Exiting Backup Stage Data. There are {numObjs} Stage Objs", taskName, LogLevel.Debug);
+                    break;
+                }
+
+                if (numObjs >= 1000000)
+                {
+                    LoggingHandler.LogMessage("Exiting Backup Stage Data as there are somehow 1000000 stage objs. Please report this.", taskName, LogLevel.Error);
+                    break;
+                }
+                numObjs++;
+                currentObjPtr += 0x40;
+
+                if (!StageObjData.BackupStageObjSpawnData.ContainsKey(spawnData.Type))
+                {
+                    StageObjData.BackupStageObjSpawnData[spawnData.Type] = [];
+                }
+
+                switch (spawnData.Type)
+                {
+                    case StageObjTypes.SingleSpring:
+                        var singleSpring = (SingleSpringSpawnData)spawnData;
+                        StageObjData.BackupStageObjSpawnData[spawnData.Type].Add(singleSpring);
+                        break;
+
+                    default:
+                        StageObjData.BackupStageObjSpawnData[spawnData.Type].Add(spawnData);
+                        break;
+                }
+            }
+        }
+        catch (Exception e)
+        {
+            LoggingHandler.LogMessage($"{e}", taskName, LogLevel.Error);
+        }
+    }
+    
+
+    public static List<StageObjSpawnData> GetInLevelObjsOfType(StageObjTypes stageObjType, string taskName)
+    {
+        try
+        {
+            return StageObjData.BackupStageObjSpawnData.TryGetValue(stageObjType, out var objList) ?  objList : [];
+        }
+        catch (Exception e)
+        {
+            LoggingHandler.LogMessage($"{e}", taskName, LogLevel.Error);
+        }
+        return [];
+    }
+    
     
     public static void HandleStageObjs(Team team, LevelId level, Act act, string taskName)
     {
+        SpawnObjsBasedOnSaveDataForTeam(team, taskName);
         switch (team)
         {
             case Team.Sonic:
@@ -257,34 +247,56 @@ public static class StageObjHandler
                 break;
         }
     }
-    
-    //TODO handle Stage Obj Stuff for Level Gates
-    public static unsafe void HandleSonicStageObjs(LevelId level, Act act, string taskName)
+
+    public static void SpawnObjsBasedOnSaveDataForTeam(Team team, string taskName)
+    {
+        if (Mod.SaveDataHandler.CustomSaveData == null)
+        {
+            LoggingHandler.LogMessage($"Custom SaveData is null in SpawnObjsBasedOnSaveDataForTeam", taskName, LogLevel.Error);
+            return;
+        }
+            
+        foreach (var pair in Mod.SaveDataHandler.CustomSaveData.StageObjSpawnSaveData[team])
+        {
+            foreach (var objData in GetInLevelObjsOfType(pair.Key, taskName))
+            {
+                objData.SpawnOrDespawnObj(pair.Value, taskName);
+            }
+        }
+    }
+
+    public static void MoveSpawnPosOfMatchingStageObjsByOffset(StageObjTypes stageObjType, Vector3 spawnPos,
+        Vector3 offset, string taskName, string customDebugMsg = "")
     {
         try
         {
-            var objsToFind = new List<StageObjTypes>(StageObjData.StageObjsToMessWith);
-            
-            var foundAddrs = GetAddrsOfObjInTable(objsToFind, taskName);
-
-            foreach (var cageAddr in foundAddrs[StageObjTypes.CageBox])
+            foreach (var objSpawnData in GetInLevelObjsOfType(stageObjType, taskName))
             {
-                var tempObj = (ObjSpawnData*) new IntPtr(cageAddr);
-                tempObj->RenderDistance = 0x00;
-            }
-
-            foreach (var pair in Mod.SaveDataHandler.CustomSaveData.StageObjSpawnSaveData[Team.Sonic])
-            {
-                if (!pair.Value)
+                if (Vector3.Distance(objSpawnData.GetOriginalSpawnPosition(taskName), spawnPos) < StageObjData.DistanceForMatchingStageObj)
                 {
-                    foreach (var objAddr in foundAddrs[pair.Key])
+                    if (customDebugMsg != "")
                     {
-                        var tempObj = (ObjSpawnData*) new IntPtr(objAddr);
-                        tempObj->RenderDistance = 0x00;
+                        LoggingHandler.LogMessage(customDebugMsg, taskName, LogLevel.Debug);
                     }
+                    objSpawnData.SetSpawnPosition(spawnPos + offset, taskName);
                 }
             }
-            
+        }
+        catch (Exception e)
+        {
+            LoggingHandler.LogMessage($"{e}", taskName, LogLevel.Error);
+        }
+    }
+    
+    //TODO handle Stage Obj Stuff for Level Gates
+    public static void HandleSonicStageObjs(LevelId level, Act act, string taskName)
+    {
+        try
+        {
+            foreach (var cageObj in GetInLevelObjsOfType(StageObjTypes.CageBox, taskName))
+            {
+                cageObj.SpawnOrDespawnObj(false, taskName);
+            }
             
             switch (level)
             {
@@ -296,34 +308,27 @@ public static class StageObjHandler
                     //-6480.093 430 1695.467    (coord)
                     //There is only 1 laser gate in Casino Park Sonic
 
-                    var renderDistance =
-                        Mod.ArchipelagoHandler.SlotData.RemoveCasinoParkVIPTableLaserGate ? (byte)0x00 : (byte)0xA;
-                    LoggingHandler.LogMessage($"Setting Casino Park Sonic VIP Table Laser Gate to 0x{renderDistance:X}", taskName, LogLevel.Debug);
-                    foreach (var laserAddr in foundAddrs[StageObjTypes.LaserFence])
+                    var despawnLaser = Mod.ArchipelagoHandler.SlotData.RemoveCasinoParkVIPTableLaserGate;
+                    var spawnStr = !despawnLaser ? "Spawning" : "Despawning";
+                    foreach (var objSpawnData in GetInLevelObjsOfType(StageObjTypes.LaserFence, taskName))
                     {
-                        var tempObj = (ObjSpawnData*) new IntPtr(laserAddr);
-                        tempObj->RenderDistance = renderDistance;
+                        objSpawnData.SpawnOrDespawnObj(!despawnLaser, taskName);
+                        LoggingHandler.LogMessage($"{spawnStr} Casino Park Sonic VIP Table Laser Gate", taskName, LogLevel.Debug);
                     }
                     break;
                 }
+                
                 case LevelId.RailCanyon:
                 {
                     //Rail Canyon Sonic
                     //A9151C
                     //change to 12620
-                    LoggingHandler.LogMessage($"Rail Canyon Sonic Bonus Key 3 moving down", taskName, LogLevel.Debug);
-                    foreach (var keyAddr in foundAddrs[StageObjTypes.BonusKey])
-                    {
-                        //-55567.08f, 12762.00f, -20100.07f <- is normally here
-                        //-55567.08f, 12620.00f, -20100.07f <- is moved to here to not have cage
-                        var tempObj = (ObjSpawnData*) new IntPtr(keyAddr);
-                        Vector3 oldPos = new Vector3(tempObj->XSpawnPos,  tempObj->YSpawnPos, tempObj->ZSpawnPos);
-                        Vector3 key3Pos = new Vector3(-55567.08f, 12762.00f, -20100.07f);
-                        if (Vector3.Distance(oldPos, key3Pos) < 175)
-                        {
-                            tempObj->YSpawnPos = 12620f;
-                        }
-                    }
+                    //-55567.08f, 12762.00f, -20100.07f <- is normally here
+                    //-55567.08f, 12620.00f, -20100.07f <- is moved to here to not have cage (and to be on ground)
+                    Vector3 originalPos = new Vector3(-55567.08f, 12762.00f, -20100.07f);
+                    Vector3 posOffset = new Vector3(0f, -142f, 0f);
+                    MoveSpawnPosOfMatchingStageObjsByOffset(StageObjTypes.BonusKey, originalPos, posOffset, taskName, $"Rail Canyon Sonic Bonus Key 3 moving down");
+                    
                     break;
                 }
 
@@ -332,35 +337,19 @@ public static class StageObjHandler
                     //Move Cage with BonusKey 1 Down in case it spawns in level (so it doesnt block getting Key)
                     //0, 1000, -5349.7f <- is normally here
                     //0, 800, -5349.7f <- is moved to here to not block Key 1
-                    foreach (var cageAddr in foundAddrs[StageObjTypes.CageBox])
-                    {
-                        var tempObj = (ObjSpawnData*) new IntPtr(cageAddr);
-                        tempObj->RenderDistance = 0x00;
-                        Vector3 oldPos = new Vector3(tempObj->XSpawnPos,  tempObj->YSpawnPos, tempObj->ZSpawnPos);
-                        Vector3 cage1Pos = new Vector3(0, 1000, -5349.7f);
-                        if (Vector3.Distance(oldPos, cage1Pos) < 175)
-                        {
-                            tempObj->YSpawnPos = 800f;
-                        }
-                    }
+                    Vector3 originalPos = new Vector3(0f, 1000f, -5349.7f);
+                    Vector3 posOffset = new Vector3(0f, -200f, 0f);
+                    MoveSpawnPosOfMatchingStageObjsByOffset(StageObjTypes.CageBox, originalPos, posOffset, taskName, $"Frog Forest Sonic Cage for Key 1 moving down");
                     break;
                 }
 
                 case LevelId.HangCastle:
                 {
-                    LoggingHandler.LogMessage($"Hang Castle Sonic Bonus Key 3 moving down", taskName, LogLevel.Debug);
-                    foreach (var keyAddr in foundAddrs[StageObjTypes.BonusKey])
-                    {
-                        //10700.52f, -1595.80f, -13541.10f <- is normally here
-                        //10700.52f, -1755f, -13541.10f <- is moved to here to not have cage
-                        var tempObj = (ObjSpawnData*) new IntPtr(keyAddr);
-                        Vector3 oldPos = new Vector3(tempObj->XSpawnPos,  tempObj->YSpawnPos, tempObj->ZSpawnPos);
-                        Vector3 key3Pos = new Vector3(10700.52f, -1595.80f, -13541.10f);
-                        if (Vector3.Distance(oldPos, key3Pos) < 175)
-                        {
-                            tempObj->YSpawnPos = -1755f;
-                        }
-                    }
+                    //10700.52f, -1595.80f, -13541.10f <- is normally here
+                    //10700.52f, -1755f, -13541.10f <- is moved to here to not have cage
+                    Vector3 originalPos = new Vector3(10700.52f, -1595.80f, -13541.10f);
+                    Vector3 posOffset = new Vector3(0f, -159.2f, 0f);
+                    MoveSpawnPosOfMatchingStageObjsByOffset(StageObjTypes.BonusKey, originalPos, posOffset, taskName, $"Hang Castle Sonic Bonus Key 3 moving down");
                     break;
                 }
 
@@ -370,58 +359,38 @@ public static class StageObjHandler
                     //A8A8D8 (coords)
                     //15420.056f, -8739.9f, -39680.32f
                     //change to 15420.056f, -8878f, -39730f
-                    LoggingHandler.LogMessage($"Mystic Mansion Sonic Bonus Key 3 moving down", taskName, LogLevel.Debug);
-                    foreach (var keyAddr in foundAddrs[StageObjTypes.BonusKey])
-                    {
-                        //15420.056f, -8739.9f, -39680.32f <- is normally here
-                        //15420.056f, -8878f, -39730f <- is moved to here to not have cage
-                        var tempObj = (ObjSpawnData*) new IntPtr(keyAddr);
-                        Vector3 oldPos = new Vector3(tempObj->XSpawnPos,  tempObj->YSpawnPos, tempObj->ZSpawnPos);
-                        Vector3 key3Pos = new Vector3(15420.056f, -8739.9f, -39680.32f);
-                        if (Vector3.Distance(oldPos, key3Pos) < 175)
-                        {
-                            tempObj->YSpawnPos = -8878f;
-                            tempObj->ZSpawnPos = -39730f;
-                        }
-                    }
+                    Vector3 originalPos = new Vector3(15420.056f, -8739.9f, -39680.32f);
+                    Vector3 posOffset = new Vector3(0f, -138.1f, -49.68f);
+                    MoveSpawnPosOfMatchingStageObjsByOffset(StageObjTypes.BonusKey, originalPos, posOffset, taskName, $"Mystic Mansion Sonic Bonus Key 3 moving down");
                     break;
                 }
+                
                 case LevelId.FinalFortress:
                 {
                     //Final Fortress Sonic
                     //A8945C
                     //change to 5400 (y)
-                    
-                    LoggingHandler.LogMessage($"Final Fortress Sonic Bonus Key 2 moving down", taskName, LogLevel.Debug);
-                    foreach (var keyAddr in foundAddrs[StageObjTypes.BonusKey])
-                    {
-                        //2250.01f, 5552.00f, 33690.04f <- is normally here
-                        //2250.01f, 5400.00f, 33690.04f <- is moved to here to not have cage
-                        var tempObj = (ObjSpawnData*) new IntPtr(keyAddr);
-                        Vector3 oldPos = new Vector3(tempObj->XSpawnPos,  tempObj->YSpawnPos, tempObj->ZSpawnPos);
-                        Vector3 key3Pos = new Vector3(2250.01f, 5552.00f, 33690.04f);
-                        if (Vector3.Distance(oldPos, key3Pos) < 175)
-                        {
-                            tempObj->YSpawnPos = 5400f;
-                        }
-                    }
+                    //2250.01f, 5552.00f, 33690.04f <- is normally here
+                    //2250.01f, 5400.00f, 33690.04f <- is moved to here to not have cage
+                    Vector3 originalPos = new Vector3(2250.01f, 5552.00f, 33690.04f);
+                    Vector3 posOffset = new Vector3(0f, -152f, 0f);
+                    MoveSpawnPosOfMatchingStageObjsByOffset(StageObjTypes.BonusKey, originalPos, posOffset, taskName, $"Final Fortress Sonic Bonus Key 2 moving down");
                     
                     
                     //UnSpawn Self Destruct Switches if no Sonic
                     var hasSpeedChar = Mod.SaveDataHandler.CustomSaveData.UnlockSaveData[Team.Sonic].CharsUnlocked[FormationChar.Speed];
-                    var selfDestructSwitchItem = Mod.SaveDataHandler.CustomSaveData.StageObjSpawnSaveData[Team.Sonic][StageObjTypes.SelfDestructSwitch];
-                    var stringValue = hasSpeedChar && selfDestructSwitchItem ? "Spawning" : "Despawning";
-                    var renderValue = hasSpeedChar && selfDestructSwitchItem ? (byte)0x0F : (byte)0x00;
+                   
+                    var selfDestructSwitchItem = IsStageObjUnlockedForTeamRegion(StageObjTypes.SelfDestructSwitch, Team.Sonic, Region.Sky, taskName);
+                    var stringValue = hasSpeedChar && selfDestructSwitchItem ? "Respawning" : "Despawning";
                     
-                    foreach (var switchAddr in foundAddrs[StageObjTypes.SelfDestructSwitch])
+                    foreach (var selfDestructSwitch in GetInLevelObjsOfType(StageObjTypes.SelfDestructSwitch, taskName))
                     {
-                        LoggingHandler.LogMessage($"Final Fortress Sonic {stringValue} SelfDestruct Switch at Address 0x{switchAddr:x}", taskName, LogLevel.Debug);
-                        var tempObj = (ObjSpawnData*) new IntPtr(switchAddr);
-                        tempObj->RenderDistance = renderValue;
+                        LoggingHandler.LogMessage($"Final Fortress Sonic {stringValue} SelfDestruct Switch at Address 0x{selfDestructSwitch.GetPtrToSpawnData(taskName):X}", taskName, LogLevel.Debug);
+                        selfDestructSwitch.SpawnOrDespawnObj(hasSpeedChar && selfDestructSwitchItem, taskName);
                     }
-                    
                     break;
                 }
+                
                 default:
                 {
                     break;
@@ -434,51 +403,24 @@ public static class StageObjHandler
         }
     }
     
-    public static unsafe void HandleDarkStageObjs(LevelId level, Act act, string taskName)
-    {
-        try
-        {
-            var objsToFind = new List<StageObjTypes>(StageObjData.StageObjsToMessWith);
-            
-            var foundAddrs = GetAddrsOfObjInTable(objsToFind, taskName);
-
-            foreach (var cageAddr in foundAddrs[StageObjTypes.CageBox])
-            {
-                var tempObj = (ObjSpawnData*) new IntPtr(cageAddr);
-                //tempObj->RenderDistance = 0x00;
-            }
-
-            foreach (var pair in Mod.SaveDataHandler.CustomSaveData.StageObjSpawnSaveData[Team.Dark])
-            {
-                if (!pair.Value)
-                {
-                    foreach (var objAddr in foundAddrs[pair.Key])
-                    {
-                        var tempObj = (ObjSpawnData*) new IntPtr(objAddr);
-                        tempObj->RenderDistance = 0x00;
-                    }
-                }
-            }
-        }
-        catch (Exception e)
-        {
-            LoggingHandler.LogMessage($"{e}", taskName, LogLevel.Error);
-        }
-        
-    }
-    
-    public static unsafe void HandleRoseStageObjs(LevelId level, Act act, string taskName)
+    public static void HandleDarkStageObjs(LevelId level, Act act, string taskName)
     {
         
     }
     
-    public static unsafe void HandleChaotixStageObjs(LevelId level, Act act, string taskName)
+    public static void HandleRoseStageObjs(LevelId level, Act act, string taskName)
     {
         
     }
     
-    public static unsafe void HandleSuperHardStageObjs(LevelId level, Act act, string taskName)
+    public static void HandleChaotixStageObjs(LevelId level, Act act, string taskName)
     {
         
     }
+    
+    public static void HandleSuperHardStageObjs(LevelId level, Act act, string taskName)
+    {
+        
+    }
+    
 }

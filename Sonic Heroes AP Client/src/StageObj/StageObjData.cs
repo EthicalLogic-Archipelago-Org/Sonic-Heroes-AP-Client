@@ -1,8 +1,13 @@
 
+using System.Reflection;
+using System.Runtime.InteropServices;
+using Microsoft.VisualBasic.ApplicationServices;
 using Sonic_Heroes_AP_Client.Definitions;
+using Sonic_Heroes_AP_Client.Logging;
 
 namespace Sonic_Heroes_AP_Client.StageObj;
 
+[StructLayout(LayoutKind.Sequential, Pack = 1)]
 public struct ObjSpawnData
 {
     public float XSpawnPos;
@@ -27,13 +32,49 @@ public struct ObjSpawnData
     public int PtrPrevObj;
     public int PtrNextObj;
     public int PtrDynamicMem;
+    
+    public string ToString(string taskName)
+    {
+        try
+        {
+            Type type = this.GetType();
+            FieldInfo[] fields = type.GetFields();
+            PropertyInfo[] properties = type.GetProperties();
+            ObjSpawnData objSpawnData = this;
+
+            Dictionary<string, object> values = new Dictionary<string, object>();
+            Array.ForEach(fields, (field) => values.Add(field.Name, field.GetValue(objSpawnData)));
+            Array.ForEach(properties, (property) =>
+            {
+                if (property.CanRead)
+                    values.Add(property.Name, property.GetValue(objSpawnData, null));
+            });
+
+            return string.Join(", ", values);
+        }
+        catch (Exception e)
+        {
+            LoggingHandler.LogMessage($"{e}", taskName, LogLevel.Error);
+        }
+        return "";
+    }
 }
+
 
 
 public static class StageObjData
 {
-    public const IntPtr StartOfStageObjTable = 0xA825D8; 
+    public const UIntPtr StartOfStageObjTable = 0xA825D8; 
     //Mod.ModuleBase + 0x6825D8
+
+    public const byte DespawnObjRenderDistance = 0x00;
+
+    public const float DistanceForMatchingStageObj = 100f;
+    
+    /// <summary>
+    /// Dict of StageObjType to Dict of address to saved copy of ObjSpawnData
+    /// </summary>
+    //public static Dictionary<StageObjTypes, Dictionary<UIntPtr, ObjSpawnData>> SavedStageObjSpawnData = new();
     
     public static readonly List<StageObjTypes> StageObjsToMessWith =
     [
@@ -477,6 +518,8 @@ public static class StageObjData
         //StageObjTypes.SampleObject2,
         
     ];
+    
+    public static Dictionary<StageObjTypes, List<StageObjSpawnData>> BackupStageObjSpawnData = new();
 
 
     public static List<StageObjTypes> StageObjsWithSpecialHandlingWhenReceivingCharItem =

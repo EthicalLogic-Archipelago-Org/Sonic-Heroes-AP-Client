@@ -48,7 +48,26 @@ public class LevelSelectManager
     {
         if (Mod.IsDebug)
         {
-            //EnabledStoriesAndSanities |= StoriesAndSanities.SuperHardMode;
+            ForceSuperHardModeEnable(taskName);
+        }
+    }
+
+    private void ForceSuperHardModeEnable(string taskName)
+    {
+        EnabledStoriesAndSanities &= ~StoriesAndSanities.SonicActB;
+        EnabledStoriesAndSanities |= StoriesAndSanities.SuperHardMode;
+        
+        if (EnabledStoriesAndSanities.HasFlag(StoriesAndSanities.SonicKeySanityBothActs))
+        {
+            EnabledStoriesAndSanities &= ~StoriesAndSanities.SonicKeySanityBothActs;
+            EnabledStoriesAndSanities |= StoriesAndSanities.SonicKeySanity1Set;
+        }
+        
+        if (EnabledStoriesAndSanities.HasFlag(StoriesAndSanities.SonicCheckpointSanityBothActs))
+        {
+            EnabledStoriesAndSanities &= ~StoriesAndSanities.SonicCheckpointSanityBothActs;
+            EnabledStoriesAndSanities |= StoriesAndSanities.SonicCheckpointSanity1Set;
+            //EnabledStoriesAndSanities |= StoriesAndSanities.SuperHardCheckpointSanity;
         }
     }
 

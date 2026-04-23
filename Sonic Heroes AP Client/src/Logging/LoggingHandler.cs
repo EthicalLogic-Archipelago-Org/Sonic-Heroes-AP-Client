@@ -70,9 +70,6 @@ public static class LoggingHandler
     public static LogStackTraceInfo GetStackTraceInformationFromCallingFunction(int stackFrameOverride)
     {
         //var name = new StackTrace(true).GetFrame(2)?.GetMethod()?.GetMethodFullName();
-        
-        
-        
         var stack = new StackTrace(true);
         
         var stackFrameIndex = stackFrameOverride >= 0 && stackFrameOverride < stack.FrameCount ? stackFrameOverride : 2; //2 because the third func call (this one, LogMessage, then actual function)
