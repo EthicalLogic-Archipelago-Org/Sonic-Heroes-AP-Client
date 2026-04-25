@@ -7,7 +7,7 @@ namespace Sonic_Heroes_AP_Client.LevelSelect;
 public class GateDatum
 {
     private readonly SlotData _slotData;
-    public int Index { get; private set; }
+    public int Index { get; }
     public int BossCost;
     public List<Level> Levels;
     public Level BossLevel;
