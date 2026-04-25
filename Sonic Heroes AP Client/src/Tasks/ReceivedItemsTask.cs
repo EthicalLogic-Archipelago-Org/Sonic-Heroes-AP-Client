@@ -6,11 +6,11 @@ namespace Sonic_Heroes_AP_Client.Tasks;
 
 public static class ReceivedItemsTask
 {
-    public static void CheckReceivedItemsTask()
+    public static void CheckReceivedItemsTask(CancellationToken token)
     {
         const string taskName = "ReceivedItemsTask";
         LoggingHandler.LogMessage($"ReceivedItemsTask Started", taskName, LogLevel.SuperDebug);
-        while (true)
+        while (!token.IsCancellationRequested)
         {
             //LoggingHandler.LogMessage($"ReceivedItems: {ItemHandler.ReceivedItems} : {ItemHandler.ReceivedItems.Count}", taskName, LogLevel.SuperDebug);
             if (ItemHandler.ReceivedItems.TryDequeue(out var itemTuple))

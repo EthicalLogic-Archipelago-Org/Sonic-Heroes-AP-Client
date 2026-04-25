@@ -134,9 +134,9 @@ public class SaveDataHandler
         }
     }
     
-    public unsafe void WriteLevelUnlockToRedirectSaveData(LevelId level, bool isBoss, Team? story, bool value)
+    public unsafe void WriteLevelUnlockToRedirectSaveData(LevelId level, bool isBoss, Team? story, bool value, string taskName)
     {
-        LoggingHandler.LogMessage($"Start of WriteLevelUnlockToRedirectSaveData", "Unknown", LogLevel.SuperDebug);
+        LoggingHandler.LogMessage($"Start of WriteLevelUnlockToRedirectSaveData: level: {level} isBoss: {isBoss} Team: {story} value: {value}", taskName, LogLevel.SuperDebug);
 
         var rank = value ? Rank.ERank : Rank.NoRank;
     
@@ -169,7 +169,7 @@ public class SaveDataHandler
         if (story == Team.Chaotix)
             RedirectData->Levels[(int)level - 2].Chaotix.Mission1.Rank = rank;
         
-        LoggingHandler.LogMessage($"End of WriteLevelUnlockToRedirectSaveData", "Unknown", LogLevel.SuperDebug);
+        LoggingHandler.LogMessage($"End of WriteLevelUnlockToRedirectSaveData", taskName, LogLevel.SuperDebug);
     }
     
 }

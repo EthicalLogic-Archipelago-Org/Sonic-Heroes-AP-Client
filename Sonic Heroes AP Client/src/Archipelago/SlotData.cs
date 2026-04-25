@@ -7,7 +7,6 @@ using Sonic_Heroes_AP_Client.Configuration;
 using Sonic_Heroes_AP_Client.Definitions;
 using Sonic_Heroes_AP_Client.Exceptions;
 using Sonic_Heroes_AP_Client.LevelSelect;
-using Sonic_Heroes_AP_Client.LevelUnlocking;
 using Sonic_Heroes_AP_Client.Logging;
 using Sonic_Heroes_AP_Client.UI;
 
@@ -81,7 +80,8 @@ public class SlotData
         var shuffledLevels = ((JArray)slotDict["ShuffledLevels"]).ToObject<string[]>();
         var shuffledBosses = ((JArray)slotDict["ShuffledBosses"]).ToObject<string[]>();
         var runningLevelCount = 0;
-        
+
+        Mod.LevelSelectManager.GateData = [];
         
         for (var gateIndex = 0; gateIndex < gateEmblemCosts.Length; gateIndex++)
         {
@@ -95,7 +95,7 @@ public class SlotData
                 bossLevelString
             ));
             if (gateIndex == 0)
-                Mod.LevelSelectManager.GateData[gateIndex].IsUnlocked = true;
+                Mod.LevelSelectManager.GateData[gateIndex].SetIsUnlocked(true, taskName);
             runningLevelCount += gateLevelCounts[gateIndex];
         }
         LoggingHandler.LogMessage($"Slot Data Gate Datum Done", taskName, LogLevel.SuperDebug);

@@ -27,7 +27,6 @@ public static class AbilityCharacterManager
                     {
                         //UnlockAbilityForAllRegions(team, Ability.Jump, taskName);            //moved to APWorld Precollected
                         //UnlockAbilityForAllRegions(team, Ability.PowerAttack,  taskName);    //moved to APWorld Precollected
-                        
                     }
                 }
                 else

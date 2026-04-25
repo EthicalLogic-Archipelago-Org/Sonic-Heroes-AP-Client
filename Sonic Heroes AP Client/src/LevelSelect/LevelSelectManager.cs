@@ -1,6 +1,5 @@
 using Sonic_Heroes_AP_Client.AbilityAndCharacter;
 using Sonic_Heroes_AP_Client.Definitions;
-using Sonic_Heroes_AP_Client.LevelUnlocking;
 using Sonic_Heroes_AP_Client.Logging;
 
 namespace Sonic_Heroes_AP_Client.LevelSelect;
@@ -103,15 +102,16 @@ public class LevelSelectManager
 
             foreach (var gate in GateData.Where(gate => IsThisBossCompletedYet(gate.BossLevel.LevelId, taskName)))
             {
-                gate.Next().IsUnlocked = true;
+                gate.Next().SetIsUnlocked(true, taskName);
             }
                 
             //GateBoss Unlocking (Not Final Boss)
             foreach (var gate in GateData
-                         .Where(gate => gate.IsUnlocked && Mod.SaveDataHandler.CustomSaveData.Emblems >= gate.BossCost 
+                         .Where(gate => gate.GetIsUnlocked(taskName) && Mod.SaveDataHandler.CustomSaveData.Emblems >= gate.BossCost 
                                                         && gate.BossLevel.LevelId != LevelId.MetalMadness))
             {
-                gate.BossLevel.IsUnlocked = true;
+                gate.BossLevel.SetIsUnlocked(true, taskName);
+                
             }
             
             
@@ -196,15 +196,15 @@ public class LevelSelectManager
                 }
                 LoggingHandler.LogMessage(message, taskName, LogLevel.Info);
             }
-            finalGate.BossLevel.IsUnlocked = finalGate.IsUnlocked && hasCharacters && hasEmblemsForMetal && hasEmeralds && hasLevelCompletions && hasLevelCompletionsPerStory;
+            finalGate.BossLevel.SetIsUnlocked(finalGate.GetIsUnlocked(taskName) && hasCharacters && hasEmblemsForMetal && hasEmeralds && hasLevelCompletions && hasLevelCompletionsPerStory, taskName);
             
             
             Mod.ArchipelagoHandler!.Save(taskName);
             
             foreach (var gate in GateData)
             {
-                gate.RefreshUnlockStatus();
-                gate.BossLevel.RefreshUnlockStatus();
+                gate.RefreshUnlockStatus(taskName);
+                gate.BossLevel.RefreshUnlockStatus(taskName);
             }
         }
         catch (Exception e)

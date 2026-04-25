@@ -1,5 +1,7 @@
 
 using System.Collections.Concurrent;
+using System.Net.Sockets;
+using System.Net.WebSockets;
 using Archipelago.MultiClient.Net;
 using Archipelago.MultiClient.Net.Converters;
 using Archipelago.MultiClient.Net.Enums;
@@ -85,6 +87,11 @@ public class ArchipelagoHandler
         }
         catch (Exception e)
         {
+            if (e is TaskCanceledException)
+            {
+                IsConnecting = false;
+                return;
+            }
             LoggingHandler.LogMessage($"{e}", taskName, LogLevel.Error);
             IsConnecting = false;
             return;
@@ -216,7 +223,13 @@ public class ArchipelagoHandler
     private void OnError(Exception exception, string msg)
     {
         const string taskName = "OnError";
-        LoggingHandler.LogMessage($"OnError: {exception} {msg}", taskName, LogLevel.Error);
+
+        if (exception is AggregateException e)
+        {
+            LoggingHandler.LogMessage($"Multiple errors detected: \n{string.Join("\n", e.InnerExceptions.Select(ex => ex.Message))}", taskName, LogLevel.Error);
+            return;
+        }
+        LoggingHandler.LogMessage($"OnError: {exception}", taskName, LogLevel.Error);
     }
     
     private static void OnMessageReceived(LogMessage message)
@@ -231,6 +244,7 @@ public class ArchipelagoHandler
         const string taskName = "OnSocketClosed";
         LoggingHandler.LogMessage($"Connection closed ({reason}) Attempting reconnect...", taskName, LogLevel.Error);
         IsConnected = false;
+        IsConnecting = false;
     }
     
     private static void PacketReceived(ArchipelagoPacketBase packet)

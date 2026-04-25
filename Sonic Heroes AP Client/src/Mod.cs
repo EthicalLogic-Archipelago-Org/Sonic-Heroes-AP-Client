@@ -90,10 +90,11 @@ public class Mod: ModBase
     
     //tasks here
     //main task/thread exists as well (obv)
+    public static CancellationTokenSource? Cts;
     
     public static Task ConnectionTask = new (Tasks.ConnectionTask.APConnectionTask);
-    public static Task CheckReceivedItemsTask = new (ReceivedItemsTask.CheckReceivedItemsTask);
-    public static Task CheckedLocationsTask = new (Tasks.CheckedLocationsTask.CheckedLocationsAPTask);
+    public static Task CheckReceivedItemsTask;
+    public static Task CheckedLocationsTask;
     public static Task StealthTrapTask = new (TrapTask.StealthTrapTask);
     public static Task FreezeTrapTask = new (TrapTask.FreezeTrapTask);
     public static Task CharmyTrapTask = new (TrapTask.CharmyTrapTask);

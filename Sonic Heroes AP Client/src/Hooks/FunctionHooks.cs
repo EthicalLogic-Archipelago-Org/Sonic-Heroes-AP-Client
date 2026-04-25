@@ -1045,7 +1045,7 @@ public static class FunctionHooks
                 {
                     if (Mod.LevelSelectManager.GateData[gateIndex].BossLevel.LevelId == (LevelId)levelIndex)
                     {
-                        Mod.LevelSelectManager.GateData[gateIndex + 1].IsUnlocked = true;
+                        Mod.LevelSelectManager.GateData[gateIndex + 1].SetIsUnlocked(true, TaskName);
                         //if (!Mod.LevelSelectManager.IsThisBossCompletedYet((LevelId)levelIndex))
                         Mod.LevelSelectManager.RecalculateOpenLevels(TaskName);
                     }

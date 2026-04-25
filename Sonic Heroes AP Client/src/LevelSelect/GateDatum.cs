@@ -1,6 +1,8 @@
 using Sonic_Heroes_AP_Client.Archipelago;
+using Sonic_Heroes_AP_Client.Definitions;
+using Sonic_Heroes_AP_Client.Logging;
 
-namespace Sonic_Heroes_AP_Client.LevelUnlocking;
+namespace Sonic_Heroes_AP_Client.LevelSelect;
 
 public class GateDatum
 {
@@ -10,15 +12,15 @@ public class GateDatum
     public List<Level> Levels;
     public Level BossLevel;
     private bool _isUnlocked;
-    public bool IsUnlocked
+    
+    public bool GetIsUnlocked(string taskName) => _isUnlocked;
+
+    public void SetIsUnlocked(bool value, string taskName)
     {
-        get => _isUnlocked;
-        set
-        {
-            _isUnlocked = value;
-            foreach (var level in Levels)
-                level.IsUnlocked = value;
-        }
+        // LoggingHandler.LogMessage($"Setting Gate Datum Index: {Index} Unlocked to: {value} Actual Index: {Mod.LevelSelectManager.GateData.IndexOf(this)}", taskName, LogLevel.SuperDebug);
+        _isUnlocked = value;
+        foreach (var level in Levels)
+            level.SetIsUnlocked(value, taskName);
     }
 
     public GateDatum Next()
@@ -31,9 +33,9 @@ public class GateDatum
         return Index != 0 ? Mod.LevelSelectManager.GateData[Index - 1] : this;
     }
     
-    public void RefreshUnlockStatus()
+    public void RefreshUnlockStatus(string taskName)
     {
-        IsUnlocked = _isUnlocked;
+        SetIsUnlocked(GetIsUnlocked(taskName), taskName);
     }
 
     public GateDatum(SlotData slotData, int index, int bossCost, string[] levelIndices, string bossLevel)

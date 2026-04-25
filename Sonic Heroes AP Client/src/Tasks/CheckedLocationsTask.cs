@@ -6,10 +6,10 @@ namespace Sonic_Heroes_AP_Client.Tasks;
 public static class CheckedLocationsTask
 {
     // ReSharper disable once InconsistentNaming
-    public static void CheckedLocationsAPTask()
+    public static void CheckedLocationsAPTask(CancellationToken token)
     {
         const string taskName = "CheckedLocationsTask";
-        while (true)
+        while (!token.IsCancellationRequested)
         {
             if (Mod.ArchipelagoHandler.LocationsToCheck.TryDequeue(out var locationId))
             {
