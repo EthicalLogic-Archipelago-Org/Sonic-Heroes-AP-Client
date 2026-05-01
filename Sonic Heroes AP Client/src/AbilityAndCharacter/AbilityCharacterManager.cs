@@ -386,6 +386,7 @@ public static class AbilityCharacterManager
         if (Mod.SaveDataHandler.CustomSaveData == null)
         {
             LoggingHandler.LogMessage($"Custom Save Data Null in GetLevelUpForChar", taskName, LogLevel.Error);
+            return 0;
         }
         List<Ability> abilities = GetAbilitiesForTeamAndChar(team, formationChar,  taskName);
         var abilitiesNeeded = abilities.Count;

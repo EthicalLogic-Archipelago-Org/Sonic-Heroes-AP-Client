@@ -18,7 +18,7 @@ public static class ConnectionTask
                 if (Mod.Cts != null)
                     Mod.Cts.Cancel();
                 
-                Mod.Cts = new();
+                Mod.Cts = new CancellationTokenSource();
                 Mod.CheckReceivedItemsTask = new Task(() => ReceivedItemsTask.CheckReceivedItemsTask(Mod.Cts.Token), Mod.Cts.Token);
                 Mod.CheckedLocationsTask = new Task(() => CheckedLocationsTask.CheckedLocationsAPTask(Mod.Cts.Token), Mod.Cts.Token);
                 
@@ -28,6 +28,8 @@ public static class ConnectionTask
                 //LoggingHandler.LogMessage($"Connection Task Finished in : {taskName}", taskName, LogLevel.SuperDebug);
             }
             Thread.Sleep(2500);
+            // Task.Delay(2500).Wait();
+            // Task.Delay(2500).GetAwaiter().GetResult();
         }
         // ReSharper disable once FunctionNeverReturns
     }

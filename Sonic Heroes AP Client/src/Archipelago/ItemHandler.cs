@@ -71,15 +71,16 @@ public static class ItemHandler
             
             LoggingHandler.LogMessage($"Handle Item Start : Name: {itemName} Index: {Mod.SaveDataHandler.CustomSaveData.LastItemIndex}", taskName, LogLevel.SuperDebug);
 
-            if (itemName.Contains("Emblem"))
-            {
-                LoggingHandler.LogMessage($"Dropping Emblem Please send help.", taskName, LogLevel.SuperDebug);
-                //return;
-            }
+            // if (itemName.Contains("Emblem"))
+            // {
+            //     LoggingHandler.LogMessage($"Dropping Emblem Please send help.", taskName, LogLevel.SuperDebug);
+            //     //return;
+            // }
 
             if (itemName == null)
             {
                 LoggingHandler.LogMessage($"ItemName is null for some reason", taskName, LogLevel.Error);
+                return;
             }
             
             //check for items here
