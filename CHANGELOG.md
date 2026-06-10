@@ -4,6 +4,37 @@
 ===================================================
 ===================================================
 
+## Version 2.2.3 (Mod)
+
+## Mod
+
+
+### Changes
+- Force SuperHardMode enabled when Debug build (for testing)
+- Lower Team Dark Seaside Hill Spawn NoControlTime
+
+
+### Fixes
+- Add CanellationTokens for ReceivedItems and CheckedLocations Tasks and cancel those tasks on disconnect (fixes crash when reconnecting)
+- Properly reset GateData on reconnection (fixes issue of all levels being locked)
+- Added additional null check in PlaySound and PlayAFSSound (this should address crashing early in connection)
+- Fix crash on disabled Belly Flop
+- Return out of a null case in GetLevelUpForChar
+
+
+### Improvements
+- Trim excessive error logs when connection refused by server
+- Remove unneeded dropping emblem item debug print
+
+
+### Refactors
+- Revamped the backup of Stage Obj Table to allow for more granular control of StageObjs
+- Fix incorrect namespace for GateDatum and Level
+
+
+===================================================
+===================================================
+
 ## Version 2.2.2 (Mod)
 
 ### Fixes
