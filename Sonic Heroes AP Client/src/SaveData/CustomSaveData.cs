@@ -93,4 +93,6 @@ public class CustomSaveData
 
     public Dictionary<Team, Dictionary<StageObjTypes, bool>> StageObjSpawnSaveData = Enum.GetValues<Team>().ToDictionary(x => x, x => StageObjData.StageObjsToMessWith.ToDictionary(y => y, y => !StageObjData.SeasideHillStageObjsToNotSpawn.Contains(y)));
     
+    public Dictionary<Team, bool> BobsledUnlocks = Enum.GetValues<Team>().ToDictionary(x => x, _ => false);
+    
 }

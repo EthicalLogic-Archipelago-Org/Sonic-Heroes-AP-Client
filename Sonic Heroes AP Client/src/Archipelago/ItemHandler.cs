@@ -96,6 +96,9 @@ public static class ItemHandler
             LoggingHandler.LogMessage($"Handle Item Before StageObj: {handled}", taskName, LogLevel.SuperDebug);
             CheckStageObjItemName(itemName, ref handled, taskName);
             
+            LoggingHandler.LogMessage($"Handle Item Before Bobsled: {handled}", taskName, LogLevel.SuperDebug);
+            CheckBobsledItemName(itemName, ref handled, taskName);
+            
             
             if (handled)
             {
@@ -342,7 +345,15 @@ public static class ItemHandler
             return;
         team = CheckTeamItemName(itemName, taskName);
         region = CheckRegionItemName(itemName, taskName);
-        AbilityCharacterManager.UnlockAbilityItemCallback(ability, team, region, taskName);
+
+        if (itemName.Contains("Progressive", StringComparison.InvariantCultureIgnoreCase))
+        {
+            AbilityCharacterManager.UnlockProgressiveAbilityItemCallback((Ability)ability, team, region, taskName);
+        }
+        else
+        {
+            AbilityCharacterManager.UnlockAbilityItemCallback(ability, team, region, taskName);
+        }
         LoggingHandler.LogMessage($"Got Item: {itemName}", taskName, LogLevel.APAction);
         handled = true;
     }
@@ -405,6 +416,29 @@ public static class ItemHandler
                     handled = true;
                     return;
                 }
+            }
+        }
+        catch (Exception e)
+        {
+            LoggingHandler.LogMessage($"{e}", taskName, LogLevel.Error);
+        }
+    }
+
+    public static void CheckBobsledItemName(string itemName, ref bool handled, string taskName)
+    {
+        try
+        {
+            if (handled)
+                return;
+            Team? team;
+            // LevelId? levelId;
+            if (itemName.Contains("Bobsled", StringComparison.InvariantCultureIgnoreCase))
+            {
+                LoggingHandler.LogMessage($"Got Item: {itemName}", taskName, LogLevel.APAction);
+                team = CheckTeamItemName(itemName, taskName);
+                // levelId = CheckLevelIdItemName(itemName, taskName);
+                StageObjHandler.UnlockBobsledItemCallback(team, taskName);
+                handled = true;
             }
         }
         catch (Exception e)

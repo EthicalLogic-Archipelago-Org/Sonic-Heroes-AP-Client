@@ -17,6 +17,28 @@ public static class StageObjHandler
         UnlockStageObjItemCallback(null, team, region, taskName, true);
         //Mod.SaveDataHandler!.CustomSaveData!.StageObjSpawnSaveData[(Team)team][obj] = true;
     }
+
+    public static void UnlockBobsledItemCallback(Team? team, string taskname)
+    {
+        try
+        {
+            if (team is null)
+            {
+                foreach (var t in Enum.GetValues<Team>())
+                {
+                    UnlockBobsledItemCallback(t, taskname);
+                }
+            }
+            else
+            {
+                Mod.SaveDataHandler.CustomSaveData.BobsledUnlocks[(Team)team] = !Mod.IsDebug || !Mod.SaveDataHandler.CustomSaveData.BobsledUnlocks[(Team)team];
+            }
+        }
+        catch (Exception e)
+        {
+            LoggingHandler.LogMessage($"{e}", taskname, LogLevel.Error);
+        }
+    }
     
     public static void UnlockStageObjItemCallback(StageObjTypes? stageObjTypes, Team? team, Region? region, string taskName, bool forceunlock = false)
     {

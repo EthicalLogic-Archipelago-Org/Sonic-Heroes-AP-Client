@@ -149,7 +149,7 @@ public static class AbilityCharacterManager
             return;
         }
         
-        Mod.SaveDataHandler.CustomSaveData.UnlockSaveData[team].AbilityUnlocks[region][ability] = true;
+        Mod.SaveDataHandler.CustomSaveData.UnlockSaveData[team].AbilityUnlocks[region][ability] = !Mod.IsDebug || !Mod.SaveDataHandler.CustomSaveData.UnlockSaveData[team].AbilityUnlocks[region][ability];
         PollUpdates(taskName);
     }
     
@@ -192,6 +192,133 @@ public static class AbilityCharacterManager
         //AbilityCharacterGameWrites.SetUltimateFireDunk(forceunlock || Mod.SaveDataHandler.CustomSaveData.UnlockSaveData[team].AbilityUnlocks[region][Ability.UltimateFireDunk]);
         AbilityCharacterGameWrites.SetBellyFlop(forceunlock || Mod.SaveDataHandler.CustomSaveData.UnlockSaveData[team].AbilityUnlocks[region][Ability.BellyFlop]);
     }
+
+
+    public static void UnlockProgressiveAbilityItemCallback(Ability ability, Team? team, Region? region, string taskName)
+    {
+        if (Mod.SaveDataHandler.CustomSaveData == null)
+        {
+            LoggingHandler.LogMessage($"Custom Save Data Null in UnlockAbilityItemCallback", taskName, LogLevel.Error);
+            return;
+        }
+
+        if (team is null)
+        {
+            foreach (var t in Enum.GetValues<Team>())
+            {
+                UnlockProgressiveAbilityItemCallback(ability, t, region, taskName);
+            }
+        }
+        else if (region is null)
+        {
+            foreach (var r in Enum.GetValues<Region>())
+            {
+                UnlockProgressiveAbilityItemCallback(ability, team, r, taskName);
+            }
+        }
+        else
+        {
+            switch (ability)
+            {
+                case Ability.HomingAttack:
+                {
+                    //Homing
+                    //Triangle Jump
+                    bool hasHoming = Mod.SaveDataHandler.CustomSaveData.UnlockSaveData[(Team)team].AbilityUnlocks[(Region)region][Ability.HomingAttack];
+                    bool hasTriangleJump = Mod.SaveDataHandler.CustomSaveData.UnlockSaveData[(Team)team].AbilityUnlocks[(Region)region][Ability.TriangleJump];
+                    if (hasHoming && hasTriangleJump)
+                    {
+                        UnlockAbilityForRegion((Team)team, (Region)region, Ability.HomingAttack, taskName);
+                        UnlockAbilityForRegion((Team)team, (Region)region, Ability.TriangleJump, taskName);
+                    }
+                    else if (hasHoming)
+                    {
+                        UnlockAbilityForRegion((Team)team, (Region)region, Ability.TriangleJump, taskName);
+                    }
+                    else
+                    {
+                        UnlockAbilityForRegion((Team)team, (Region)region, Ability.HomingAttack, taskName);
+                    }
+                    break;
+                }
+                
+                case Ability.Tornado:
+                {
+                    //Tornado
+                    //Invis
+                    bool hasTornado = Mod.SaveDataHandler.CustomSaveData.UnlockSaveData[(Team)team].AbilityUnlocks[(Region)region][Ability.Tornado];
+                    bool hasInvis = Mod.SaveDataHandler.CustomSaveData.UnlockSaveData[(Team)team].AbilityUnlocks[(Region)region][Ability.Invisibility];
+                    if (hasTornado && hasInvis)
+                    {
+                        UnlockAbilityForRegion((Team)team, (Region)region, Ability.Tornado, taskName);
+                        UnlockAbilityForRegion((Team)team, (Region)region, Ability.Invisibility, taskName);
+                    }
+                    else if (hasTornado)
+                    {
+                        UnlockAbilityForRegion((Team)team, (Region)region, Ability.Invisibility, taskName);
+                    }
+                    else
+                    {
+                        UnlockAbilityForRegion((Team)team, (Region)region, Ability.Tornado, taskName);
+                    }
+                    break;
+                }
+
+                case Ability.Flight:
+                {
+                    //Thundershoot
+                    //Flight
+                    bool hasThundershoot = Mod.SaveDataHandler.CustomSaveData.UnlockSaveData[(Team)team].AbilityUnlocks[(Region)region][Ability.Thundershoot];
+                    bool hasFlight = Mod.SaveDataHandler.CustomSaveData.UnlockSaveData[(Team)team].AbilityUnlocks[(Region)region][Ability.Flight];
+                    
+                    if (hasThundershoot && hasFlight)
+                    {
+                        UnlockAbilityForRegion((Team)team, (Region)region, Ability.Thundershoot, taskName);
+                        UnlockAbilityForRegion((Team)team, (Region)region, Ability.Flight, taskName);
+                        UnlockAbilityForRegion((Team)team, (Region)region, Ability.DummyRings, taskName);
+                        UnlockAbilityForRegion((Team)team, (Region)region, Ability.CheeseCannon, taskName);
+                        UnlockAbilityForRegion((Team)team, (Region)region, Ability.FlowerSting, taskName);
+                    }
+                    else if (hasThundershoot)
+                    {
+                        UnlockAbilityForRegion((Team)team, (Region)region, Ability.Flight, taskName);
+                    }
+                    else
+                    {
+                        UnlockAbilityForRegion((Team)team, (Region)region, Ability.Thundershoot, taskName);
+                        UnlockAbilityForRegion((Team)team, (Region)region, Ability.DummyRings, taskName);
+                        UnlockAbilityForRegion((Team)team, (Region)region, Ability.CheeseCannon, taskName);
+                        UnlockAbilityForRegion((Team)team, (Region)region, Ability.FlowerSting, taskName);
+                    }
+                    break;
+                }
+
+                case Ability.PowerAttack:
+                {
+                    //Power Attack
+                    //Combo Finisher
+                    
+                    //currently not doing Fire Dunk/Belly Flop
+                    bool hasPowerAttack = Mod.SaveDataHandler.CustomSaveData.UnlockSaveData[(Team)team].AbilityUnlocks[(Region)region][Ability.PowerAttack];
+                    bool hasCombo = Mod.SaveDataHandler.CustomSaveData.UnlockSaveData[(Team)team].AbilityUnlocks[(Region)region][Ability.ComboFinisher];
+                    if (hasPowerAttack && hasCombo)
+                    {
+                        UnlockAbilityForRegion((Team)team, (Region)region, Ability.PowerAttack, taskName);
+                        UnlockAbilityForRegion((Team)team, (Region)region, Ability.ComboFinisher, taskName);
+                    }
+                    else if (hasPowerAttack)
+                    {
+                        UnlockAbilityForRegion((Team)team, (Region)region, Ability.ComboFinisher, taskName);
+                    }
+                    else
+                    {
+                        UnlockAbilityForRegion((Team)team, (Region)region, Ability.PowerAttack, taskName);
+                    }
+                    break;
+                }
+            }
+        }
+    }
     
     
     public static void UnlockAbilityItemCallback(Ability? ability, Team? team, Region? region, string taskName)
@@ -226,8 +353,7 @@ public static class AbilityCharacterManager
         }
         else
         {
-            // TODO use UnlockAbilityForRegion Here to unify handling
-            Mod.SaveDataHandler.CustomSaveData.UnlockSaveData[(Team)team].AbilityUnlocks[(Region)region][(Ability)ability] = !Mod.IsDebug || !Mod.SaveDataHandler.CustomSaveData.UnlockSaveData[(Team)team].AbilityUnlocks[(Region)region][(Ability)ability];
+            UnlockAbilityForRegion((Team)team, (Region)region, (Ability)ability, taskName);
             PollUpdates(taskName);
         }
     }

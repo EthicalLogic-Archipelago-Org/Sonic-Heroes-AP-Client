@@ -13,7 +13,7 @@ public static class CheckedLocationsTask
         {
             if (Mod.ArchipelagoHandler.LocationsToCheck.TryDequeue(out var locationId))
             {
-                LoggingHandler.LogMessage($"Checking Location ID: 0x{locationId:x}", taskName, LogLevel.SuperDebug);
+                LoggingHandler.LogMessage($"Checking Location ID: 0x{locationId:X}", taskName, LogLevel.SuperDebug);
                 Mod.ArchipelagoHandler.Session.Locations.CompleteLocationChecks(locationId);
             }
             Thread.Sleep(100);
