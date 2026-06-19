@@ -91,6 +91,6 @@ public class CustomSaveData
         MusicShuffleData.HeroesSongs.ToDictionary(x => x.name.Split('\\').Last(), x => x.name.Split('\\').Last());
 
 
-    public Dictionary<Team, Dictionary<StageObjTypes, bool>> StageObjSpawnSaveData = Enum.GetValues<Team>().ToDictionary(x => x, x => StageObjData.StageObjsToMessWith.ToDictionary(y => y, y => true));
+    public Dictionary<Team, Dictionary<StageObjTypes, bool>> StageObjSpawnSaveData = Enum.GetValues<Team>().ToDictionary(x => x, x => StageObjData.StageObjsToMessWith.ToDictionary(y => y, y => !StageObjData.SeasideHillStageObjsToNotSpawn.Contains(y)));
     
 }

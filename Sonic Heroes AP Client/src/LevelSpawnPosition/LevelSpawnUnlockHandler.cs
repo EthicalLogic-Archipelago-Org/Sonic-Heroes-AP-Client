@@ -41,13 +41,13 @@ public static class LevelSpawnUnlockHandler
             foreach (var team in Enum.GetValues<Team>().Where(t => (bool)Mod.LevelSelectManager.IsThisTeamEnabled(t, taskName)!))
             {
                 //starting spawn pos here
-                UnlockSpawnPosForAllLevelsForTeam(team, 0, taskName);
+                //UnlockSpawnPosForAllLevelsForTeam(team, 0, taskName);
             }
             if (!Mod.IsDebug)
                 return;
             foreach (var team in Enum.GetValues<Team>())
             {
-                UnlockAllSpawnDataForTeam(team, taskName);
+                //UnlockAllSpawnDataForTeam(team, taskName);
             }
             Mod.ArchipelagoHandler.Save(taskName);
         }

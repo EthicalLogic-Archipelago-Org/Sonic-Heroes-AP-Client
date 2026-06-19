@@ -12,7 +12,10 @@ public class LevelSelectManager
 {
     public List<GateDatum> GateData;
     
-    public StoriesAndSanities EnabledStoriesAndSanities;
+    //public StoriesAndSanities EnabledStoriesAndSanities;
+    public EnabledStories EnabledStories;
+    public Dictionary<Team, Dictionary<SanityType, SanityEnableStatus>> EnabledSanities;
+    
     public GoalUnlockConditions GoalUnlockConditions;
     public FinalBoss FinalBoss;
 
@@ -38,7 +41,9 @@ public class LevelSelectManager
         LevelSelectAllLevelsAvailableWrite = Mod.IsDebug;
         ActSelectedInLevelSelect = Act.Act1;
         
-        EnabledStoriesAndSanities = StoriesAndSanities.None;
+        EnabledStories = EnabledStories.None;
+        EnabledSanities = Enum.GetValues<Team>().ToDictionary(team => team, _ => Enum.GetValues<SanityType>().ToDictionary(sanityType => sanityType, _ => SanityEnableStatus.Disabled));
+        
         GoalUnlockConditions = GoalUnlockConditions.None;
         FinalBoss = FinalBoss.MetalMadness;
     }
@@ -53,20 +58,18 @@ public class LevelSelectManager
 
     private void ForceSuperHardModeEnable(string taskName)
     {
-        EnabledStoriesAndSanities &= ~StoriesAndSanities.SonicActB;
-        EnabledStoriesAndSanities |= StoriesAndSanities.SuperHardMode;
+        EnabledStories &= ~EnabledStories.SonicActB;
+        EnabledStories |= EnabledStories.SuperHardMode;
         
-        if (EnabledStoriesAndSanities.HasFlag(StoriesAndSanities.SonicKeySanityBothActs))
+        if (EnabledSanities[Team.Sonic][SanityType.KeySanity] is SanityEnableStatus.BothActs)
         {
-            EnabledStoriesAndSanities &= ~StoriesAndSanities.SonicKeySanityBothActs;
-            EnabledStoriesAndSanities |= StoriesAndSanities.SonicKeySanity1Set;
+            EnabledSanities[Team.Sonic][SanityType.KeySanity] = SanityEnableStatus.Only1Set;
         }
         
-        if (EnabledStoriesAndSanities.HasFlag(StoriesAndSanities.SonicCheckpointSanityBothActs))
+        if (EnabledSanities[Team.Sonic][SanityType.CheckpointSanity] is SanityEnableStatus.BothActs)
         {
-            EnabledStoriesAndSanities &= ~StoriesAndSanities.SonicCheckpointSanityBothActs;
-            EnabledStoriesAndSanities |= StoriesAndSanities.SonicCheckpointSanity1Set;
-            //EnabledStoriesAndSanities |= StoriesAndSanities.SuperHardCheckpointSanity;
+            EnabledSanities[Team.Sonic][SanityType.CheckpointSanity] = SanityEnableStatus.Only1Set;
+            //EnabledSanities[Team.SuperHardMode][SanityType.CheckpointSanity] = SanityEnableStatus.Only1Set;
         }
     }
 
@@ -273,14 +276,14 @@ public class LevelSelectManager
         switch (team)
         {
             case Team.SuperHardMode:
-                return EnabledStoriesAndSanities.HasFlag(StoriesAndSanities.SuperHardMode);
+                return EnabledStories.HasFlag(EnabledStories.SuperHardMode);
             case Team.Sonic:
                 switch (act)
                 {
                     case Act.Act1:
-                        return EnabledStoriesAndSanities.HasFlag(StoriesAndSanities.SonicActA);
+                        return EnabledStories.HasFlag(EnabledStories.SonicActA);
                     case Act.Act2:
-                        return EnabledStoriesAndSanities.HasFlag(StoriesAndSanities.SonicActB);
+                        return EnabledStories.HasFlag(EnabledStories.SonicActB);
                     case Act.Act3:
                         LoggingHandler.LogMessage($"{act} {team} asked for in IsThisTeamActEnabled", taskName, LogLevel.Error);
                         //return (bool)IsThisTeamEnabled(Team.SuperHardMode)!;
@@ -293,9 +296,9 @@ public class LevelSelectManager
                 switch (act)
                 {
                     case Act.Act1:
-                        return EnabledStoriesAndSanities.HasFlag(StoriesAndSanities.DarkActA);
+                        return EnabledStories.HasFlag(EnabledStories.DarkActA);
                     case Act.Act2:
-                        return EnabledStoriesAndSanities.HasFlag(StoriesAndSanities.DarkActB);
+                        return EnabledStories.HasFlag(EnabledStories.DarkActB);
                     case Act.Act3:
                     default:
                         LoggingHandler.LogMessage($"{act} {team} asked for in IsThisTeamActEnabled", taskName, LogLevel.Error);
@@ -305,9 +308,9 @@ public class LevelSelectManager
                 switch (act)
                 {
                     case Act.Act1:
-                        return EnabledStoriesAndSanities.HasFlag(StoriesAndSanities.RoseActA);
+                        return EnabledStories.HasFlag(EnabledStories.RoseActA);
                     case Act.Act2:
-                        return EnabledStoriesAndSanities.HasFlag(StoriesAndSanities.RoseActB);
+                        return EnabledStories.HasFlag(EnabledStories.RoseActB);
                     case Act.Act3:
                     default:
                         LoggingHandler.LogMessage($"{act} {team} asked for in IsThisTeamActEnabled", taskName, LogLevel.Error);
@@ -317,9 +320,9 @@ public class LevelSelectManager
                 switch (act)
                 {
                     case Act.Act1:
-                        return EnabledStoriesAndSanities.HasFlag(StoriesAndSanities.ChaotixActA);
+                        return EnabledStories.HasFlag(EnabledStories.ChaotixActA);
                     case Act.Act2:
-                        return EnabledStoriesAndSanities.HasFlag(StoriesAndSanities.ChaotixActB);
+                        return EnabledStories.HasFlag(EnabledStories.ChaotixActB);
                     case Act.Act3:
                     default:
                         LoggingHandler.LogMessage($"{act} {team} asked for in IsThisTeamActEnabled", taskName, LogLevel.Error);
@@ -347,96 +350,46 @@ public class LevelSelectManager
             return null;
         }
 
-        switch (team)
+        if (team is Team.Sonic or Team.SuperHardMode && sanity is SanityType.ObjSanity)
         {
-            case Team.SuperHardMode:
-                return sanity switch
-                {
-                    SanityType.CheckpointSanity => EnabledStoriesAndSanities.HasFlag(StoriesAndSanities.SuperHardCheckpointSanity),
-                    _ => false
-                };
-            case Team.Sonic when bothActs:
-                return sanity switch
-                {
-                    SanityType.KeySanity => EnabledStoriesAndSanities.HasFlag(StoriesAndSanities
-                        .SonicKeySanityBothActs),
-                    SanityType.CheckpointSanity => EnabledStoriesAndSanities.HasFlag(StoriesAndSanities
-                        .SonicCheckpointSanityBothActs),
-                    _ => false
-                };
-            case Team.Sonic:
-                return sanity switch
-                {
-                    SanityType.KeySanity => EnabledStoriesAndSanities.HasFlag(StoriesAndSanities
-                        .SonicKeySanity1Set),
-                    SanityType.CheckpointSanity => EnabledStoriesAndSanities.HasFlag(StoriesAndSanities
-                        .SonicCheckpointSanity1Set),
-                    _ => false
-                };
-            case Team.Dark when bothActs:
-                return sanity switch
-                {
-                    SanityType.ObjSanity => EnabledStoriesAndSanities.HasFlag(StoriesAndSanities.DarkObjSanity),
-                    SanityType.KeySanity => EnabledStoriesAndSanities.HasFlag(StoriesAndSanities
-                        .DarkKeySanityBothActs),
-                    SanityType.CheckpointSanity => EnabledStoriesAndSanities.HasFlag(StoriesAndSanities
-                        .DarkCheckpointSanityBothActs),
-                    _ => false
-                };
-            case Team.Dark:
-                return sanity switch
-                {
-                    SanityType.ObjSanity => EnabledStoriesAndSanities.HasFlag(StoriesAndSanities.DarkObjSanity),
-                    SanityType.KeySanity => EnabledStoriesAndSanities.HasFlag(StoriesAndSanities
-                        .DarkKeySanity1Set),
-                    SanityType.CheckpointSanity => EnabledStoriesAndSanities.HasFlag(StoriesAndSanities
-                        .DarkCheckpointSanity1Set),
-                    _ => false
-                };
-            case Team.Rose when bothActs:
-                return sanity switch
-                {
-                    SanityType.ObjSanity => EnabledStoriesAndSanities.HasFlag(StoriesAndSanities.RoseObjSanity),
-                    SanityType.KeySanity => EnabledStoriesAndSanities.HasFlag(StoriesAndSanities
-                        .RoseKeySanityBothActs),
-                    SanityType.CheckpointSanity => EnabledStoriesAndSanities.HasFlag(StoriesAndSanities
-                        .RoseCheckpointSanityBothActs),
-                    _ => false
-                };
-            case Team.Rose:
-                return sanity switch
-                {
-                    SanityType.ObjSanity => EnabledStoriesAndSanities.HasFlag(StoriesAndSanities.RoseObjSanity),
-                    SanityType.KeySanity => EnabledStoriesAndSanities.HasFlag(StoriesAndSanities
-                        .RoseKeySanity1Set),
-                    SanityType.CheckpointSanity => EnabledStoriesAndSanities.HasFlag(StoriesAndSanities
-                        .RoseCheckpointSanity1Set),
-                    _ => false
-                };
-            case Team.Chaotix when bothActs:
-                return sanity switch
-                {
-                    SanityType.ObjSanity => EnabledStoriesAndSanities.HasFlag(StoriesAndSanities.ChaotixObjSanity),
-                    SanityType.KeySanity => EnabledStoriesAndSanities.HasFlag(StoriesAndSanities
-                        .ChaotixKeySanityBothActs),
-                    SanityType.CheckpointSanity => EnabledStoriesAndSanities.HasFlag(StoriesAndSanities
-                        .ChaotixCheckpointSanityBothActs),
-                    _ => false
-                };
-            case Team.Chaotix:
-                return sanity switch
-                {
-                    SanityType.ObjSanity => EnabledStoriesAndSanities.HasFlag(StoriesAndSanities.ChaotixObjSanity),
-                    SanityType.KeySanity => EnabledStoriesAndSanities.HasFlag(StoriesAndSanities
-                        .ChaotixKeySanity1Set),
-                    SanityType.CheckpointSanity => EnabledStoriesAndSanities.HasFlag(StoriesAndSanities
-                        .ChaotixCheckpointSanity1Set),
-                    _ => false
-                };
-            default:
-                LoggingHandler.LogMessage($"HOW DID WE GET HERE???. {team} {sanity} {bothActs} in IsThisSanityEnabled", taskName, LogLevel.Error, 3);
-                return false;
+            LoggingHandler.LogMessage($"Obj Sanity asked for team: {team} in IsThisSanityEnabled.", taskName, LogLevel.Error, 3);
+            return null;
         }
+
+        switch (bothActs)
+        {
+            case true:
+                return sanity switch
+                {
+                    SanityType.ObjSanity => EnabledSanities[team][SanityType.ObjSanity] is SanityEnableStatus.BothActs,
+                    SanityType.KeySanity => EnabledSanities[team][SanityType.KeySanity] is SanityEnableStatus.BothActs,
+                    SanityType.CheckpointSanity => EnabledSanities[team][SanityType.CheckpointSanity] is SanityEnableStatus.BothActs,
+                    SanityType.BingoChipSanity => EnabledSanities[team][SanityType.BingoChipSanity] is SanityEnableStatus.BothActs,
+                    SanityType.HintRingSanity => EnabledSanities[team][SanityType.HintRingSanity] is SanityEnableStatus.BothActs,
+                    SanityType.ItemBalloonBoxSanity => EnabledSanities[team][SanityType.ItemBalloonBoxSanity] is SanityEnableStatus.BothActs,
+                    SanityType.EnemySanity => EnabledSanities[team][SanityType.EnemySanity] is SanityEnableStatus.BothActs,
+                    SanityType.RingSanityGroup => EnabledSanities[team][SanityType.RingSanityGroup] is SanityEnableStatus.BothActs,
+                    SanityType.RingSanityIndividual => EnabledSanities[team][SanityType.RingSanityIndividual] is SanityEnableStatus.BothActs,
+                    _ => false
+                };
+            case false:
+                return sanity switch
+                {
+                    SanityType.ObjSanity => EnabledSanities[team][SanityType.ObjSanity] is not SanityEnableStatus.Disabled,
+                    SanityType.KeySanity => EnabledSanities[team][SanityType.KeySanity] is not SanityEnableStatus.Disabled,
+                    SanityType.CheckpointSanity => EnabledSanities[team][SanityType.CheckpointSanity] is not SanityEnableStatus.Disabled,
+                    SanityType.BingoChipSanity => EnabledSanities[team][SanityType.BingoChipSanity] is not SanityEnableStatus.Disabled,
+                    SanityType.HintRingSanity => EnabledSanities[team][SanityType.HintRingSanity] is not SanityEnableStatus.Disabled,
+                    SanityType.ItemBalloonBoxSanity => EnabledSanities[team][SanityType.ItemBalloonBoxSanity] is not SanityEnableStatus.Disabled,
+                    SanityType.EnemySanity => EnabledSanities[team][SanityType.EnemySanity] is not SanityEnableStatus.Disabled,
+                    SanityType.RingSanityGroup => EnabledSanities[team][SanityType.RingSanityGroup] is not SanityEnableStatus.Disabled,
+                    SanityType.RingSanityIndividual => EnabledSanities[team][SanityType.RingSanityIndividual] is not SanityEnableStatus.Disabled,
+                    _ => false
+                };
+        }
+        
+        LoggingHandler.LogMessage($"HOW DID WE GET HERE???. {team} {sanity} {bothActs} in IsThisSanityEnabled", taskName, LogLevel.Error, 3);
+        return false;
     }
 
 
@@ -446,43 +399,43 @@ public class LevelSelectManager
     /// </summary>
     /// <param name="team"></param>
     /// <returns></returns>
-    public MissionsActive GetMissionsActiveForTeam(Team team, string taskName)
-    { 
-        var result = MissionsActive.None;
-        switch (team)
-        {
-            case Team.SuperHardMode:
-                if ((bool)IsThisTeamEnabled(Team.SuperHardMode, taskName)!)
-                    result = MissionsActive.SuperHard;
-                break;
-            case Team.Sonic:
-                if (EnabledStoriesAndSanities.HasFlag(StoriesAndSanities.SonicActA))
-                    result |= MissionsActive.Act1;
-                if (EnabledStoriesAndSanities.HasFlag(StoriesAndSanities.SonicActB))
-                    result |= MissionsActive.Act2;
-                break;
-            case Team.Dark:
-                if (EnabledStoriesAndSanities.HasFlag(StoriesAndSanities.DarkActA))
-                    result |= MissionsActive.Act1;
-                if (EnabledStoriesAndSanities.HasFlag(StoriesAndSanities.DarkActB))
-                    result |= MissionsActive.Act2;
-                break;
-            case Team.Rose:
-                if (EnabledStoriesAndSanities.HasFlag(StoriesAndSanities.RoseActA))
-                    result |= MissionsActive.Act1;
-                if (EnabledStoriesAndSanities.HasFlag(StoriesAndSanities.RoseActB))
-                    result |= MissionsActive.Act2;
-                break;
-            case Team.Chaotix:
-                if (EnabledStoriesAndSanities.HasFlag(StoriesAndSanities.ChaotixActA))
-                    result |= MissionsActive.Act1;
-                if (EnabledStoriesAndSanities.HasFlag(StoriesAndSanities.ChaotixActB))
-                    result |= MissionsActive.Act2;
-                break;
-            default:
-                break;
-        }
-        return result;
-    }
+    // public MissionsActive GetMissionsActiveForTeam(Team team, string taskName)
+    // { 
+    //     var result = MissionsActive.None;
+    //     switch (team)
+    //     {
+    //         case Team.SuperHardMode:
+    //             if ((bool)IsThisTeamEnabled(Team.SuperHardMode, taskName)!)
+    //                 result = MissionsActive.SuperHard;
+    //             break;
+    //         case Team.Sonic:
+    //             if (EnabledStoriesAndSanities.HasFlag(StoriesAndSanities.SonicActA))
+    //                 result |= MissionsActive.Act1;
+    //             if (EnabledStoriesAndSanities.HasFlag(StoriesAndSanities.SonicActB))
+    //                 result |= MissionsActive.Act2;
+    //             break;
+    //         case Team.Dark:
+    //             if (EnabledStoriesAndSanities.HasFlag(StoriesAndSanities.DarkActA))
+    //                 result |= MissionsActive.Act1;
+    //             if (EnabledStoriesAndSanities.HasFlag(StoriesAndSanities.DarkActB))
+    //                 result |= MissionsActive.Act2;
+    //             break;
+    //         case Team.Rose:
+    //             if (EnabledStoriesAndSanities.HasFlag(StoriesAndSanities.RoseActA))
+    //                 result |= MissionsActive.Act1;
+    //             if (EnabledStoriesAndSanities.HasFlag(StoriesAndSanities.RoseActB))
+    //                 result |= MissionsActive.Act2;
+    //             break;
+    //         case Team.Chaotix:
+    //             if (EnabledStoriesAndSanities.HasFlag(StoriesAndSanities.ChaotixActA))
+    //                 result |= MissionsActive.Act1;
+    //             if (EnabledStoriesAndSanities.HasFlag(StoriesAndSanities.ChaotixActB))
+    //                 result |= MissionsActive.Act2;
+    //             break;
+    //         default:
+    //             break;
+    //     }
+    //     return result;
+    // }
     
 }

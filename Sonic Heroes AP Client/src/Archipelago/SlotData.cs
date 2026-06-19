@@ -1,6 +1,7 @@
 
 using System.Drawing;
 using Archipelago.MultiClient.Net.BounceFeatures.DeathLink;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Sonic_Heroes_AP_Client.AbilityAndCharacter;
 using Sonic_Heroes_AP_Client.Configuration;
@@ -13,7 +14,13 @@ using Sonic_Heroes_AP_Client.UI;
 namespace Sonic_Heroes_AP_Client.Archipelago;
 
 public class SlotData
-{
+{ 
+    protected class TeamsAndSanitySlotDataEntry
+    {
+        public EnabledStories EnabledActs;
+        public Dictionary<Team, Dictionary<SanityType, SanityEnableStatus>> SanityData;
+    }
+    
     //Removed from SlotData
     //RingLink
     //RingLinkOverlord
@@ -73,72 +80,73 @@ public class SlotData
             LoggingHandler.LogMessage($"{e}", taskName, LogLevel.Error);
         }
 
-        
-        LoggingHandler.LogMessage($"Slot Data Version Check Passed", taskName, LogLevel.SuperDebug);
-        var gateLevelCounts = ((JArray)slotDict["GateLevelCounts"]).ToObject<int[]>();
-        var gateEmblemCosts = ((JArray)slotDict["GateEmblemCosts"]).ToObject<int[]>();
-        var shuffledLevels = ((JArray)slotDict["ShuffledLevels"]).ToObject<string[]>();
-        var shuffledBosses = ((JArray)slotDict["ShuffledBosses"]).ToObject<string[]>();
-        var runningLevelCount = 0;
 
-        Mod.LevelSelectManager.GateData = [];
-        
-        for (var gateIndex = 0; gateIndex < gateEmblemCosts.Length; gateIndex++)
+        try
         {
-            var gateLevelStrings = shuffledLevels.Skip(runningLevelCount).Take(gateLevelCounts[gateIndex]).ToArray();
-            var bossLevelString = shuffledBosses[gateIndex];
-            Mod.LevelSelectManager.GateData.Add(new GateDatum(
-                this,
-                gateIndex,
-                gateEmblemCosts[gateIndex],
-                gateLevelStrings,
-                bossLevelString
-            ));
-            if (gateIndex == 0)
-                Mod.LevelSelectManager.GateData[gateIndex].SetIsUnlocked(true, taskName);
-            runningLevelCount += gateLevelCounts[gateIndex];
-        }
-        LoggingHandler.LogMessage($"Slot Data Gate Datum Done", taskName, LogLevel.SuperDebug);
-        
-        EntireRunUnlockType = (EntireRunUnlockType)(int)(long)slotDict["UnlockType"];
-        
-        Mod.LevelSelectManager.FinalBoss = (FinalBoss)(int)(long)slotDict["FinalBoss"];
-        
-        GoalLevelCompletions = (int)(long)slotDict["GoalLevelCompletions"];
-        GoalLevelCompletionsPerStory = (int)(long)slotDict["GoalLevelCompletionsPerStory"];
-        RequiredRank = (Rank)(int)(long)slotDict["RequiredRank"];
+            LoggingHandler.LogMessage($"Slot Data Version Check Passed", taskName, LogLevel.SuperDebug);
+            var gateLevelCounts = ((JArray)slotDict["GateLevelCounts"]).ToObject<int[]>();
+            var gateEmblemCosts = ((JArray)slotDict["GateEmblemCosts"]).ToObject<int[]>();
+            var shuffledLevels = ((JArray)slotDict["ShuffledLevels"]).ToObject<string[]>();
+            var shuffledBosses = ((JArray)slotDict["ShuffledBosses"]).ToObject<string[]>();
+            var runningLevelCount = 0;
 
-        foreach (var str in ((JArray)slotDict["IncludedLevelsAndSanities"]).ToObject<string[]>().ToList())
-        {
-            StoriesAndSanities? res = Enum.GetValues<StoriesAndSanities>().Cast<StoriesAndSanities?>().FirstOrDefault(x => str.Replace(" ", "").Contains(x.ToString() ?? SonicHeroesDefinitions.PleaseDontContainMe, StringComparison.InvariantCultureIgnoreCase));
-            if (res == null)
+            Mod.LevelSelectManager.GateData = [];
+            
+            for (var gateIndex = 0; gateIndex < gateEmblemCosts.Length; gateIndex++)
             {
-                LoggingHandler.LogMessage($"{str} is not a valid StoriesAndSanities", taskName, LogLevel.Error);
-                continue;
+                var gateLevelStrings = shuffledLevels.Skip(runningLevelCount).Take(gateLevelCounts[gateIndex]).ToArray();
+                var bossLevelString = shuffledBosses[gateIndex];
+                Mod.LevelSelectManager.GateData.Add(new GateDatum(
+                    this,
+                    gateIndex,
+                    gateEmblemCosts[gateIndex],
+                    gateLevelStrings,
+                    bossLevelString
+                ));
+                if (gateIndex == 0)
+                    Mod.LevelSelectManager.GateData[gateIndex].SetIsUnlocked(true, taskName);
+                runningLevelCount += gateLevelCounts[gateIndex];
             }
-            Mod.LevelSelectManager.EnabledStoriesAndSanities |= (StoriesAndSanities)res;
-        }
-        
-        LoggingHandler.LogMessage($"Slot Data Stories and Sanities Done", taskName, LogLevel.SuperDebug);
-        
-        foreach (var str in ((JArray)slotDict["GoalUnlockConditions"]).ToObject<string[]>().ToList())
-        {
-            GoalUnlockConditions? res = Enum.GetValues<GoalUnlockConditions>().Cast<GoalUnlockConditions?>().FirstOrDefault(x => str.Replace(" ", "").Contains(x.ToString() ?? SonicHeroesDefinitions.PleaseDontContainMe, StringComparison.InvariantCultureIgnoreCase));
-            if (res == null)
+            LoggingHandler.LogMessage($"Slot Data Gate Datum Done", taskName, LogLevel.SuperDebug);
+            
+            EntireRunUnlockType = (EntireRunUnlockType)(int)(long)slotDict["UnlockType"];
+            
+            Mod.LevelSelectManager.FinalBoss = (FinalBoss)(int)(long)slotDict["FinalBoss"];
+            
+            GoalLevelCompletions = (int)(long)slotDict["GoalLevelCompletions"];
+            GoalLevelCompletionsPerStory = (int)(long)slotDict["GoalLevelCompletionsPerStory"];
+            RequiredRank = (Rank)(int)(long)slotDict["RequiredRank"];
+
+
+
+            var actsAndSanities = JsonConvert.DeserializeObject<TeamsAndSanitySlotDataEntry>(slotDict["ActsAndSanities"].ToString());
+            Mod.LevelSelectManager.EnabledStories = actsAndSanities.EnabledActs;
+            Mod.LevelSelectManager.EnabledSanities = actsAndSanities.SanityData;
+            LoggingHandler.LogMessage($"Slot Data Stories and Sanities Done", taskName, LogLevel.SuperDebug);
+            
+            foreach (var str in ((JArray)slotDict["GoalUnlockConditions"]).ToObject<string[]>().ToList())
             {
-                LoggingHandler.LogMessage($"{str} is not a valid GoalUnlockConditions", taskName, LogLevel.Error);
-                continue;
+                GoalUnlockConditions? res = Enum.GetValues<GoalUnlockConditions>().Cast<GoalUnlockConditions?>().FirstOrDefault(x => str.Replace(" ", "").Contains(x.ToString() ?? SonicHeroesDefinitions.PleaseDontContainMe, StringComparison.InvariantCultureIgnoreCase));
+                if (res == null)
+                {
+                    LoggingHandler.LogMessage($"{str} is not a valid GoalUnlockConditions", taskName, LogLevel.Error);
+                    continue;
+                }
+                Mod.LevelSelectManager.GoalUnlockConditions |= (GoalUnlockConditions)res;
             }
-            Mod.LevelSelectManager.GoalUnlockConditions |= (GoalUnlockConditions)res;
+            DarksanityCheckSize = (int)(long)slotDict["DarkSanity"];
+            RosesanityCheckSize = (int)(long)slotDict["RoseSanity"];
+            ChaotixsanityRingCheckSize = (int)(long)slotDict["ChaotixSanity"];
+            //RemoveCasinoParkVIPTableLaserGate =  (long)slotDict["RemoveCasinoParkVIPTableLaserGate"] == 1;
+            RemoveCasinoParkVIPTableLaserGate = true;
+            AbilityCharacterUnlockType = (AbilityCharacterUnlockType)(int)(long)slotDict["AbilityUnlocks"];
+
+            LoggingHandler.LogMessage($"Slot Data Constructor Done", taskName, LogLevel.SuperDebug);
+            ArchipelagoHandler.CheckTags(taskName);
         }
-        DarksanityCheckSize = (int)(long)slotDict["DarkSanity"];
-        RosesanityCheckSize = (int)(long)slotDict["RoseSanity"];
-        ChaotixsanityRingCheckSize = (int)(long)slotDict["ChaotixSanity"];
-        RemoveCasinoParkVIPTableLaserGate =  (long)slotDict["RemoveCasinoParkVIPTableLaserGate"] == 1;
-        AbilityCharacterUnlockType = (AbilityCharacterUnlockType)(int)(long)slotDict["AbilityUnlocks"];
-
-        LoggingHandler.LogMessage($"Slot Data Constructor Done", taskName, LogLevel.SuperDebug);
-        ArchipelagoHandler.CheckTags(taskName);
-
+        catch (Exception e)
+        {
+            LoggingHandler.LogMessage($"{e}", taskName, LogLevel.Error);
+        }
     }
 }

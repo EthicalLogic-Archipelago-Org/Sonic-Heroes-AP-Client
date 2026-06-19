@@ -38,8 +38,7 @@ public static class CheckpointSanityHandler
             
             if (!matchingcheckpoints.Any())
             {
-                var log =
-                    $"NO Checkpoints FOUND FOR TEAM LEVEL ACT Priority: {team} {level} {act} {priority} :::: coords are: {checkPointPos}";
+                var log = $"NO Checkpoints FOUND FOR TEAM LEVEL ACT Priority: {team} {level} {act} {priority} :::: coords are: {checkPointPos}";
                 LoggingHandler.LogMessage(log, taskName, LogLevel.Error);
             }
             else
@@ -68,9 +67,12 @@ public static class CheckpointSanityHandler
                         else
                         {
                             if (!(bool)Mod.LevelSelectManager.IsThisSanityEnabled((Team)team, SanityType.CheckpointSanity, taskName)! && !(bool)Mod.LevelSelectManager.IsThisSanityEnabled((Team)team, SanityType.CheckpointSanity, taskName, true)!)
+                            {
+                                LoggingHandler.LogMessage($"Checkpoint Sanity is Disabled", taskName, LogLevel.Debug);
                                 return;
-                            if ((bool)Mod.LevelSelectManager.IsThisSanityEnabled((Team)team,
-                                    SanityType.CheckpointSanity, taskName)!)
+                            }
+
+                            if ((bool)Mod.LevelSelectManager.IsThisSanityEnabled((Team)team, SanityType.CheckpointSanity, taskName)! && !(bool)Mod.LevelSelectManager.IsThisSanityEnabled((Team)team, SanityType.CheckpointSanity, taskName, true)!)
                                 //1 set
                                 Mod.ArchipelagoHandler.CheckLocation(SonicHeroesDefinitions.CheckpointNoActStartId + CheckpointData.AllCheckpoints.IndexOf(matchingcheckpoints[i]));
                             else if (act is Act.Act1)

@@ -18,6 +18,10 @@ using Sonic_Heroes_AP_Client.Sanity;
 using Sonic_Heroes_AP_Client.Sanity.BingoChip;
 using Sonic_Heroes_AP_Client.Sanity.BonusKeys;
 using Sonic_Heroes_AP_Client.Sanity.Checkpoints;
+using Sonic_Heroes_AP_Client.Sanity.Enemy;
+using Sonic_Heroes_AP_Client.Sanity.HintRing;
+using Sonic_Heroes_AP_Client.Sanity.ItemBalloonBox;
+using Sonic_Heroes_AP_Client.Sanity.Ring;
 using Sonic_Heroes_AP_Client.StageObj;
 using Sonic_Heroes_AP_Client.UI;
 
@@ -648,14 +652,13 @@ public static class FunctionHooks
         LoggingHandler.LogMessage($"HintRingActivated Start edi: 0x{edi:X}", TaskName, LogLevel.SuperDebug);
         try
         {
-            //var staticPtr = *(int*)(edi + 0x2C);
-            //LoggingHandler.LogMessage($"StaticPtr: 0x{staticPtr:x}", TaskName, LogLevel.SuperDebug);
+            HintRingSanityHandler.HandleHintRingSanity((UIntPtr)edi, TaskName);
         }
         catch (Exception e)
         {
             LoggingHandler.LogMessage($"{e}", TaskName, LogLevel.Error);
         }
-        LoggingHandler.LogMessage($"HintRingActivated Start", TaskName, LogLevel.SuperDebug);
+        LoggingHandler.LogMessage($"HintRingActivated End", TaskName, LogLevel.SuperDebug);
         return 1;
     }
     
@@ -669,8 +672,7 @@ public static class FunctionHooks
         //Balloon has 1 L because that is how the game stores it
         try
         {
-            //var staticPtr = *(int*)(edx + 0x2C);
-            //LoggingHandler.LogMessage($"StaticPtr: 0x{staticPtr:x}", TaskName, LogLevel.SuperDebug);
+            ItemBalloonBoxSanityHandler.HandleItemBalloonSanity((UIntPtr)edx, TaskName);
         }
         catch (Exception e)
         {
@@ -688,8 +690,7 @@ public static class FunctionHooks
         LoggingHandler.LogMessage($"ItemBoxPickUp Start edi: 0x{edi:X}", TaskName, LogLevel.SuperDebug);
         try
         {
-            //var staticPtr = *(int*)(edi + 0x2C);
-            //LoggingHandler.LogMessage($"StaticPtr: 0x{staticPtr:x}", TaskName, LogLevel.SuperDebug);
+            ItemBalloonBoxSanityHandler.HandleItemBoxSanity((UIntPtr)edi, TaskName);
         }
         catch (Exception e)
         {
@@ -752,8 +753,7 @@ public static class FunctionHooks
         LoggingHandler.LogMessage($"EggHammerKilled Start esi: 0x{esi:X}", TaskName, LogLevel.SuperDebug);
         try
         {
-            //var staticPtr = *(int*)(esi + 0x2C);
-            //LoggingHandler.LogMessage($"StaticPtr: 0x{staticPtr:x}", TaskName, LogLevel.SuperDebug);
+            EnemySanityHandler.HandleEnemySanity((UIntPtr)esi, TaskName);
         }
         catch (Exception e)
         {
@@ -771,8 +771,7 @@ public static class FunctionHooks
         LoggingHandler.LogMessage($"E2000Killed Start esi: 0x{esi:X}", TaskName, LogLevel.SuperDebug);
         try
         {
-            //var staticPtr = *(int*)(esi + 0x2C);
-            //LoggingHandler.LogMessage($"StaticPtr: 0x{staticPtr:x}", TaskName, LogLevel.SuperDebug);
+            EnemySanityHandler.HandleEnemySanity((UIntPtr)esi, TaskName);
         }
         catch (Exception e)
         {
@@ -790,8 +789,7 @@ public static class FunctionHooks
         LoggingHandler.LogMessage($"EnemyDestroyMyself Start esi: 0x{esi:X}", TaskName, LogLevel.SuperDebug);
         try
         {
-            //var staticPtr = *(int*)(esi + 0x2C);
-            //LoggingHandler.LogMessage($"StaticPtr: 0x{staticPtr:x}", TaskName, LogLevel.SuperDebug);
+            EnemySanityHandler.HandleEnemySanity((UIntPtr)esi, TaskName);
         }
         catch (Exception e)
         {
@@ -809,32 +807,7 @@ public static class FunctionHooks
         LoggingHandler.LogMessage($"PickUpRing Start ecx: {ecx} esi: 0x{esi:X}", TaskName, LogLevel.SuperDebug);
         try
         {
-            var heapPtr = *(int*)(esi + 0xD8);
-            //LoggingHandler.LogMessage($"HeapPtr: 0x{heapPtr:x}", TaskName, LogLevel.SuperDebug);
-            
-            var ringGroupType = *(byte*)(heapPtr + 0x29);
-            //LoggingHandler.LogMessage($"RingGroupType: {ringGroupType}", TaskName, LogLevel.SuperDebug);
-            
-            var numRingsTotal = *(byte*)(heapPtr + 0x28);
-            //LoggingHandler.LogMessage($"NumRingsTotal: {numRingsTotal}", TaskName, LogLevel.SuperDebug);
-
-            if (ringGroupType == 4)
-            {
-                LoggingHandler.LogMessage($"PickUpRing End (Scattered Ring Group)", TaskName, LogLevel.SuperDebug);
-                return 1;
-            }
-            
-            //var linkedListStartPtr = *(int*)(heapPtr + 0x4C);
-            //esi points to current entry
-            //list is list of TObjRingSubstance
-            //LoggingHandler.LogMessage($"LinkedListStartPtr: 0x{linkedListStartPtr:x}", TaskName, LogLevel.SuperDebug);
-            
-            var staticPtr = *(int*)(heapPtr + 0x54);
-            //LoggingHandler.LogMessage($"StaticPtr: 0x{staticPtr:x}", TaskName, LogLevel.SuperDebug);
-            
-            var staticRingCount =  *(byte*)(*(int*)(staticPtr + 0x2C) + 0x2);
-            //LoggingHandler.LogMessage($"StaticRingCount: {staticRingCount}", TaskName, LogLevel.SuperDebug);
-            
+            RingSanityHandler.HandleRingSanity(dynamicPtr: (UIntPtr)esi, ringIndex: ecx, taskName: TaskName);
         }
         catch (Exception e)
         {

@@ -9,12 +9,17 @@ public enum SanityType
     ObjSanity,
     KeySanity,
     CheckpointSanity,
+    BingoChipSanity,
+    HintRingSanity,
+    ItemBalloonBoxSanity,
+    EnemySanity,
+    RingSanityGroup,
+    RingSanityIndividual,
 }
 
 
 public enum LogLevel
 {
-    
     SuperDebug,
     Debug,
     Info,
@@ -50,17 +55,6 @@ public enum Act
     Act3,
 }
 
-//try to not use this I think
-[Flags]
-public enum MissionsActive
-{
-    None = 0,
-    Act1 = 1 << 0,
-    Act2 = 1 << 1,
-    BothActs = 1 << 2,
-    SuperHard = 1 << 3,
-}
-
 public enum FinalBoss
 {
     MetalMadness,
@@ -82,44 +76,32 @@ public enum GoalUnlockConditions
     //AbilitiesAndEmeralds = 2,
 }
 
-
 [Flags]
-public enum StoriesAndSanities : ulong
+public enum EnabledStories
 {
     None = 0,
+    
     SonicActA = 1 << 0,
     SonicActB = 1 << 1,
-    SonicKeySanity1Set = 1 << 2,
-    SonicKeySanityBothActs = 1 << 3,
-    SonicCheckpointSanity1Set = 1 << 4,
-    SonicCheckpointSanityBothActs = 1 << 5,
+    
+    DarkActA = 1 << 2,
+    DarkActB = 1 << 3,
+    
+    RoseActA = 1 << 4,
+    RoseActB = 1 << 5,
+    
+    ChaotixActA = 1 << 6,
+    ChaotixActB = 1 << 7,
+    
+    SuperHardMode = 1 << 8,
+}
 
-    DarkActA = 1 << 6,
-    DarkActB = 1 << 7,
-    DarkObjSanity = 1 << 8,
-    DarkKeySanity1Set = 1 << 9,
-    DarkKeySanityBothActs = 1 << 10,
-    DarkCheckpointSanity1Set = 1 << 11,
-    DarkCheckpointSanityBothActs = 1 << 12,
 
-    RoseActA = 1 << 13,
-    RoseActB = 1 << 14,
-    RoseObjSanity = 1 << 15,
-    RoseKeySanity1Set = 1 << 16,
-    RoseKeySanityBothActs = 1 << 17,
-    RoseCheckpointSanity1Set = 1 << 18,
-    RoseCheckpointSanityBothActs = 1 << 19,
-
-    ChaotixActA = 1 << 20,
-    ChaotixActB = 1 << 21,
-    ChaotixObjSanity = 1 << 22,
-    ChaotixKeySanity1Set = 1 << 23,
-    ChaotixKeySanityBothActs = 1 << 24,
-    ChaotixCheckpointSanity1Set = 1 << 25,
-    ChaotixCheckpointSanityBothActs = 1 << 26,
-
-    SuperHardMode = 1 << 27,
-    SuperHardCheckpointSanity = 1 << 28,
+public enum SanityEnableStatus
+{
+    Disabled = 0,
+    Only1Set,
+    BothActs,
 }
 
 
@@ -779,7 +761,8 @@ public enum StageObjTypes : ushort
 
 public static class SonicHeroesDefinitions
 {
-    public const long AllIdsStartOffset = 0x93930000;
+    // public const long AllIdsStartOffset = 0x93930000;
+    public const long AllIdsStartOffset = 0x0;
     
     public const int MetalMadnessId = 0x230E;
 
@@ -798,6 +781,28 @@ public static class SonicHeroesDefinitions
     public const int CheckpointNoActStartId = 0x2000;
     public const int CheckpointAct1StartId = 0x2100;
     public const int CheckpointAct2StartId = 0x2200;
+    
+    
+    public const int HintRingNoActStartId = 0x2400;
+    public const int HintRingAct1StartId = 0x2600;
+    public const int HintRingAct2StartId = 0x2800;
+    
+    public const int ItemBalloonBoxNoActStartId = 0x3000;
+    public const int ItemBalloonBoxAct1StartId = 0x4000;
+    public const int ItemBalloonBoxAct2StartId = 0x5000;
+    
+    public const int EnemyNoActStartId = 0x6000;
+    public const int EnemyAct1StartId = 0x7000;
+    public const int EnemyAct2StartId = 0x8000;
+    
+    public const int RingSanityGroupNoActStartId = 0x20000;
+    public const int RingSanityGroupAct1StartId = 0x21000;
+    public const int RingSanityGroupAct2StartId = 0x22000;
+    
+    public const int RingSanityIndividualNoActStartId = 0x30000;
+    public const int RingSanityIndividualAct1StartId = 0x40000;
+    public const int RingSanityIndividualAct2StartId = 0x50000;
+    
 
     /// <summary>
     /// The limit checked against for Max Gate num.

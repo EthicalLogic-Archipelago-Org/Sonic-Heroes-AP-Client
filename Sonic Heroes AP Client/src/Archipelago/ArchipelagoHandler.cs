@@ -315,6 +315,7 @@ public class ArchipelagoHandler
     
     public void CheckLocation(Int64 id)
     {
+        LoggingHandler.LogMessage($"Sending Location Id: {SonicHeroesDefinitions.AllIdsStartOffset + id}", "INGORE ME", LogLevel.Debug,3);
         LocationsToCheck.Enqueue(SonicHeroesDefinitions.AllIdsStartOffset + id);
     }
     

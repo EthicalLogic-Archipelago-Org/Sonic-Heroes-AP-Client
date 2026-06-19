@@ -1,10 +1,12 @@
 
 
 using System.Collections.Concurrent;
+using System.Text.RegularExpressions;
 using Archipelago.MultiClient.Net.Models;
 using Sonic_Heroes_AP_Client.AbilityAndCharacter;
 using Sonic_Heroes_AP_Client.Definitions;
 using Sonic_Heroes_AP_Client.GameState;
+using Sonic_Heroes_AP_Client.LevelSpawnPosition;
 using Sonic_Heroes_AP_Client.Logging;
 using Sonic_Heroes_AP_Client.Sound;
 using Sonic_Heroes_AP_Client.StageObj;
@@ -64,18 +66,15 @@ public static class ItemHandler
             
             LoggingHandler.LogMessage($"Handle Item Start", taskName, LogLevel.SuperDebug);
                     
-            Mod.SaveDataHandler.CustomSaveData.LastItemIndex++;
+            
             var handled = false;
             
             var itemName = item.ItemName;
             
             LoggingHandler.LogMessage($"Handle Item Start : Name: {itemName} Index: {Mod.SaveDataHandler.CustomSaveData.LastItemIndex}", taskName, LogLevel.SuperDebug);
-
-            // if (itemName.Contains("Emblem"))
-            // {
-            //     LoggingHandler.LogMessage($"Dropping Emblem Please send help.", taskName, LogLevel.SuperDebug);
-            //     //return;
-            // }
+            Mod.SaveDataHandler.CustomSaveData.LastItemIndex++;
+            
+            
 
             if (itemName == null)
             {
@@ -92,10 +91,12 @@ public static class ItemHandler
             CheckEmblemItemName(itemName, ref handled, taskName);
             LoggingHandler.LogMessage($"Handle Item Before Ability: {handled}", taskName, LogLevel.SuperDebug);
             CheckAbilityItemName(itemName, ref handled, taskName);
+            LoggingHandler.LogMessage($"Handle Item Before Spawn Position: {handled}", taskName, LogLevel.SuperDebug);
+            CheckSpawnPositionItemName(itemName, ref handled, taskName);
             LoggingHandler.LogMessage($"Handle Item Before StageObj: {handled}", taskName, LogLevel.SuperDebug);
             CheckStageObjItemName(itemName, ref handled, taskName);
             
-
+            
             if (handled)
             {
                 LoggingHandler.LogMessage($"Item Handled in HandleItem", taskName, LogLevel.SuperDebug);
@@ -371,11 +372,66 @@ public static class ItemHandler
         handled = true;
     }
     
+    public static void CheckSpawnPositionItemName(string itemName, ref bool handled, string taskName)
+    {
+        try
+        {
+            if (handled)
+                return;
+            Team? team;
+            LevelId? levelId;
+            
+            if (itemName.Contains("Spawn Position", StringComparison.InvariantCultureIgnoreCase))
+            {
+                team = CheckTeamItemName(itemName, taskName);
+                levelId = CheckLevelIdItemName(itemName, taskName);
+                if (team == null || levelId == null)
+                    return;
+                
+                if (itemName.Contains("Start of Level", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    LoggingHandler.LogMessage($"Unlocking Start of Level Spawn for: {levelId} {team}", taskName, LogLevel.Debug);
+                    LevelSpawnUnlockHandler.UnlockSpecificSpawnData((Team)team, (LevelId)levelId, 0, taskName);
+                    LoggingHandler.LogMessage($"Got Item: {itemName}", taskName, LogLevel.APAction);
+                    handled = true;
+                    return;
+                }
+
+                if (itemName.Contains("Checkpoint", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    var checkpointNumber = int.Parse(Regex.Matches(itemName, @"-?\d+").Last().Value);
+                    LoggingHandler.LogMessage($"Unlocking Checkpoint {checkpointNumber} Spawn for: {levelId} {team}", taskName, LogLevel.Debug);
+                    LevelSpawnUnlockHandler.UnlockSpecificSpawnData((Team)team, (LevelId)levelId, checkpointNumber, taskName);
+                    handled = true;
+                    return;
+                }
+            }
+        }
+        catch (Exception e)
+        {
+            LoggingHandler.LogMessage($"{e}", taskName, LogLevel.Error);
+        }
+    }
+    
     public static Team? CheckTeamItemName(string itemName, string taskName)
     {
         try
         {
             return Enum.GetValues<Team>().Cast<Team?>().FirstOrDefault(x =>
+                itemName.Replace(" ", "").Contains($"{x.ToString() ?? SonicHeroesDefinitions.PleaseDontContainMe}", StringComparison.InvariantCultureIgnoreCase));
+        }
+        catch (Exception e)
+        {
+            LoggingHandler.LogMessage($"{e}", taskName, LogLevel.Error);
+        }
+        return null;
+    }
+    
+    public static LevelId? CheckLevelIdItemName(string itemName, string taskName)
+    {
+        try
+        {
+            return Enum.GetValues<LevelId>().Cast<LevelId?>().FirstOrDefault(x =>
                 itemName.Replace(" ", "").Contains($"{x.ToString() ?? SonicHeroesDefinitions.PleaseDontContainMe}", StringComparison.InvariantCultureIgnoreCase));
         }
         catch (Exception e)

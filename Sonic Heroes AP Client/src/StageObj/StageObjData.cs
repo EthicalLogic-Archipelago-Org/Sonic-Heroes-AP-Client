@@ -69,7 +69,7 @@ public static class StageObjData
 
     public const byte DespawnObjRenderDistance = 0x00;
 
-    public const float DistanceForMatchingStageObj = 100f;
+    public const float DistanceForMatchingStageObj = 10f;
     
     /// <summary>
     /// Dict of StageObjType to Dict of address to saved copy of ObjSpawnData
@@ -517,6 +517,50 @@ public static class StageObjData
         //StageObjTypes.SampleObject1,
         //StageObjTypes.SampleObject2,
         
+    ];
+    
+    public static readonly List<StageObjTypes> SeasideHillStageObjsToNotSpawn =
+    [
+        StageObjTypes.SingleSpring,
+        StageObjTypes.TripleSpring,
+        StageObjTypes.Rings,
+        StageObjTypes.HintRing,
+        StageObjTypes.RegularSwitch,
+        StageObjTypes.PushAndPullSwitch,
+        StageObjTypes.TargetSwitch,
+        StageObjTypes.DashPanel,
+        StageObjTypes.DashRing,
+        StageObjTypes.RainbowHoops,
+        StageObjTypes.Checkpoint,
+        StageObjTypes.DashRamp,
+        StageObjTypes.Cannon,
+        StageObjTypes.ItemBox,
+        StageObjTypes.ItemBalloon,
+        StageObjTypes.GoalRing,
+        StageObjTypes.Pulley,
+        StageObjTypes.LostChao,
+        StageObjTypes.CageBox,
+        StageObjTypes.Propeller,
+        StageObjTypes.Pole,
+        StageObjTypes.Gong,
+        StageObjTypes.Fan,
+        StageObjTypes.WarpFlower,
+        StageObjTypes.BonusKey,
+        
+        StageObjTypes.MovingRuinPlatform,
+        StageObjTypes.TriggerRuins,
+        StageObjTypes.HermitCrab,
+
+        //Enemies
+        StageObjTypes.EggFlapper,
+        StageObjTypes.EggPawn,
+        StageObjTypes.Klagen,
+        StageObjTypes.Falco,
+        StageObjTypes.EggHammer,
+        StageObjTypes.Cameron,
+        StageObjTypes.RhinoLiner,
+        StageObjTypes.EggBishop,
+        StageObjTypes.E2000,
     ];
     
     public static Dictionary<StageObjTypes, List<StageObjSpawnData>> BackupStageObjSpawnData = new();

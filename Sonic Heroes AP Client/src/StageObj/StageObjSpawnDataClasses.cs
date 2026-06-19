@@ -6,6 +6,51 @@ using Sonic_Heroes_AP_Client.Logging;
 
 namespace Sonic_Heroes_AP_Client.StageObj;
 
+
+public enum RingType : byte
+{
+    Normal = 0,
+    Line,
+    Circle,
+    Arch,
+    WarpToPlayerIfAtSpawn,
+    Scattered = WarpToPlayerIfAtSpawn,
+}
+
+
+public enum RegularSwitchType : byte
+{
+    Alternate,
+    Touch,
+    Once,
+    Interlock,
+}
+
+
+public enum RegularSwitchSound : byte
+{
+    Pi,
+    Pipori,
+}
+
+
+public enum PushPullSwitchType : byte
+{
+    Push,
+    Pull,
+}
+
+
+public enum RainbowHoopsType
+{
+    Speed,  //horizontal forward
+    FlyA,   //vertical upward
+    FlyB,   //vertical forward
+    PowerS, //3 spread even height
+    PowerL, //3 spread uneven height
+}
+
+
 public enum ItemReward: byte
 {
     NoneItemBox = 0,
@@ -23,6 +68,26 @@ public enum ItemReward: byte
     RefillFlightGauge,
     None3Spring = 255,
 }
+
+
+public static class StageObjSpawnDataClasses
+{
+    public static string GetToStringForStageObjStruct<T>(ref T input, bool shouldIncludeStructType = false) where T : struct
+    {
+        //T tempStruct = *input;
+        string _result = shouldIncludeStructType ? $"{typeof(T).Name}: {{" : $"{{";
+
+        foreach (var field in typeof(T).GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic))
+        {
+            _result += $"{field.Name}: {field.GetValue(input)}, ";
+        }
+        _result = _result.TrimEnd();
+        _result = _result.TrimEnd(',');
+        _result += $"}}";
+        return _result;
+    }
+}
+
 
 public unsafe class StageObjSpawnData
 {
@@ -76,34 +141,71 @@ public unsafe class StageObjSpawnData
 
     public override string ToString()
     {
-        ObjSpawnData temp = *SpawnDataPtr;
-        string _result = $"StageObjSpawnData: SpawnData: Ptr: 0x{(UIntPtr)SpawnDataPtr:X} {{";
+        try
+        {
+            ObjSpawnData temp = *SpawnDataPtr;
+            string _result = $"{this.GetType().Name}: Ptr: 0x{(UIntPtr)SpawnDataPtr:X} {StageObjSpawnDataClasses.GetToStringForStageObjStruct(input: ref temp, shouldIncludeStructType: true)}";
+            return _result;
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+        }
+        return "ERROR IN STAGEOBJSPAWNDATA TOSTRING";
+    }
+}
 
-        foreach (var field in typeof(ObjSpawnData).GetFields(BindingFlags.Instance | 
-                                                             BindingFlags.Public |
-                                                             BindingFlags.NonPublic))
-        {
-            _result += $"{field.Name}: {field.GetValue(temp)}, ";
-        }
-        _result.TrimEnd();
-        _result.TrimEnd(',');
-        _result += $"}} Type: {(StageObjTypes)temp.ObjId} _backupData: {{";
+
+public unsafe class StageObjSpawnDataWithExtraVars : StageObjSpawnData
+{
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    private struct PlaceholderStruct
+    {
+        private fixed byte _padding[0x20];
+        public int SomeID;
+    }
         
-        foreach (var field in typeof(ObjSpawnData).GetFields(BindingFlags.Instance | 
-                                                             BindingFlags.Public |
-                                                             BindingFlags.NonPublic))
-        {
-            _result += $"{field.Name}: {field.GetValue(_backupData)}, ";
-        }
-        _result.TrimEnd();
-        _result.TrimEnd(',');
-        _result += $"}}";
+    private readonly PlaceholderStruct* _extraVarsPtr;
+    private readonly PlaceholderStruct _backupExtraVars;
         
+    public StageObjSpawnDataWithExtraVars(UIntPtr objPtr) : base(objPtr)
+    {
+        _extraVarsPtr = (PlaceholderStruct*)SpawnDataPtr->PtrVars;
+        _backupExtraVars = *_extraVarsPtr;
+    }
+        
+    public new void ResetData(string taskName)
+    {
+        base.ResetData(taskName);
+        *_extraVarsPtr = _backupExtraVars;
+    }
+    
+    public int SomeID
+    {
+        get => _extraVarsPtr->SomeID;
+        set => _extraVarsPtr->SomeID = value;
+    }
+        
+    public void ResetSomeID(string taskName)
+    {
+        LoggingHandler.LogMessage($"Resetting {this.GetType().Name} SomeID: 0x{(UIntPtr)SpawnDataPtr:X} :: Old: {_extraVarsPtr->SomeID} :: New: {_backupExtraVars.SomeID}", taskName, LogLevel.Debug);
+        _extraVarsPtr->SomeID = _backupExtraVars.SomeID;
+    }
+
+    public void PrintResetLogMsg(string taskName)
+    {
+        
+    }
+
+    public override string ToString()
+    {
+        string _result = $"{base.ToString()} ExtraVars: Ptr: 0x{(UIntPtr)this._extraVarsPtr:X} {StageObjSpawnDataClasses.GetToStringForStageObjStruct(input: ref *this._extraVarsPtr, shouldIncludeStructType: true)}";
         return _result;
     }
 }
 
-public unsafe class SingleSpringSpawnData: StageObjSpawnData
+
+public unsafe class SingleSpringSpawnData: StageObjSpawnDataWithExtraVars
 {
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     private struct SingleSpringExtraVars
@@ -122,56 +224,29 @@ public unsafe class SingleSpringSpawnData: StageObjSpawnData
         _extraVarsPtr = (SingleSpringExtraVars*)SpawnDataPtr->PtrVars;
         _backupExtraVars = *_extraVarsPtr;
     }
-    
-    public new void ResetData(string taskName)
-    {
-        base.ResetData(taskName);
-        *_extraVarsPtr = _backupExtraVars;
-    }
 
+    public float Power
+    { 
+        get => _extraVarsPtr->Power;
+        set => _extraVarsPtr->Power = value;
+    }
+        
     public void ResetPower(string taskName)
     {
         LoggingHandler.LogMessage($"Resetting Single Spring Power: 0x{(UIntPtr)SpawnDataPtr:X} :: Old: {_extraVarsPtr->Power} :: New: {_backupExtraVars.Power}", taskName, LogLevel.Debug);
         _extraVarsPtr->Power = _backupExtraVars.Power;
     }
-    
-    public float Power
-    { 
-        get => _extraVarsPtr->Power;
-        set => _extraVarsPtr->Power = value; 
-    }
-    
+        
     public ushort NoControlTime
     {
         get => _extraVarsPtr->NoControlTime;
         set => _extraVarsPtr->NoControlTime = value;
     }
-
-    public override string ToString()
-    {
-        SingleSpringExtraVars temp = *_extraVarsPtr;
-        string _result = $"{base.ToString().Replace("StageObjSpawnData", "SingleSpringSpawnData")} ExtraVars: Ptr: 0x{(UIntPtr)_extraVarsPtr:X} {{";
-
-        foreach (var field in typeof(SingleSpringExtraVars).GetFields(BindingFlags.Instance | 
-                                                                      BindingFlags.Public |
-                                                                      BindingFlags.NonPublic))
-        {
-            _result += $"{field.Name}: {field.GetValue(temp)}, ";
-        }
-        _result.TrimEnd();
-        _result.TrimEnd(',');
-        _result += $"}} _backupExtraVars: {{";
         
-        foreach (var field in typeof(SingleSpringExtraVars).GetFields(BindingFlags.Instance | 
-                                                                      BindingFlags.Public |
-                                                                      BindingFlags.NonPublic))
-        {
-            _result += $"{field.Name}: {field.GetValue(_backupExtraVars)}, ";
-        }
-        _result.TrimEnd();
-        _result.TrimEnd(',');
-        _result += $"}}";
-        return _result;
+    public void ResetNoControlTime(string taskName)
+    {
+        LoggingHandler.LogMessage($"Resetting Single Spring NoControlTime: 0x{(UIntPtr)SpawnDataPtr:X} :: Old: {_extraVarsPtr->NoControlTime} :: New: {_backupExtraVars.NoControlTime}", taskName, LogLevel.Debug);
+        _extraVarsPtr->NoControlTime = _backupExtraVars.NoControlTime;
     }
 }
 
@@ -183,7 +258,7 @@ public unsafe class TripleSpringSpawnData: StageObjSpawnData
         public float Power;
         public float Scale;
         public ushort NoControlTime;
-        public ItemReward Reward;
+        public ItemReward ItemReward;
         private fixed byte _padding[0x15];
         public int SomeID;
     }
@@ -197,28 +272,31 @@ public unsafe class TripleSpringSpawnData: StageObjSpawnData
         _backupExtraVars = *_extraVarsPtr;
     }
     
-    public new void ResetData(string taskName)
-    {
-        base.ResetData(taskName);
-        *_extraVarsPtr = _backupExtraVars;
-    }
-
-    public void ResetPower(string taskName)
-    {
-        LoggingHandler.LogMessage($"Resetting Triple Spring Power: 0x{(UIntPtr)SpawnDataPtr:X} :: Old: {_extraVarsPtr->Power} :: New: {_backupExtraVars.Power}", taskName, LogLevel.Debug);
-        _extraVarsPtr->Power = _backupExtraVars.Power;
-    }
     
     public float Power
     { 
         get => _extraVarsPtr->Power;
         set => _extraVarsPtr->Power = value; 
     }
-
+    
+    
+    public void ResetPower(string taskName)
+    {
+        LoggingHandler.LogMessage($"Resetting Triple Spring Power: 0x{(UIntPtr)SpawnDataPtr:X} :: Old: {_extraVarsPtr->Power} :: New: {_backupExtraVars.Power}", taskName, LogLevel.Debug);
+        _extraVarsPtr->Power = _backupExtraVars.Power;
+    }
+    
+    
     public float Scale
     {
         get => _extraVarsPtr->Scale;
         set => _extraVarsPtr->Scale = value;
+    }
+    
+    public void ResetScale(string taskName)
+    {
+        LoggingHandler.LogMessage($"Resetting Triple Spring Scale: 0x{(UIntPtr)SpawnDataPtr:X} :: Old: {_extraVarsPtr->Scale} :: New: {_backupExtraVars.Scale}", taskName, LogLevel.Debug);
+        _extraVarsPtr->Scale = _backupExtraVars.Scale;
     }
     
     public ushort NoControlTime
@@ -226,47 +304,28 @@ public unsafe class TripleSpringSpawnData: StageObjSpawnData
         get => _extraVarsPtr->NoControlTime;
         set => _extraVarsPtr->NoControlTime = value;
     }
-
-    public override string ToString()
+    
+    public void ResetNoControlTime(string taskName)
     {
-        TripleSpringExtraVars temp = *_extraVarsPtr;
-        string _result = $"{base.ToString().Replace("StageObjSpawnData", "TripleSpringSpawnData")} ExtraVars: Ptr: 0x{(UIntPtr)_extraVarsPtr:X} {{";
-
-        foreach (var field in typeof(TripleSpringExtraVars).GetFields(BindingFlags.Instance | 
-                                                                      BindingFlags.Public |
-                                                                      BindingFlags.NonPublic))
-        {
-            _result += $"{field.Name}: {field.GetValue(temp)}, ";
-        }
-        _result.TrimEnd();
-        _result.TrimEnd(',');
-        _result += $"}} _backupExtraVars: {{";
-        
-        foreach (var field in typeof(TripleSpringExtraVars).GetFields(BindingFlags.Instance | 
-                                                                      BindingFlags.Public |
-                                                                      BindingFlags.NonPublic))
-        {
-            _result += $"{field.Name}: {field.GetValue(_backupExtraVars)}, ";
-        }
-        _result.TrimEnd();
-        _result.TrimEnd(',');
-        _result += $"}}";
-        return _result;
+        LoggingHandler.LogMessage($"Resetting Triple Spring No Control Time: 0x{(UIntPtr)SpawnDataPtr:X} :: Old: {_extraVarsPtr->NoControlTime} :: New: {_backupExtraVars.NoControlTime}", taskName, LogLevel.Debug);
+        _extraVarsPtr->NoControlTime = _backupExtraVars.NoControlTime;
+    }
+    
+    public ItemReward ItemReward
+    {
+        get => _extraVarsPtr->ItemReward;
+        set => _extraVarsPtr->ItemReward = value;
+    }
+    
+    public void ResetItemReward(string taskName)
+    {
+        LoggingHandler.LogMessage($"Resetting Triple Spring Item Reward: 0x{(UIntPtr)SpawnDataPtr:X} :: Old: {_extraVarsPtr->ItemReward} :: New: {_backupExtraVars.ItemReward}", taskName, LogLevel.Debug);
+        _extraVarsPtr->ItemReward = _backupExtraVars.ItemReward;
     }
 }
 
 public unsafe class RingsSpawnData: StageObjSpawnData
 {
-    public enum RingType : byte
-    {
-        Normal = 0,
-        Line,
-        Circle,
-        Arch,
-        WarpToPlayerIfAtSpawn,
-        Scattered = WarpToPlayerIfAtSpawn,
-    }
-    
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     private struct RingsExtraVars
     {
@@ -289,38 +348,54 @@ public unsafe class RingsSpawnData: StageObjSpawnData
         _backupExtraVars = *_extraVarsPtr;
     }
     
-    public new void ResetData(string taskName)
-    {
-        base.ResetData(taskName);
-        *_extraVarsPtr = _backupExtraVars;
+    public RingType RingType
+    { 
+        get => _extraVarsPtr->RingType;
+        set => _extraVarsPtr->RingType = value; 
     }
-
-    public override string ToString()
+    
+    public void ResetRingType(string taskName)
     {
-        RingsExtraVars temp = *_extraVarsPtr;
-        string _result = $"{base.ToString().Replace("StageObjSpawnData", "RingsSpawnData")} ExtraVars: Ptr: 0x{(UIntPtr)_extraVarsPtr:X} {{";
-
-        foreach (var field in typeof(RingsExtraVars).GetFields(BindingFlags.Instance | 
-                                                               BindingFlags.Public |
-                                                               BindingFlags.NonPublic))
-        {
-            _result += $"{field.Name}: {field.GetValue(temp)}, ";
-        }
-        _result.TrimEnd();
-        _result.TrimEnd(',');
-        _result += $"}} _backupExtraVars: {{";
-        
-        foreach (var field in typeof(RingsExtraVars).GetFields(BindingFlags.Instance | 
-                                                               BindingFlags.Public |
-                                                               BindingFlags.NonPublic))
-        {
-            _result += $"{field.Name}: {field.GetValue(_backupExtraVars)}, ";
-        }
-        _result.TrimEnd();
-        _result.TrimEnd(',');
-        _result += $"}}";
-        return _result;
+        LoggingHandler.LogMessage($"Resetting Rings Ring Type: 0x{(UIntPtr)SpawnDataPtr:X} :: Old: {_extraVarsPtr->RingType} :: New: {_backupExtraVars.RingType}", taskName, LogLevel.Debug);
+        _extraVarsPtr->RingType = _backupExtraVars.RingType;
     }
+    
+    public ushort NumberOfRings
+    { 
+        get => _extraVarsPtr->NumberOfRings;
+        set => _extraVarsPtr->NumberOfRings = value; 
+    }
+    
+    public void ResetNumberOfRings(string taskName)
+    {
+        LoggingHandler.LogMessage($"Resetting Rings Number Of Rings: 0x{(UIntPtr)SpawnDataPtr:X} :: Old: {_extraVarsPtr->NumberOfRings} :: New: {_backupExtraVars.NumberOfRings}", taskName, LogLevel.Debug);
+        _extraVarsPtr->NumberOfRings = _backupExtraVars.NumberOfRings;
+    }
+    
+    public float Length
+    { 
+        get => _extraVarsPtr->Length;
+        set => _extraVarsPtr->Length = value; 
+    }
+    
+    public void ResetLength(string taskName)
+    {
+        LoggingHandler.LogMessage($"Resetting Rings Length: 0x{(UIntPtr)SpawnDataPtr:X} :: Old: {_extraVarsPtr->Length} :: New: {_backupExtraVars.Length}", taskName, LogLevel.Debug);
+        _extraVarsPtr->Length = _backupExtraVars.Length;
+    }
+    
+    public float Radius
+    { 
+        get => _extraVarsPtr->Radius;
+        set => _extraVarsPtr->Radius = value; 
+    }
+    
+    public void ResetRadius(string taskName)
+    {
+        LoggingHandler.LogMessage($"Resetting Rings Radius: 0x{(UIntPtr)SpawnDataPtr:X} :: Old: {_extraVarsPtr->Radius} :: New: {_backupExtraVars.Radius}", taskName, LogLevel.Debug);
+        _extraVarsPtr->Radius = _backupExtraVars.Radius;
+    }
+    
 }
 
 public unsafe class HintRingSpawnData: StageObjSpawnData
@@ -343,55 +418,35 @@ public unsafe class HintRingSpawnData: StageObjSpawnData
         _backupExtraVars = *_extraVarsPtr;
     }
     
-    public new void ResetData(string taskName)
-    {
-        base.ResetData(taskName);
-        *_extraVarsPtr = _backupExtraVars;
+    public ushort VoiceLineID
+    { 
+        get => _extraVarsPtr->VoiceLineID;
+        set => _extraVarsPtr->VoiceLineID = value; 
     }
-
-    public override string ToString()
+    
+    public void ResetVoiceLineID(string taskName)
     {
-        HintRingExtraVars temp = *_extraVarsPtr;
-        string _result = $"{base.ToString().Replace("StageObjSpawnData", $"{this.GetType().Name}")} ExtraVars: Ptr: 0x{(UIntPtr)_extraVarsPtr:X} {{";
-
-        foreach (var field in typeof(HintRingExtraVars).GetFields(BindingFlags.Instance | 
-                                                                  BindingFlags.Public |
-                                                                  BindingFlags.NonPublic))
-        {
-            _result += $"{field.Name}: {field.GetValue(temp)}, ";
-        }
-        _result.TrimEnd();
-        _result.TrimEnd(',');
-        _result += $"}} _backupExtraVars: {{";
-        
-        foreach (var field in typeof(HintRingExtraVars).GetFields(BindingFlags.Instance | 
-                                                                  BindingFlags.Public |
-                                                                  BindingFlags.NonPublic))
-        {
-            _result += $"{field.Name}: {field.GetValue(_backupExtraVars)}, ";
-        }
-        _result.TrimEnd();
-        _result.TrimEnd(',');
-        _result += $"}}";
-        return _result;
+        LoggingHandler.LogMessage($"Resetting Hint Ring VoiceLine ID: 0x{(UIntPtr)SpawnDataPtr:X} :: Old: {_extraVarsPtr->VoiceLineID} :: New: {_backupExtraVars.VoiceLineID}", taskName, LogLevel.Debug);
+        _extraVarsPtr->VoiceLineID = _backupExtraVars.VoiceLineID;
+    }
+    
+    public bool DeleteByLinkOff
+    { 
+        get => _extraVarsPtr->DeleteByLinkOff;
+        set => _extraVarsPtr->DeleteByLinkOff = value; 
+    }
+    
+    public void ResetDeleteByLinkOff(string taskName)
+    {
+        LoggingHandler.LogMessage($"Resetting Hint Ring DeleteByLinkOff ID: 0x{(UIntPtr)SpawnDataPtr:X} :: Old: {_extraVarsPtr->DeleteByLinkOff} :: New: {_backupExtraVars.DeleteByLinkOff}", taskName, LogLevel.Debug);
+        _extraVarsPtr->DeleteByLinkOff = _backupExtraVars.DeleteByLinkOff;
     }
 }
 
+
+//Not Done Yet
 public unsafe class RegularSwitchSpawnData: StageObjSpawnData
 {
-    public enum RegularSwitchType : byte
-    {
-        Alternate,
-        Touch,
-        Once,
-        Interlock,
-    }
-    public enum RegularSwitchSound : byte
-    {
-        Pi,
-        Pipori,
-    }
-    
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     private struct RegularSwitchExtraVars
     {
@@ -411,21 +466,11 @@ public unsafe class RegularSwitchSpawnData: StageObjSpawnData
         _extraVarsPtr = (RegularSwitchExtraVars*)SpawnDataPtr->PtrVars;
         _backupExtraVars = *_extraVarsPtr;
     }
-    
-    public new void ResetData(string taskName)
-    {
-        base.ResetData(taskName);
-        *_extraVarsPtr = _backupExtraVars;
-    }
 }
 
 public unsafe class PushPullSwitchSpawnData: StageObjSpawnData
 {
-    public enum PushPullSwitchType : byte
-    {
-        Push,
-        Pull,
-    }
+    
     
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     private struct PushPullSwitchExtraVars
@@ -442,12 +487,6 @@ public unsafe class PushPullSwitchSpawnData: StageObjSpawnData
     {
         _extraVarsPtr = (PushPullSwitchExtraVars*)SpawnDataPtr->PtrVars;
         _backupExtraVars = *_extraVarsPtr;
-    }
-    
-    public new void ResetData(string taskName)
-    {
-        base.ResetData(taskName);
-        *_extraVarsPtr = _backupExtraVars;
     }
 }
 
@@ -471,12 +510,6 @@ public unsafe class TargetSwitchSpawnData: StageObjSpawnData
         _extraVarsPtr = (TargetSwitchExtraVars*)SpawnDataPtr->PtrVars;
         _backupExtraVars = *_extraVarsPtr;
     }
-    
-    public new void ResetData(string taskName)
-    {
-        base.ResetData(taskName);
-        *_extraVarsPtr = _backupExtraVars;
-    }
 }
 
 public unsafe class DashPanelSpawnData: StageObjSpawnData
@@ -496,12 +529,6 @@ public unsafe class DashPanelSpawnData: StageObjSpawnData
     {
         _extraVarsPtr = (DashPanelExtraVars*)SpawnDataPtr->PtrVars;
         _backupExtraVars = *_extraVarsPtr;
-    }
-    
-    public new void ResetData(string taskName)
-    {
-        base.ResetData(taskName);
-        *_extraVarsPtr = _backupExtraVars;
     }
 }
 
@@ -523,24 +550,11 @@ public unsafe class DashRingSpawnData: StageObjSpawnData
         _extraVarsPtr = (DashRingExtraVars*)SpawnDataPtr->PtrVars;
         _backupExtraVars = *_extraVarsPtr;
     }
-    
-    public new void ResetData(string taskName)
-    {
-        base.ResetData(taskName);
-        *_extraVarsPtr = _backupExtraVars;
-    }
 }
 
 public unsafe class RainbowHoopsSpawnData: StageObjSpawnData
 {
-    public enum RainbowHoopsType
-    {
-        Speed,  //horizontal forward
-        FlyA,   //vertical upward
-        FlyB,   //vertical forward
-        PowerS, //3 spread even height
-        PowerL, //3 spread uneven height
-    }
+    
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     private struct RainbowHoopsExtraVars
     {
@@ -560,12 +574,6 @@ public unsafe class RainbowHoopsSpawnData: StageObjSpawnData
         _extraVarsPtr = (RainbowHoopsExtraVars*)SpawnDataPtr->PtrVars;
         _backupExtraVars = *_extraVarsPtr;
     }
-    
-    public new void ResetData(string taskName)
-    {
-        base.ResetData(taskName);
-        *_extraVarsPtr = _backupExtraVars;
-    }
 }
 
 public unsafe class CheckpointSpawnData: StageObjSpawnData
@@ -573,7 +581,7 @@ public unsafe class CheckpointSpawnData: StageObjSpawnData
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     private struct CheckpointExtraVars
     {
-        private byte Priority;
+        public byte Priority;
         private fixed byte _padding[0x1F];
         public int SomeID;
     }
@@ -585,11 +593,65 @@ public unsafe class CheckpointSpawnData: StageObjSpawnData
         _extraVarsPtr = (CheckpointExtraVars*)SpawnDataPtr->PtrVars;
         _backupExtraVars = *_extraVarsPtr;
     }
-    public new void ResetData(string taskName)
+    
+    public byte Priority
+    { 
+        get => _extraVarsPtr->Priority;
+        set => _extraVarsPtr->Priority = value; 
+    }
+    
+    public void ResetPriority(string taskName)
     {
-        base.ResetData(taskName);
-        *_extraVarsPtr = _backupExtraVars;
+        LoggingHandler.LogMessage($"Resetting Checkpoint Priority ID: 0x{(UIntPtr)SpawnDataPtr:X} :: Old: {_extraVarsPtr->Priority} :: New: {_backupExtraVars.Priority}", taskName, LogLevel.Debug);
+        _extraVarsPtr->Priority = _backupExtraVars.Priority;
     }
 }
+
+public unsafe class DashRampSpawnData: StageObjSpawnData
+{
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    private struct DashRampExtraVars
+    {
+        private float SpeedHorizontal;
+        private float SpeedVertical;
+        private ushort NoControlTime;
+        private fixed byte _padding[0x16];
+        public int SomeID;
+    }
+    private readonly DashRampExtraVars* _extraVarsPtr;
+    private readonly DashRampExtraVars _backupExtraVars;
+
+    public DashRampSpawnData(UIntPtr objPtr) : base(objPtr)
+    {
+        _extraVarsPtr = (DashRampExtraVars*)SpawnDataPtr->PtrVars;
+        _backupExtraVars = *_extraVarsPtr;
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
