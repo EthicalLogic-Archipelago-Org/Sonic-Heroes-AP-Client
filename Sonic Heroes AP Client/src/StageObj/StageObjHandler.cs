@@ -18,7 +18,39 @@ public static class StageObjHandler
         //Mod.SaveDataHandler!.CustomSaveData!.StageObjSpawnSaveData[(Team)team][obj] = true;
     }
 
-    public static void UnlockBobsledItemCallback(Team? team, string taskname)
+    public static unsafe void SpawnOrUnSpawnBobsled(Team team, LevelId levelId, bool forceDespawn, int index, string taskName)
+    {
+        try
+        {
+            var bobsledPtr = Mod.ModuleBase + 0x5CE618 + (UIntPtr)(4 * index);
+            var bobsledYCoordPtr = (float*)(*(int*)bobsledPtr + 0x9C);
+            float oldYCoord = *bobsledYCoordPtr;
+            bool shouldSpawn = !forceDespawn && Mod.SaveDataHandler.CustomSaveData.BobsledUnlocks[team];
+            float newYCoord = shouldSpawn ? oldYCoord - 1000f : oldYCoord + 1000f;
+            *bobsledYCoordPtr = newYCoord;
+            string msg = shouldSpawn ? "Spawning" : "Despawning";
+            LoggingHandler.LogMessage($"{msg} Bobsled at 0x{(int)bobsledYCoordPtr:X} :: Old Y: {oldYCoord} New Y: {newYCoord}", taskName, LogLevel.Debug);
+        }
+        catch (Exception e)
+        {
+            LoggingHandler.LogMessage($"{e}", taskName,  LogLevel.Error);
+        }
+    }
+
+
+    public static void HandleBobsledItemToSpawn(Team team, LevelId levelId, string taskName)
+    {
+        if (GameStateHandler.GetCurrentStory(taskName) != team)
+            return;
+
+        if (team is Team.Dark && levelId is LevelId.SeasideHill)
+        {
+            SpawnOrUnSpawnBobsled(team, levelId, false, 1, taskName);
+        }
+        
+    }
+
+    public static void UnlockBobsledItemCallback(Team? team, string taskName)
     {
         try
         {
@@ -26,17 +58,22 @@ public static class StageObjHandler
             {
                 foreach (var t in Enum.GetValues<Team>())
                 {
-                    UnlockBobsledItemCallback(t, taskname);
+                    UnlockBobsledItemCallback(t, taskName);
                 }
             }
             else
             {
                 Mod.SaveDataHandler.CustomSaveData.BobsledUnlocks[(Team)team] = !Mod.IsDebug || !Mod.SaveDataHandler.CustomSaveData.BobsledUnlocks[(Team)team];
+
+                if (!GameStateHandler.InGame(taskName, true))
+                    return;
+                LevelId level = (LevelId)GameStateHandler.GetCurrentLevel(taskName);
+                HandleBobsledItemToSpawn((Team)team, level, taskName);
             }
         }
         catch (Exception e)
         {
-            LoggingHandler.LogMessage($"{e}", taskname, LogLevel.Error);
+            LoggingHandler.LogMessage($"{e}", taskName, LogLevel.Error);
         }
     }
     
@@ -427,21 +464,67 @@ public static class StageObjHandler
     
     public static void HandleDarkStageObjs(LevelId level, Act act, string taskName)
     {
-        
+        try
+        {
+            foreach (var cageObj in GetInLevelObjsOfType(StageObjTypes.CageBox, taskName))
+            {
+                cageObj.SpawnOrDespawnObj(false, taskName);
+            }
+
+            switch (level)
+            {
+                case LevelId.SeasideHill:
+                {
+                    SpawnOrUnSpawnBobsled(Team.Dark, level, true, 0, taskName);
+                    if (!Mod.SaveDataHandler.CustomSaveData.BobsledUnlocks[Team.Dark])
+                    {
+                        SpawnOrUnSpawnBobsled(Team.Dark, level,false, 1, taskName);
+                    }
+                    break;
+                }
+            }
+        }
+        catch (Exception e)
+        {
+            LoggingHandler.LogMessage($"{e}", taskName, LogLevel.Error);
+        }
     }
     
     public static void HandleRoseStageObjs(LevelId level, Act act, string taskName)
     {
-        
+        try
+        {
+
+        }
+        catch (Exception e)
+        {
+            LoggingHandler.LogMessage($"{e}", taskName, LogLevel.Error);
+        }
     }
     
     public static void HandleChaotixStageObjs(LevelId level, Act act, string taskName)
     {
+        try
+        {
+
+        }
+        catch (Exception e)
+        {
+            LoggingHandler.LogMessage($"{e}", taskName, LogLevel.Error);
+        }
         
     }
     
     public static void HandleSuperHardStageObjs(LevelId level, Act act, string taskName)
     {
+        try
+        {
+
+        }
+        catch (Exception e)
+        {
+            LoggingHandler.LogMessage($"{e}", taskName, LogLevel.Error);
+        }
         
     }
     
