@@ -23,10 +23,14 @@ public static class StageObjHandler
         try
         {
             var bobsledPtr = Mod.ModuleBase + 0x5CE618 + (UIntPtr)(4 * index);
-            var bobsledYCoordPtr = (float*)(*(int*)bobsledPtr + 0x9C);
+            LoggingHandler.LogMessage($"Bobsled Ptr Here: 0x{(int)bobsledPtr:X} and is value: 0x{*(int*)bobsledPtr:X}", taskName, LogLevel.Debug);
+            var bobsledStartAddr = *(int*)bobsledPtr;
+            LoggingHandler.LogMessage($"Bobsled Start Addr Here: 0x{bobsledStartAddr:X}", taskName, LogLevel.Debug);
+            var bobsledYCoordPtr = (float*)(bobsledStartAddr + 0x9C);
+            LoggingHandler.LogMessage($"Bobsled Y Coord Here: 0x{(UIntPtr)bobsledYCoordPtr:X} and value is: {*bobsledYCoordPtr}", taskName, LogLevel.Debug);
             float oldYCoord = *bobsledYCoordPtr;
             bool shouldSpawn = !forceDespawn && Mod.SaveDataHandler.CustomSaveData.BobsledUnlocks[team];
-            float newYCoord = shouldSpawn ? oldYCoord - 1000f : oldYCoord + 1000f;
+            float newYCoord = shouldSpawn ? oldYCoord + 1000f : oldYCoord - 1000f;
             *bobsledYCoordPtr = newYCoord;
             string msg = shouldSpawn ? "Spawning" : "Despawning";
             LoggingHandler.LogMessage($"{msg} Bobsled at 0x{(int)bobsledYCoordPtr:X} :: Old Y: {oldYCoord} New Y: {newYCoord}", taskName, LogLevel.Debug);
@@ -38,6 +42,33 @@ public static class StageObjHandler
     }
 
 
+    public static void CheckBobsledOnEnterLevel(string taskName)
+    {
+        //InitSetGen is too early moving to Set State In Game
+        try
+        {
+            Team team = (Team)GameStateHandler.GetCurrentStory(taskName);
+            LevelId levelId = (LevelId)GameStateHandler.GetCurrentLevel(taskName);
+
+            if (team is Team.Dark && levelId is LevelId.SeasideHill)
+            {
+                SpawnOrUnSpawnBobsled(Team.Dark, levelId, true, 0, taskName);
+                if (!Mod.SaveDataHandler.CustomSaveData.BobsledUnlocks[Team.Dark])
+                {
+                    SpawnOrUnSpawnBobsled(Team.Dark, levelId,false, 1, taskName);
+                }
+                
+            }
+        }
+        catch (Exception e)
+        {
+            LoggingHandler.LogMessage($"{e}", taskName, LogLevel.Error);
+        }
+    }
+    
+    
+    
+    
     public static void HandleBobsledItemToSpawn(Team team, LevelId levelId, string taskName)
     {
         if (GameStateHandler.GetCurrentStory(taskName) != team)
@@ -76,6 +107,7 @@ public static class StageObjHandler
             LoggingHandler.LogMessage($"{e}", taskName, LogLevel.Error);
         }
     }
+    
     
     public static void UnlockStageObjItemCallback(StageObjTypes? stageObjTypes, Team? team, Region? region, string taskName, bool forceunlock = false)
     {
@@ -473,15 +505,7 @@ public static class StageObjHandler
 
             switch (level)
             {
-                case LevelId.SeasideHill:
-                {
-                    SpawnOrUnSpawnBobsled(Team.Dark, level, true, 0, taskName);
-                    if (!Mod.SaveDataHandler.CustomSaveData.BobsledUnlocks[Team.Dark])
-                    {
-                        SpawnOrUnSpawnBobsled(Team.Dark, level,false, 1, taskName);
-                    }
-                    break;
-                }
+                
             }
         }
         catch (Exception e)

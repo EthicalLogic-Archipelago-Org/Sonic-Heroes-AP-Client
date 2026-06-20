@@ -1222,6 +1222,7 @@ public static class FunctionHooks
         LoggingHandler.LogMessage($"SetStateInGame Start", TaskName, LogLevel.SuperDebug);
         ItemHandler.HandleCachedItems(TaskName);
         AbilityCharacterManager.PollUpdates(TaskName);
+        StageObjHandler.CheckBobsledOnEnterLevel(TaskName);
 
         if (GameStateHandler.GetCurrentAct(TaskName) != Act.Act3)
         {
