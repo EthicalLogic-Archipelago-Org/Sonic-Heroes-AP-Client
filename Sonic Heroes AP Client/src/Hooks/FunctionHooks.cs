@@ -213,7 +213,7 @@ public static class FunctionHooks
                 "popfd",
                 "popad"
             };
-            _asmHooks.Add(hooks.CreateAsmHook(checkRings, (int)(Mod.ModuleBase + 0x1A9DB2), AsmHookBehaviour.ExecuteFirst).Activate());
+            //_asmHooks.Add(hooks.CreateAsmHook(checkRings, (int)(Mod.ModuleBase + 0x1A9DB2), AsmHookBehaviour.ExecuteFirst).Activate());
             
             
             string[] completeEmeraldStage =
@@ -1222,8 +1222,7 @@ public static class FunctionHooks
         LoggingHandler.LogMessage($"SetStateInGame Start", TaskName, LogLevel.SuperDebug);
         ItemHandler.HandleCachedItems(TaskName);
         AbilityCharacterManager.PollUpdates(TaskName);
-        StageObjHandler.CheckBobsledOnEnterLevel(TaskName);
-
+        
         if (GameStateHandler.GetCurrentAct(TaskName) != Act.Act3)
         {
             LoggingHandler.LogMessage($"SetStateInGame End", TaskName, LogLevel.SuperDebug);
@@ -1405,6 +1404,19 @@ public static class FunctionHooks
     public delegate int SetTeamInitialPosition();
     private static int OnSetTeamInitialPosition()
     {
+        LoggingHandler.LogMessage($"OnSetTeamInitialPosition Start", TaskName, LogLevel.SuperDebug);
+        ObjSanityHandler.HandleObjSanityOnEnterLevel(TaskName);
+        
+        //Start task Here
+        if (Mod.CheckBobsledCts != null)
+        {
+            Mod.CheckBobsledCts.Cancel();
+        }
+        Mod.CheckBobsledCts = new CancellationTokenSource();
+        Mod.CheckBobsledOnEnterLevelTask = new Task(() => Tasks.CheckBobsledOnEnterLevelTask.DelayedCheckBobsledOnEnterLevelTask(Mod.CheckBobsledCts.Token), Mod.CheckBobsledCts.Token);
+        Mod.CheckBobsledOnEnterLevelTask.Start();
+        
+        LoggingHandler.LogMessage($"OnSetTeamInitialPosition Finished", TaskName, LogLevel.SuperDebug);
         return 0;
     }
     

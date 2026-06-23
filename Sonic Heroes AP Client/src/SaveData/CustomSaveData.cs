@@ -4,6 +4,7 @@ using Sonic_Heroes_AP_Client.Definitions;
 using Sonic_Heroes_AP_Client.MusicShuffle;
 using Sonic_Heroes_AP_Client.Sanity.BonusKeys;
 using Sonic_Heroes_AP_Client.Sanity.Checkpoints;
+using Sonic_Heroes_AP_Client.Sanity.Enemy;
 using Sonic_Heroes_AP_Client.StageObj;
 
 namespace Sonic_Heroes_AP_Client.SaveData;
@@ -67,12 +68,13 @@ public class CustomSaveData
             id => 
             {
                 var amount = CheckpointData.AllCheckpoints.Count(x =>
-                    x.Team == team && x.LevelId == id) + 1;
+                    x.Team == team && x.LevelId == id);
 
                 if (team is Team.Sonic && id is LevelId.GrandMetropolis)
                     amount++;
                 
-                var output = Enumerable.Repeat(false, amount + 1).ToList();
+                // add 1 for start of level and 1 for bonus stage
+                var output = Enumerable.Repeat(false, amount + 2).ToList();
                 
                 //default spawn
                 //output[0] = true;
@@ -95,4 +97,15 @@ public class CustomSaveData
     
     public Dictionary<Team, bool> BobsledUnlocks = Enum.GetValues<Team>().ToDictionary(x => x, _ => false);
     
+    
+    public Dictionary<LevelId, List<bool>> DarkObjSanityEnemyKills = Enum.GetValues<LevelId>().ToDictionary
+    (
+        level => level,
+        level =>
+        {
+            var amount = EnemyData.DarkEnemies.Count(x => x.LevelId == level);
+            var output = Enumerable.Repeat(false, amount).ToList();
+            return output;
+        }
+    );
 }

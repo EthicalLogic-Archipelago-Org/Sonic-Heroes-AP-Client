@@ -15,6 +15,8 @@ public static class EnemySanityHandler
         {
             var log = $"Got Team {enemySanityData.Team} {enemySanityData.LevelId} Act {act} {enemySanityData.LocName} At {enemySanityData.Region}";
             LoggingHandler.LogMessage(log, taskName, LogLevel.APAction);
+            
+            ObjSanityHandler.HandleEnemyKilledObjSanity(enemySanityData, act, taskName);
 
             if (enemySanityData.Team is not Team.SuperHardMode && (bool)Mod.LevelSelectManager.IsThisSanityEnabled(enemySanityData.Team, SanityType.HintRingSanity, taskName, true))
             {
@@ -53,6 +55,7 @@ public static class EnemySanityHandler
             var enemysInLevel = EnemyData.AllEnemies.Where(x => x.Team == team && x.LevelId == level).ToList();
             
             var minDistance = 999999f;
+            var numMatched = 0;
 
             foreach (var enemyData in enemysInLevel)
             {
@@ -64,8 +67,14 @@ public static class EnemySanityHandler
 
                 if (distance < StageObjData.DistanceForMatchingStageObj)
                 {
+                    numMatched++;
                     CheckEnemySanity(enemyData, (Act)act, taskName);
                 }
+            }
+
+            if (numMatched == 0)
+            {
+                LoggingHandler.LogMessage($"No Enemies Matched at 0x{staticPtr:X}", taskName, LogLevel.Debug);
             }
             
         }

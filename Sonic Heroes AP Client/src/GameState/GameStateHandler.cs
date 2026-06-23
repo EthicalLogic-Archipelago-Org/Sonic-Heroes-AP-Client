@@ -41,8 +41,7 @@ public static class GameStateHandler
             var team = (Team)(*(int*)(Mod.ModuleBase + 0x4D6920));
             var act = GetCurrentAct(taskName);
 
-            if (team is Team.Sonic && act is Act.Act2 or Act.Act3 &&
-                (bool)Mod.LevelSelectManager.IsThisTeamEnabled(Team.SuperHardMode, taskName)!)
+            if (team is Team.Sonic && act is Act.Act2 or Act.Act3 && (bool)Mod.LevelSelectManager.IsThisTeamEnabled(Team.SuperHardMode, taskName)!)
                 team = Team.SuperHardMode;
         
             return team;

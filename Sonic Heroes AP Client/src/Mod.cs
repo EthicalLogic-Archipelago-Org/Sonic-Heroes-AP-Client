@@ -98,6 +98,10 @@ public class Mod: ModBase
     public static Task StealthTrapTask = new (TrapTask.StealthTrapTask);
     public static Task FreezeTrapTask = new (TrapTask.FreezeTrapTask);
     public static Task CharmyTrapTask = new (TrapTask.CharmyTrapTask);
+    
+    public static CancellationTokenSource? CheckBobsledCts;
+    public static Task CheckBobsledOnEnterLevelTask;
+    
     //public static Task PositionMappingTask = new (Tasks.ConnectionTask.APConnectionTask);
     
     //Imgui (Level, Trap, logger windows)

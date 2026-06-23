@@ -22,6 +22,16 @@ public static class StageObjHandler
     {
         try
         {
+            if (!StageObjData.BobsledInitialYCoords.TryGetValue(team, out var levelDict))
+            {
+                return;
+            }
+
+            if (!levelDict.TryGetValue(levelId, out var bobsledYCoords))
+            {
+                return;
+            }
+            
             var bobsledPtr = Mod.ModuleBase + 0x5CE618 + (UIntPtr)(4 * index);
             LoggingHandler.LogMessage($"Bobsled Ptr Here: 0x{(int)bobsledPtr:X} and is value: 0x{*(int*)bobsledPtr:X}", taskName, LogLevel.Debug);
             var bobsledStartAddr = *(int*)bobsledPtr;
@@ -30,7 +40,7 @@ public static class StageObjHandler
             LoggingHandler.LogMessage($"Bobsled Y Coord Here: 0x{(UIntPtr)bobsledYCoordPtr:X} and value is: {*bobsledYCoordPtr}", taskName, LogLevel.Debug);
             float oldYCoord = *bobsledYCoordPtr;
             bool shouldSpawn = !forceDespawn && Mod.SaveDataHandler.CustomSaveData.BobsledUnlocks[team];
-            float newYCoord = shouldSpawn ? oldYCoord + 1000f : oldYCoord - 1000f;
+            float newYCoord = shouldSpawn ? bobsledYCoords[index] : bobsledYCoords[index] - 1000f;
             *bobsledYCoordPtr = newYCoord;
             string msg = shouldSpawn ? "Spawning" : "Despawning";
             LoggingHandler.LogMessage($"{msg} Bobsled at 0x{(int)bobsledYCoordPtr:X} :: Old Y: {oldYCoord} New Y: {newYCoord}", taskName, LogLevel.Debug);
@@ -45,6 +55,7 @@ public static class StageObjHandler
     public static void CheckBobsledOnEnterLevel(string taskName)
     {
         //InitSetGen is too early moving to Set State In Game
+        //Set State In Game is still too early moving to delayed task
         try
         {
             Team team = (Team)GameStateHandler.GetCurrentStory(taskName);

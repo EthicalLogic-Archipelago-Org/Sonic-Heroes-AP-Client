@@ -570,5 +570,26 @@ public static class StageObjData
     [
         StageObjTypes.SelfDestructSwitch,
     ];
-    
+
+
+    public static readonly Dictionary<Team, Dictionary<LevelId, List<float>>> BobsledInitialYCoords = new()
+    {
+        { 
+            Team.Sonic, new()
+            {
+                {
+                    LevelId.SeasideHill, [402.00f, 2002.00f]
+                },
+            }
+        },
+        { 
+            Team.Dark, new()
+            {
+                {
+                    LevelId.SeasideHill, [402.00f, 2002.00f]
+                },
+            }
+        },
+    };
+
 }
