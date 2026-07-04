@@ -1,7 +1,6 @@
 
 
 using System.Diagnostics;
-using System.Drawing;
 using Heroes.Controller.Hook.Interfaces;
 using Reloaded.Hooks.Definitions;
 using Reloaded.Imgui.Hook;

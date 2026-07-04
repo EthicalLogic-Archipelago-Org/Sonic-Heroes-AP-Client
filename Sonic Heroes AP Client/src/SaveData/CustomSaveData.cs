@@ -103,8 +103,7 @@ public class CustomSaveData
         level => level,
         level =>
         {
-            // TODO FIX THIS
-            var amount = EnemyData.AllEnemies.Where(enemy => enemy.Team is Team.Dark).Count(x => x.LevelId == level);
+            var amount = EnemyData.AllEnemies.Count(enemy => enemy.Team is Team.Dark && enemy.LevelId == level);
             var output = Enumerable.Repeat(false, amount).ToList();
             return output;
         }
