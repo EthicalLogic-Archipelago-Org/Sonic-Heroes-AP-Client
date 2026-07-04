@@ -3,7 +3,7 @@ using Sonic_Heroes_AP_Client.Definitions;
 using Sonic_Heroes_AP_Client.Logging;
 using Sonic_Heroes_AP_Client.StageObj;
 
-namespace Sonic_Heroes_AP_Client.Sanity.BingoChip;
+namespace Sonic_Heroes_AP_Client.Sanity.BingoChips;
 
 public static class BingoChipSanityHandler
 {

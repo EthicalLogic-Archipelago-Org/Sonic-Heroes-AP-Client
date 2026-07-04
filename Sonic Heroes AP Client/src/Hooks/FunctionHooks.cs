@@ -14,14 +14,15 @@ using Sonic_Heroes_AP_Client.GameState;
 using Sonic_Heroes_AP_Client.LevelSpawnPosition;
 using Sonic_Heroes_AP_Client.Logging;
 using Sonic_Heroes_AP_Client.MusicShuffle;
-using Sonic_Heroes_AP_Client.Sanity;
-using Sonic_Heroes_AP_Client.Sanity.BingoChip;
+using Sonic_Heroes_AP_Client.Sanity.ObjSanity;
+using Sonic_Heroes_AP_Client.Sanity.BingoChips;
 using Sonic_Heroes_AP_Client.Sanity.BonusKeys;
 using Sonic_Heroes_AP_Client.Sanity.Checkpoints;
 using Sonic_Heroes_AP_Client.Sanity.Enemy;
-using Sonic_Heroes_AP_Client.Sanity.HintRing;
-using Sonic_Heroes_AP_Client.Sanity.ItemBalloonBox;
-using Sonic_Heroes_AP_Client.Sanity.Ring;
+using Sonic_Heroes_AP_Client.Sanity.HintRings;
+using Sonic_Heroes_AP_Client.Sanity.ItemBalloons;
+using Sonic_Heroes_AP_Client.Sanity.ItemBoxes;
+using Sonic_Heroes_AP_Client.Sanity.Rings;
 using Sonic_Heroes_AP_Client.StageObj;
 using Sonic_Heroes_AP_Client.UI;
 
@@ -672,7 +673,7 @@ public static class FunctionHooks
         //Balloon has 1 L because that is how the game stores it
         try
         {
-            ItemBalloonBoxSanityHandler.HandleItemBalloonSanity((UIntPtr)edx, TaskName);
+            ItemBalloonsSanityHandler.HandleItemBalloonSanity((UIntPtr)edx, TaskName);
         }
         catch (Exception e)
         {
@@ -690,7 +691,7 @@ public static class FunctionHooks
         LoggingHandler.LogMessage($"ItemBoxPickUp Start edi: 0x{edi:X}", TaskName, LogLevel.SuperDebug);
         try
         {
-            ItemBalloonBoxSanityHandler.HandleItemBoxSanity((UIntPtr)edi, TaskName);
+            ItemBoxesSanityHandler.HandleItemBoxSanity((UIntPtr)edi, TaskName);
         }
         catch (Exception e)
         {
@@ -1131,9 +1132,9 @@ public static class FunctionHooks
     public delegate int IncrementEnemyCount(int newCount);
     private static int OnMoveEnemyCount(int ebx)
     {
-        LoggingHandler.LogMessage($"IncrementEnemyCount Start NewCount: {ebx}", TaskName, LogLevel.SuperDebug);
+        //LoggingHandler.LogMessage($"IncrementEnemyCount Start NewCount: {ebx}", TaskName, LogLevel.SuperDebug);
         ObjSanityHandler.CheckEnemyCount(ebx, TaskName);
-        LoggingHandler.LogMessage($"IncrementEnemyCount End", TaskName, LogLevel.SuperDebug);
+        //LoggingHandler.LogMessage($"IncrementEnemyCount End", TaskName, LogLevel.SuperDebug);
         return 0;
     }
     

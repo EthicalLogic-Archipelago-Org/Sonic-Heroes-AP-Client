@@ -8,7 +8,7 @@ using Sonic_Heroes_AP_Client.GameState;
 using Sonic_Heroes_AP_Client.Logging;
 using Sonic_Heroes_AP_Client.Sanity.Enemy;
 
-namespace Sonic_Heroes_AP_Client.Sanity;
+namespace Sonic_Heroes_AP_Client.Sanity.ObjSanity;
 
 public static class ObjSanityHandler
 {
@@ -126,7 +126,7 @@ public static class ObjSanityHandler
             }
 
             int currentAmount = Mod.SaveDataHandler.CustomSaveData.DarkObjSanityEnemyKills[(LevelId)levelId].Count(x => x);
-            currentAmount = Math.Min(currentAmount, 99);
+            currentAmount = Math.Min(currentAmount, 90);
             SetTEnemyScoreManagerEnemyKilledCount(currentAmount, taskName);
         }
         catch (Exception e)
@@ -150,29 +150,29 @@ public static class ObjSanityHandler
 
 
 
-    public static void HandleEnemyKilledObjSanity(EnemyData.EnemySanityData enemySanityData, Act act, string taskName)
+    public static void HandleEnemyKilledObjSanity(EnemyData.BaseEnemyData enemyData, Act act, string taskName)
     {
         try
         {
-            if (enemySanityData.Team is not Team.Dark && enemySanityData.Team is not Team.Chaotix)
+            if (enemyData.Team is not Team.Dark && enemyData.Team is not Team.Chaotix)
             {
                 return;
             }
-            if (enemySanityData.Team is Team.Dark && !(act is Act.Act2 && Mod.LevelSelectManager.IsThisTeamActEnabled(enemySanityData.Team, act, taskName) && (bool)Mod.LevelSelectManager.IsThisSanityEnabled(enemySanityData.Team, SanityType.ObjSanity, taskName)))
+            if (enemyData.Team is Team.Dark && !(act is Act.Act2 && Mod.LevelSelectManager.IsThisTeamActEnabled(enemyData.Team, act, taskName) && (bool)Mod.LevelSelectManager.IsThisSanityEnabled(enemyData.Team, SanityType.ObjSanity, taskName)))
             {
                 LoggingHandler.LogMessage($"Team Dark but no ObjSanity in HandleEnemyKilledObjSanity", taskName,  LogLevel.Debug);
                 return;
             }
-            if (enemySanityData.Team is Team.Chaotix && !(Mod.LevelSelectManager.IsThisTeamActEnabled(enemySanityData.Team, act, taskName) && (bool)Mod.LevelSelectManager.IsThisSanityEnabled(enemySanityData.Team, SanityType.ObjSanity, taskName)))
+            if (enemyData.Team is Team.Chaotix && !(Mod.LevelSelectManager.IsThisTeamActEnabled(enemyData.Team, act, taskName) && (bool)Mod.LevelSelectManager.IsThisSanityEnabled(enemyData.Team, SanityType.ObjSanity, taskName)))
             {
                 LoggingHandler.LogMessage($"Team Chaotix but no ObjSanity in HandleEnemyKilledObjSanity", taskName,  LogLevel.Debug); 
                 return;
             }
 
-            switch (enemySanityData.Team)
+            switch (enemyData.Team)
             {
                 case Team.Dark:
-                    HandleDarkEnemyKilledObjSanity(enemySanityData, taskName);
+                    HandleDarkEnemyKilledObjSanity(enemyData, taskName);
                     break;
                 case Team.Chaotix:
                     break;
@@ -187,7 +187,7 @@ public static class ObjSanityHandler
     }
 
 
-    public static void HandleDarkEnemyKilledObjSanity(EnemyData.EnemySanityData enemySanityData, string taskName)
+    public static void HandleDarkEnemyKilledObjSanity(EnemyData.BaseEnemyData enemySanityData, string taskName)
     {
         try
         {
@@ -203,7 +203,7 @@ public static class ObjSanityHandler
 
             if (!Mod.SaveDataHandler.CustomSaveData.DarkObjSanityEnemyKills[enemySanityData.LevelId][enemyIndex])
             {
-                LoggingHandler.LogMessage($"Team Dark Level: {enemySanityData.LevelId} Enemy #{enemyIndex + 1} has not been killed yet. Incrementing Counter", taskName, LogLevel.Debug);
+                LoggingHandler.LogMessage($"Team Dark Level: {enemySanityData.LevelId} Enemy #{enemyIndex + 1} has not been killed yet.", taskName, LogLevel.Debug);
 
                 Mod.SaveDataHandler.CustomSaveData.DarkObjSanityEnemyKills[enemySanityData.LevelId][enemyIndex] = true;
                 Mod.ArchipelagoHandler.Save(taskName);
@@ -211,8 +211,8 @@ public static class ObjSanityHandler
             }
             else
             {
-                LoggingHandler.LogMessage($"Team Dark Level: {enemySanityData.LevelId} Enemy #{enemyIndex + 1} has been killed already.", taskName, LogLevel.Debug);
                 var enemyCounter = GetTEnemyScoreManagerEnemyKilledCount(taskName);
+                LoggingHandler.LogMessage($"Team Dark Level: {enemySanityData.LevelId} Enemy #{enemyIndex + 1} has been killed already.", taskName, LogLevel.Debug);
                 SetTEnemyScoreManagerEnemyKilledCount(enemyCounter - 1, taskName);
             }
         }
@@ -221,6 +221,15 @@ public static class ObjSanityHandler
             LoggingHandler.LogMessage($"{e}", taskName, LogLevel.Error);
         }
     }
+    
+    
+    
+    
+    
+    
+    
+    
+    
     
     
     public static void CheckRingSanity(int newCount, string taskName)

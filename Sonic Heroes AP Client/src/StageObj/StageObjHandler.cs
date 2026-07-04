@@ -516,6 +516,15 @@ public static class StageObjHandler
 
             switch (level)
             {
+                case LevelId.SeasideHill:
+
+                    
+                    
+                    
+                    
+                    break;
+                
+                
                 
             }
         }

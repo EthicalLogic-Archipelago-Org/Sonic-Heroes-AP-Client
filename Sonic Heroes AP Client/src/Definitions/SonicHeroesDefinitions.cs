@@ -11,8 +11,18 @@ public enum SanityType
     CheckpointSanity,
     BingoChipSanity,
     HintRingSanity,
-    ItemBalloonBoxSanity,
-    EnemySanity,
+    ItemBoxSanity,
+    ItemBalloonSanity,
+    EggFlapperSanity,
+    EggPawnSanity,
+    KlagenSanity,
+    FalcoSanity,
+    EggHammerSanity,
+    CameronSanity,
+    RhinoLinerSanity,
+    EggBishopSanity,
+    E2000Sanity,
+    
     RingSanityGroup,
     RingSanityIndividual,
 }
@@ -303,6 +313,60 @@ public enum Ability
     BellyFlop,
 }
 
+
+public enum EggFlapperWeapon
+{
+    NoWeapon,
+    Needle,
+    Bazooka,
+    Shot = Bazooka,
+    MachineGun,
+    MachineGun90 = MachineGun,
+    MachineGun120 = MachineGun,
+    MachineGun150 = MachineGun,
+    MachineGun180 = MachineGun,
+    Lightning,
+    Laser = Lightning,
+    Bomb,
+    Searchlight,
+}
+
+public enum EggFlapperArmor
+{
+    NoArmor,
+    SilverArmor,
+}
+
+public enum EggPawnWeapon
+{
+    NoWeapon,
+    Lance,
+    Bazooka,
+    Shot = Bazooka,
+    MachineGun,
+    MachineGun90 = MachineGun,
+    MachineGun120 = MachineGun,
+    MachineGun150 = MachineGun,
+    MachineGun180 = MachineGun,
+}
+
+public enum EggPawnShield
+{
+    NoShield,
+    ConcreteShield,
+    PlainShield,
+    SpikeShield,
+}
+
+public enum EggPawnType
+{
+    RegularPawn,
+    KingPawn,
+    CasinoPawn1,
+    CasinoPawn2,
+}
+
+
 public enum StageObjTypes : ushort
 {
     None = 0x0000,
@@ -353,8 +417,8 @@ public enum StageObjTypes : ushort
     BonusKey = 0x0067,
     TeleportTrigger = 0x0080,
     // ReSharper disable once InconsistentNaming
-    SECollisionObject = 0x0081,
     NoOttoOttoCollisionObject = 0x0082,
+    SECollisionObject = 0x0081,
 
     //SeasideHill
     CementBlockOnRails = 0x0102,
@@ -787,21 +851,29 @@ public static class SonicHeroesDefinitions
     public const int HintRingAct1StartId = 0x2600;
     public const int HintRingAct2StartId = 0x2800;
     
-    public const int ItemBalloonBoxNoActStartId = 0x3000;
-    public const int ItemBalloonBoxAct1StartId = 0x4000;
-    public const int ItemBalloonBoxAct2StartId = 0x5000;
+    public const int ItemBoxNoActStartId = 0x3000;
+    public const int ItemBoxAct1StartId = 0x4000;
+    public const int ItemBoxAct2StartId = 0x5000;
     
-    public const int EnemyNoActStartId = 0x6000;
-    public const int EnemyAct1StartId = 0x7000;
-    public const int EnemyAct2StartId = 0x8000;
+    public const int ItemBalloonNoActStartId = 0x6000;
+    public const int ItemBalloonAct1StartId = 0x7000;
+    public const int ItemBalloonAct2StartId = 0x8000;
     
-    public const int RingSanityGroupNoActStartId = 0x20000;
-    public const int RingSanityGroupAct1StartId = 0x21000;
-    public const int RingSanityGroupAct2StartId = 0x22000;
+    public const int EggFlapperNoActStartId = 0x10000;
+    public const int EggFlapperAct1StartId = 0x11000;
+    public const int EggFlapperAct2StartId = 0x12000;
     
-    public const int RingSanityIndividualNoActStartId = 0x30000;
-    public const int RingSanityIndividualAct1StartId = 0x40000;
-    public const int RingSanityIndividualAct2StartId = 0x50000;
+    public const int EggPawnNoActStartId = 0x13000;
+    public const int EggPawnAct1StartId = 0x14000;
+    public const int EggPawnAct2StartId = 0x15000;
+    
+    public const int RingSanityGroupNoActStartId = 0x30000;
+    public const int RingSanityGroupAct1StartId = 0x31000;
+    public const int RingSanityGroupAct2StartId = 0x32000;
+    
+    public const int RingSanityIndividualNoActStartId = 0x40000;
+    public const int RingSanityIndividualAct1StartId = 0x50000;
+    public const int RingSanityIndividualAct2StartId = 0x60000;
     
 
     /// <summary>

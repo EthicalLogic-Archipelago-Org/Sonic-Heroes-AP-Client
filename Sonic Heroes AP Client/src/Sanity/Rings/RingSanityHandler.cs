@@ -4,11 +4,11 @@ using Sonic_Heroes_AP_Client.GameState;
 using Sonic_Heroes_AP_Client.Logging;
 using Sonic_Heroes_AP_Client.StageObj;
 
-namespace Sonic_Heroes_AP_Client.Sanity.Ring;
+namespace Sonic_Heroes_AP_Client.Sanity.Rings;
 
 public static class RingSanityHandler
 {
-    public static unsafe void CheckRing(RingData.RingsData ringData, UIntPtr staticPtr, int ringIndex, Team team, Act act, string taskName)
+    public static unsafe void CheckRing(RingsData.RingData ringData, UIntPtr staticPtr, int ringIndex, Team team, Act act, string taskName)
     {
         try
         {
@@ -34,13 +34,13 @@ public static class RingSanityHandler
 
 
 
-    public static unsafe void CheckRingGroup(RingData.RingsData ringData, int ringIndex, Team team, Act act, string taskName)
+    public static unsafe void CheckRingGroup(RingsData.RingData ringData, int ringIndex, Team team, Act act, string taskName)
     {
         try
         {
             if (team is not Team.SuperHardMode && (bool)Mod.LevelSelectManager.IsThisSanityEnabled(team, SanityType.RingSanityGroup, taskName, true))
             {
-                var idToSend = act is Act.Act1 ? SonicHeroesDefinitions.RingSanityGroupAct1StartId + ringData.StartIDOffset + RingData.AllRings.IndexOf(ringData) - ringData.ID_offset : SonicHeroesDefinitions.RingSanityGroupAct2StartId + RingData.AllRings.IndexOf(ringData) - ringData.ID_offset;
+                var idToSend = act is Act.Act1 ? SonicHeroesDefinitions.RingSanityGroupAct1StartId + ringData.StartIDOffset + RingsData.AllRings.IndexOf(ringData) - ringData.ID_offset : SonicHeroesDefinitions.RingSanityGroupAct2StartId + RingsData.AllRings.IndexOf(ringData) - ringData.ID_offset;
                 LoggingHandler.LogMessage($"Sending Location ID: 0x{idToSend:X} ", taskName, LogLevel.Debug);
                 Mod.ArchipelagoHandler.CheckLocation(id: idToSend);
                 return;
@@ -48,7 +48,7 @@ public static class RingSanityHandler
             
             if ((bool)Mod.LevelSelectManager.IsThisSanityEnabled(team, SanityType.RingSanityGroup, taskName))
             {
-                var idToSend = SonicHeroesDefinitions.RingSanityGroupNoActStartId + ringData.StartIDOffset + RingData.AllRings.IndexOf(ringData) - ringData.ID_offset;
+                var idToSend = SonicHeroesDefinitions.RingSanityGroupNoActStartId + ringData.StartIDOffset + RingsData.AllRings.IndexOf(ringData) - ringData.ID_offset;
                 LoggingHandler.LogMessage($"Sending Location ID: 0x{idToSend:X} ", taskName, LogLevel.Debug);
                 Mod.ArchipelagoHandler.CheckLocation(id: idToSend);
                 return;
@@ -60,7 +60,7 @@ public static class RingSanityHandler
         }
     }
     
-    public static unsafe void CheckRingIndividual(RingData.RingsData ringData, int ringIndex, Team team, Act act, string taskName)
+    public static unsafe void CheckRingIndividual(RingsData.RingData ringData, int ringIndex, Team team, Act act, string taskName)
     {
         try
         {
@@ -123,7 +123,7 @@ public static class RingSanityHandler
             var act = GameStateHandler.GetCurrentAct(taskName);
             
             Vector3 ringGroupPos = new Vector3(*(float*)(staticPtr + 0x0), *(float*)(staticPtr + 0x4), *(float*)(staticPtr + 0x8));
-            var ringGroupsInLevel = RingData.AllRings.Where(x => x.Team == team && x.LevelId == level).ToList();
+            var ringGroupsInLevel = RingsData.AllRings.Where(x => x.Team == team && x.LevelId == level).ToList();
             
             var minDistance = 999999f;
             
