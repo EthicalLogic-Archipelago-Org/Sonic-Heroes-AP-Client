@@ -141,7 +141,7 @@ public static class AbilityCharacterManager
     }
     
     
-    public static void UnlockAbilityForRegion(Team team, Region region, Ability ability, string taskName)
+    public static void UnlockAbilityForRegion(Team team, Region region, Ability ability, string taskName, bool forceunlock = false, bool forcelock = false)
     {
         if (Mod.SaveDataHandler.CustomSaveData == null)
         {
@@ -149,7 +149,13 @@ public static class AbilityCharacterManager
             return;
         }
         
-        Mod.SaveDataHandler.CustomSaveData.UnlockSaveData[team].AbilityUnlocks[region][ability] = !Mod.IsDebug || !Mod.SaveDataHandler.CustomSaveData.UnlockSaveData[team].AbilityUnlocks[region][ability];
+        bool currState = Mod.SaveDataHandler.CustomSaveData.UnlockSaveData[team].AbilityUnlocks[region][ability];
+        if (forceunlock || !Mod.IsDebug)
+            currState = false;
+        if (forcelock)
+            currState = true;
+        LoggingHandler.LogMessage($"Handling Ability Unlock. Ability: {ability} Team: {team} Region: {region} currState: {Mod.SaveDataHandler.CustomSaveData.UnlockSaveData[team].AbilityUnlocks[region][ability]} newState: {!currState} forceunlock: {forceunlock} forcelock: {forcelock}", taskName, LogLevel.SuperDebug);
+        Mod.SaveDataHandler.CustomSaveData.UnlockSaveData[team].AbilityUnlocks[region][ability] = !currState;
         PollUpdates(taskName);
     }
     
@@ -321,7 +327,7 @@ public static class AbilityCharacterManager
     }
     
     
-    public static void UnlockAbilityItemCallback(Ability? ability, Team? team, Region? region, string taskName)
+    public static void UnlockAbilityItemCallback(Ability? ability, Team? team, Region? region, string taskName, bool forceunlock = false, bool forcelock = false)
     {
         if (Mod.SaveDataHandler.CustomSaveData == null)
         {
@@ -333,14 +339,14 @@ public static class AbilityCharacterManager
         {
             foreach (var a in Enum.GetValues<Ability>())
             {
-                UnlockAbilityItemCallback(a, team, region, taskName);
+                UnlockAbilityItemCallback(a, team, region, taskName, forceunlock, forcelock);
             }
         }
         else if (team is null)
         {
             foreach (var t in Enum.GetValues<Team>())
             {
-                UnlockAbilityItemCallback(ability, t, region, taskName);
+                UnlockAbilityItemCallback(ability, t, region, taskName, forceunlock, forcelock);
             }
         }
     
@@ -348,7 +354,7 @@ public static class AbilityCharacterManager
         {
             foreach (var r in Enum.GetValues<Region>())
             {
-                UnlockAbilityItemCallback(ability, team, r, taskName);
+                UnlockAbilityItemCallback(ability, team, r, taskName, forceunlock, forcelock);
             }
         }
         else

@@ -331,9 +331,11 @@ public static class ItemHandler
         Region? region;
         if (itemName.Contains("All Abilities", StringComparison.InvariantCultureIgnoreCase))
         {
+            bool forceUnlock = itemName.Contains("Force Unlock", StringComparison.InvariantCultureIgnoreCase);
+            bool forceLock = itemName.Contains("Force Lock", StringComparison.InvariantCultureIgnoreCase);
             team = CheckTeamItemName(itemName, taskName);
             region = CheckRegionItemName(itemName, taskName);
-            AbilityCharacterManager.UnlockAbilityItemCallback(null, team, region, taskName);
+            AbilityCharacterManager.UnlockAbilityItemCallback(null, team, region, taskName,  forceUnlock, forceLock);
             LoggingHandler.LogMessage($"Got Item: {itemName}", taskName, LogLevel.APAction);
             handled = true;
             return;
@@ -366,10 +368,12 @@ public static class ItemHandler
         Region? region;
         if (itemName.Contains("All Stage Objects", StringComparison.InvariantCultureIgnoreCase))
         {
+            bool forceUnlock = itemName.Contains("Force Unlock", StringComparison.InvariantCultureIgnoreCase);
+            bool forceLock = itemName.Contains("Force Lock", StringComparison.InvariantCultureIgnoreCase);
             LoggingHandler.LogMessage($"Got Item: {itemName}", taskName, LogLevel.APAction);
             team = CheckTeamItemName(itemName, taskName);
             region = CheckRegionItemName(itemName, taskName);
-            StageObjHandler.UnlockStageObjItemCallback(null, team, region, taskName);
+            StageObjHandler.UnlockStageObjItemCallback(null, team, region, taskName,  forceUnlock, forceLock);
             handled = true;
             return;
         }

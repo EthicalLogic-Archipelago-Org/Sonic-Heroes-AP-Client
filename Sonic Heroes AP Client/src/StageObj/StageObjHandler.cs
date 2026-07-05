@@ -68,7 +68,6 @@ public static class StageObjHandler
                 {
                     SpawnOrUnSpawnBobsled(Team.Dark, levelId,false, 1, taskName);
                 }
-                
             }
         }
         catch (Exception e)
@@ -120,25 +119,25 @@ public static class StageObjHandler
     }
     
     
-    public static void UnlockStageObjItemCallback(StageObjTypes? stageObjTypes, Team? team, Region? region, string taskName, bool forceunlock = false)
+    public static void UnlockStageObjItemCallback(StageObjTypes? stageObjTypes, Team? team, Region? region, string taskName, bool forceunlock = false, bool forcelock = false)
     {
         if (stageObjTypes is null)
         {
             foreach (var s in StageObjData.StageObjsToMessWith)
             {
-                UnlockStageObjItemCallback(s, team, region, taskName, forceunlock);
+                UnlockStageObjItemCallback(s, team, region, taskName, forceunlock, forcelock);
             }
         }
         else if (team is null)
         {
             foreach (var t in Enum.GetValues<Team>())
             {
-                UnlockStageObjItemCallback(stageObjTypes, t, region, taskName, forceunlock);
+                UnlockStageObjItemCallback(stageObjTypes, t, region, taskName, forceunlock, forcelock);
             }
         }
         else if (region is null)
         {
-            UnlockStageObjForTeamRegion((StageObjTypes)stageObjTypes, (Team)team, Region.SpecialStage, taskName, forceunlock);
+            UnlockStageObjForTeamRegion((StageObjTypes)stageObjTypes, (Team)team, Region.SpecialStage, taskName, forceunlock, forcelock);
             // foreach (var r in Enum.GetValues<Region>())
             // {
             //     UnlockStageObjItemCallback(stageObjTypes, team, r, taskName, forceunlock);
@@ -146,23 +145,24 @@ public static class StageObjHandler
         }
         else
         {
-            UnlockStageObjForTeamRegion((StageObjTypes)stageObjTypes, (Team)team, (Region)region, taskName, forceunlock);
+            UnlockStageObjForTeamRegion((StageObjTypes)stageObjTypes, (Team)team, (Region)region, taskName, forceunlock, forcelock);
         }
     }
 
     public static void UnlockStageObjForTeamRegion(StageObjTypes stageObjTypes, Team team, Region region,
-        string taskName, bool forceunlock = false)
+        string taskName, bool forceunlock = false, bool forcelock = false)
     {
         if (Mod.SaveDataHandler.CustomSaveData == null)
         {
             LoggingHandler.LogMessage($"Custom Save Data is Null in UnlockStageObjForTeamRegion", taskName, LogLevel.Error);
             return;
         }
-        
         var currState = IsStageObjUnlockedForTeamRegion(stageObjTypes, team, region, taskName);
         if (forceunlock || !Mod.IsDebug)
             currState = false;
-        LoggingHandler.LogMessage($"StageObjItemReceived. Obj: {stageObjTypes} Team: {team} Region: {region} currState: {currState} newState: {!currState} forceunlock: {forceunlock}", taskName, LogLevel.SuperDebug);
+        if (forcelock)
+            currState = true;
+        LoggingHandler.LogMessage($"StageObjItemReceived. Obj: {stageObjTypes} Team: {team} Region: {region} currState: {IsStageObjUnlockedForTeamRegion(stageObjTypes, team, region, taskName)} newState: {!currState} forceunlock: {forceunlock} forcelock: {forcelock}", taskName, LogLevel.SuperDebug);
         Mod.SaveDataHandler.CustomSaveData.StageObjSpawnSaveData[team][stageObjTypes] = !currState;
         StageObjHandleChangingUnlockStatusSingle(stageObjTypes, team, region, taskName);
     }
@@ -519,7 +519,21 @@ public static class StageObjHandler
                 case LevelId.SeasideHill:
 
                     
+                    //Seaside Hill Dark
+
+                    //Dash Panels to Unspawn (move down 1000)
                     
+                    //27.0046f, 30f, -4897f
+                    //1.9955f, 30f, -4911f
+                    //30.9955f, 30f, -4897f 
+                    
+                    //105f, 30f, -5345f
+                    //130f, 30f, -5370f
+                    //156f, 30.1880f, -5345f 
+                    
+                    //102.0002f, 32.3710f, -5930.8240f      <- should keep this one
+                    //129.0002f, 34.2878f, -5955.8240f
+                    //154.0002f, 32.3710f, -5930.8240f 
                     
                     
                     break;
