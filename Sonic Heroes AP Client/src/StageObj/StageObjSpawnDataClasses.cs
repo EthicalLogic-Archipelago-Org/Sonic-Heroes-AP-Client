@@ -93,7 +93,7 @@ public unsafe class StageObjSpawnData
 {
     protected readonly ObjSpawnData* SpawnDataPtr; //<- 0x40 bytes
     public readonly StageObjTypes Type;
-    private readonly ObjSpawnData _backupData;
+    private ObjSpawnData _backupData;
 
     public StageObjSpawnData(UIntPtr objPtr)
     {
@@ -126,17 +126,52 @@ public unsafe class StageObjSpawnData
         return new Vector3(_backupData.XSpawnPos, _backupData.YSpawnPos, _backupData.ZSpawnPos);
     }
 
+    public bool IsAtPosition(Vector3 pos, string taskName)
+    {
+        return Vector3.Distance(pos, GetOriginalSpawnPosition(taskName)) < StageObjData.DistanceForMatchingStageObj;
+    }
+
     public void SpawnOrDespawnObj(bool spawn, string taskName)
     {
         byte renderDistance = spawn ? _backupData.RenderDistance : StageObjData.DespawnObjRenderDistance;
         SpawnDataPtr->RenderDistance = renderDistance;
     }
 
-    public void SetSpawnPosition(Vector3 position, string taskName)
+    public void SetSpawnPosition(Vector3 position, string taskName, bool shouldChangeBackup = false)
     {
         SpawnDataPtr->XSpawnPos = position.X;
         SpawnDataPtr->YSpawnPos = position.Y;
         SpawnDataPtr->ZSpawnPos = position.Z;
+        
+        LoggingHandler.LogMessage($"Moving Spawn Pos of obj: {Type}. Old Pos: ({_backupData.XSpawnPos}, {_backupData.YSpawnPos}, {_backupData.ZSpawnPos}) New Pos: ({position.X}, {position.Y}, {position.Z}) ChangeBackup: {shouldChangeBackup}", taskName, LogLevel.Debug);
+
+        if (shouldChangeBackup)
+        {
+            _backupData.XSpawnPos = position.X;
+            _backupData.YSpawnPos = position.Y;
+            _backupData.ZSpawnPos = position.Z;
+        }
+    }
+
+    public void ChangeValueAtDynamicMem<T>(T value, int offset, string taskName)
+    {
+        if (!SonicHeroesDefinitions.IsValidPtr(SpawnDataPtr->PtrDynamicMem)) 
+            return;
+        if (value is not (int or float or ushort or byte))
+        {
+            LoggingHandler.LogMessage($"Invalid type for value in ChangeFloatAtDynamicMem: {value.GetType()}", taskName, LogLevel.Error);
+            return;
+        }
+        
+        try
+        {
+            var dynamicMemValuePtr = SpawnDataPtr->PtrDynamicMem + (UIntPtr)offset;
+            *(T*)dynamicMemValuePtr = value;
+        }
+        catch (Exception e)
+        {
+            LoggingHandler.LogMessage($"{e}", taskName, LogLevel.Error);
+        }
     }
 
     public override string ToString()
@@ -217,7 +252,7 @@ public unsafe class SingleSpringSpawnData: StageObjSpawnDataWithExtraVars
     }
 
     private readonly SingleSpringExtraVars* _extraVarsPtr;
-    private readonly SingleSpringExtraVars _backupExtraVars;
+    private SingleSpringExtraVars _backupExtraVars;
 
     public SingleSpringSpawnData(UIntPtr objPtr) : base(objPtr)
     {
@@ -225,28 +260,32 @@ public unsafe class SingleSpringSpawnData: StageObjSpawnDataWithExtraVars
         _backupExtraVars = *_extraVarsPtr;
     }
 
-    public float Power
-    { 
-        get => _extraVarsPtr->Power;
-        set => _extraVarsPtr->Power = value;
+    public float Power => _extraVarsPtr->Power;
+
+    public void SetPower(float value, string taskName)
+    {
+        _extraVarsPtr->Power = value;
+        ChangeValueAtDynamicMem(value, 0xC8, taskName);
     }
-        
+
     public void ResetPower(string taskName)
     {
         LoggingHandler.LogMessage($"Resetting Single Spring Power: 0x{(UIntPtr)SpawnDataPtr:X} :: Old: {_extraVarsPtr->Power} :: New: {_backupExtraVars.Power}", taskName, LogLevel.Debug);
-        _extraVarsPtr->Power = _backupExtraVars.Power;
+        SetPower(_backupExtraVars.Power, taskName);
     }
         
-    public ushort NoControlTime
+    public ushort NoControlTime => _extraVarsPtr->NoControlTime;
+
+    public void SetNoControlTime(ushort value, string taskName)
     {
-        get => _extraVarsPtr->NoControlTime;
-        set => _extraVarsPtr->NoControlTime = value;
+        _extraVarsPtr->NoControlTime = value;
+        ChangeValueAtDynamicMem(value, 0x9C, taskName);
     }
         
     public void ResetNoControlTime(string taskName)
     {
         LoggingHandler.LogMessage($"Resetting Single Spring NoControlTime: 0x{(UIntPtr)SpawnDataPtr:X} :: Old: {_extraVarsPtr->NoControlTime} :: New: {_backupExtraVars.NoControlTime}", taskName, LogLevel.Debug);
-        _extraVarsPtr->NoControlTime = _backupExtraVars.NoControlTime;
+        SetNoControlTime(_backupExtraVars.NoControlTime, taskName);
     }
 }
 
@@ -273,54 +312,61 @@ public unsafe class TripleSpringSpawnData: StageObjSpawnData
     }
     
     
-    public float Power
-    { 
-        get => _extraVarsPtr->Power;
-        set => _extraVarsPtr->Power = value; 
+    public float Power => _extraVarsPtr->Power;
+
+    public void SetPower(float value, string taskName)
+    {
+        _extraVarsPtr->Power = value;
+        ChangeValueAtDynamicMem(value, 0xC8, taskName);
     }
-    
-    
+
     public void ResetPower(string taskName)
     {
         LoggingHandler.LogMessage($"Resetting Triple Spring Power: 0x{(UIntPtr)SpawnDataPtr:X} :: Old: {_extraVarsPtr->Power} :: New: {_backupExtraVars.Power}", taskName, LogLevel.Debug);
-        _extraVarsPtr->Power = _backupExtraVars.Power;
+        SetPower(_backupExtraVars.Power, taskName);
     }
     
-    
-    public float Scale
+    public float Scale => _extraVarsPtr->Scale;
+
+    public void SetScale(float value, string taskName)
     {
-        get => _extraVarsPtr->Scale;
-        set => _extraVarsPtr->Scale = value;
+        _extraVarsPtr->Power = value;
+        //have to add 1 as scale defaults to 0 in static but defaults to 1 in dynamic
+        ChangeValueAtDynamicMem(value + 1, 0xCC, taskName);
     }
     
     public void ResetScale(string taskName)
     {
         LoggingHandler.LogMessage($"Resetting Triple Spring Scale: 0x{(UIntPtr)SpawnDataPtr:X} :: Old: {_extraVarsPtr->Scale} :: New: {_backupExtraVars.Scale}", taskName, LogLevel.Debug);
-        _extraVarsPtr->Scale = _backupExtraVars.Scale;
+        SetScale(_backupExtraVars.Scale, taskName);
     }
     
-    public ushort NoControlTime
+    public float NoControlTime => _extraVarsPtr->NoControlTime;
+
+    public void SetNoControlTime(ushort value, string taskName)
     {
-        get => _extraVarsPtr->NoControlTime;
-        set => _extraVarsPtr->NoControlTime = value;
+        _extraVarsPtr->NoControlTime = value;
+        ChangeValueAtDynamicMem(value, 0x9E, taskName);
     }
     
     public void ResetNoControlTime(string taskName)
     {
         LoggingHandler.LogMessage($"Resetting Triple Spring No Control Time: 0x{(UIntPtr)SpawnDataPtr:X} :: Old: {_extraVarsPtr->NoControlTime} :: New: {_backupExtraVars.NoControlTime}", taskName, LogLevel.Debug);
-        _extraVarsPtr->NoControlTime = _backupExtraVars.NoControlTime;
+        SetNoControlTime(_backupExtraVars.NoControlTime, taskName);
     }
     
-    public ItemReward ItemReward
+    public ItemReward ItemReward => _extraVarsPtr->ItemReward;
+
+    public void SetItemReward(ItemReward value, string taskName)
     {
-        get => _extraVarsPtr->ItemReward;
-        set => _extraVarsPtr->ItemReward = value;
+        _extraVarsPtr->ItemReward = value;
+        ChangeValueAtDynamicMem((byte)value, 0x9D, taskName);
     }
     
     public void ResetItemReward(string taskName)
     {
         LoggingHandler.LogMessage($"Resetting Triple Spring Item Reward: 0x{(UIntPtr)SpawnDataPtr:X} :: Old: {_extraVarsPtr->ItemReward} :: New: {_backupExtraVars.ItemReward}", taskName, LogLevel.Debug);
-        _extraVarsPtr->ItemReward = _backupExtraVars.ItemReward;
+        SetItemReward(_backupExtraVars.ItemReward, taskName);
     }
 }
 
@@ -348,53 +394,13 @@ public unsafe class RingsSpawnData: StageObjSpawnData
         _backupExtraVars = *_extraVarsPtr;
     }
     
-    public RingType RingType
-    { 
-        get => _extraVarsPtr->RingType;
-        set => _extraVarsPtr->RingType = value; 
-    }
+    //dynamic - 0x50
     
-    public void ResetRingType(string taskName)
-    {
-        LoggingHandler.LogMessage($"Resetting Rings Ring Type: 0x{(UIntPtr)SpawnDataPtr:X} :: Old: {_extraVarsPtr->RingType} :: New: {_backupExtraVars.RingType}", taskName, LogLevel.Debug);
-        _extraVarsPtr->RingType = _backupExtraVars.RingType;
-    }
-    
-    public ushort NumberOfRings
-    { 
-        get => _extraVarsPtr->NumberOfRings;
-        set => _extraVarsPtr->NumberOfRings = value; 
-    }
-    
-    public void ResetNumberOfRings(string taskName)
-    {
-        LoggingHandler.LogMessage($"Resetting Rings Number Of Rings: 0x{(UIntPtr)SpawnDataPtr:X} :: Old: {_extraVarsPtr->NumberOfRings} :: New: {_backupExtraVars.NumberOfRings}", taskName, LogLevel.Debug);
-        _extraVarsPtr->NumberOfRings = _backupExtraVars.NumberOfRings;
-    }
-    
-    public float Length
-    { 
-        get => _extraVarsPtr->Length;
-        set => _extraVarsPtr->Length = value; 
-    }
-    
-    public void ResetLength(string taskName)
-    {
-        LoggingHandler.LogMessage($"Resetting Rings Length: 0x{(UIntPtr)SpawnDataPtr:X} :: Old: {_extraVarsPtr->Length} :: New: {_backupExtraVars.Length}", taskName, LogLevel.Debug);
-        _extraVarsPtr->Length = _backupExtraVars.Length;
-    }
-    
-    public float Radius
-    { 
-        get => _extraVarsPtr->Radius;
-        set => _extraVarsPtr->Radius = value; 
-    }
-    
-    public void ResetRadius(string taskName)
-    {
-        LoggingHandler.LogMessage($"Resetting Rings Radius: 0x{(UIntPtr)SpawnDataPtr:X} :: Old: {_extraVarsPtr->Radius} :: New: {_backupExtraVars.Radius}", taskName, LogLevel.Debug);
-        _extraVarsPtr->Radius = _backupExtraVars.Radius;
-    }
+    //NOT POSSIBLE TO EDIT SPAWNED IN RINGS WITHOUT DESPAWNING AND RESPAWNING
+    public RingType RingType => _extraVarsPtr->RingType;
+    public ushort NumberOfRings => _extraVarsPtr->NumberOfRings;
+    public float Length => _extraVarsPtr->Length;
+    public float Radius => _extraVarsPtr->Radius;
     
 }
 
@@ -418,28 +424,33 @@ public unsafe class HintRingSpawnData: StageObjSpawnData
         _backupExtraVars = *_extraVarsPtr;
     }
     
-    public ushort VoiceLineID
-    { 
-        get => _extraVarsPtr->VoiceLineID;
-        set => _extraVarsPtr->VoiceLineID = value; 
+    
+    public float VoiceLineID => _extraVarsPtr->VoiceLineID;
+
+    public void SetVoiceLineID(ushort value, string taskName)
+    {
+        _extraVarsPtr->VoiceLineID = value;
+        ChangeValueAtDynamicMem(value, 0x18, taskName);
     }
     
     public void ResetVoiceLineID(string taskName)
     {
         LoggingHandler.LogMessage($"Resetting Hint Ring VoiceLine ID: 0x{(UIntPtr)SpawnDataPtr:X} :: Old: {_extraVarsPtr->VoiceLineID} :: New: {_backupExtraVars.VoiceLineID}", taskName, LogLevel.Debug);
-        _extraVarsPtr->VoiceLineID = _backupExtraVars.VoiceLineID;
+        SetVoiceLineID(_backupExtraVars.VoiceLineID, taskName);
     }
     
-    public bool DeleteByLinkOff
-    { 
-        get => _extraVarsPtr->DeleteByLinkOff;
-        set => _extraVarsPtr->DeleteByLinkOff = value; 
+    public bool DeleteByLinkOff => _extraVarsPtr->DeleteByLinkOff;
+
+    public void SetDeleteByLinkOff(bool value, string taskName)
+    {
+        _extraVarsPtr->DeleteByLinkOff = value;
+        ChangeValueAtDynamicMem(value, 0x18, taskName);
     }
     
     public void ResetDeleteByLinkOff(string taskName)
     {
         LoggingHandler.LogMessage($"Resetting Hint Ring DeleteByLinkOff ID: 0x{(UIntPtr)SpawnDataPtr:X} :: Old: {_extraVarsPtr->DeleteByLinkOff} :: New: {_backupExtraVars.DeleteByLinkOff}", taskName, LogLevel.Debug);
-        _extraVarsPtr->DeleteByLinkOff = _backupExtraVars.DeleteByLinkOff;
+        SetDeleteByLinkOff(_backupExtraVars.DeleteByLinkOff, taskName);
     }
 }
 

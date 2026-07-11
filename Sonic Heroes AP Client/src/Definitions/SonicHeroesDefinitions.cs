@@ -874,6 +874,12 @@ public static class SonicHeroesDefinitions
     public const int RingSanityIndividualNoActStartId = 0x40000;
     public const int RingSanityIndividualAct1StartId = 0x50000;
     public const int RingSanityIndividualAct2StartId = 0x60000;
+
+
+    public static bool IsValidPtr(UIntPtr address)
+    {
+        return Mod.ModuleBase < address && address < int.MaxValue;
+    }
     
 
     /// <summary>

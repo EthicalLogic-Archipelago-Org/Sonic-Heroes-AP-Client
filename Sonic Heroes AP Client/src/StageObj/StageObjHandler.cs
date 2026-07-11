@@ -5,6 +5,12 @@ using Sonic_Heroes_AP_Client.Archipelago;
 using Sonic_Heroes_AP_Client.Definitions;
 using Sonic_Heroes_AP_Client.GameState;
 using Sonic_Heroes_AP_Client.Logging;
+using Sonic_Heroes_AP_Client.StageObj.DashPanel;
+using Sonic_Heroes_AP_Client.StageObj.HintRing;
+using Sonic_Heroes_AP_Client.StageObj.MovingRuinPlatform;
+using Sonic_Heroes_AP_Client.StageObj.Ring;
+using Sonic_Heroes_AP_Client.StageObj.SingleSpring;
+using Sonic_Heroes_AP_Client.StageObj.TripleSpring;
 
 namespace Sonic_Heroes_AP_Client.StageObj;
 
@@ -164,7 +170,7 @@ public static class StageObjHandler
             currState = true;
         LoggingHandler.LogMessage($"StageObjItemReceived. Obj: {stageObjTypes} Team: {team} Region: {region} currState: {IsStageObjUnlockedForTeamRegion(stageObjTypes, team, region, taskName)} newState: {!currState} forceunlock: {forceunlock} forcelock: {forcelock}", taskName, LogLevel.SuperDebug);
         Mod.SaveDataHandler.CustomSaveData.StageObjSpawnSaveData[team][stageObjTypes] = !currState;
-        StageObjHandleChangingUnlockStatusSingle(stageObjTypes, team, region, taskName);
+        //StageObjRefreshSpawnStatus(taskName); called in ItemHandler after
     }
 
     public static bool IsStageObjUnlockedForTeamRegion(StageObjTypes stageObjTypes, Team team, Region region, string taskName)
@@ -178,19 +184,22 @@ public static class StageObjHandler
     }
 
 
-    public static void StageObjHandleChangingUnlockStatusSingle(StageObjTypes stageObjTypes, Team team, Region? region, string taskName)
+    public static void StageObjRefreshSpawnStatus(string taskName)
     {
-        try
+        if (!GameStateHandler.InGame(taskName, true))
+            return;
+        
+        Team? team = GameStateHandler.GetCurrentStory(taskName);
+        LevelId? level = GameStateHandler.GetCurrentLevel(taskName);
+        Act? act = GameStateHandler.GetCurrentAct(taskName);
+
+        if (team == null || level == null || act == null)
         {
-            foreach (var spawnData in GetInLevelObjsOfType(stageObjTypes, taskName))
-            {
-                spawnData.SpawnOrDespawnObj(IsStageObjUnlockedForTeamRegion(stageObjTypes, team, region ?? Region.SpecialStage, taskName), taskName);
-            }
+            LoggingHandler.LogMessage($"Null in StageObjRefreshSpawnStatus. team: {team} level: {level} act: {act}", taskName, LogLevel.Debug);
+            return;
         }
-        catch (Exception e)
-        {
-            LoggingHandler.LogMessage($"{e}", taskName, LogLevel.Error);
-        }
+        
+        HandleStageObjs((Team)team, (LevelId)level, (Act)act, taskName);
     }
     
     
@@ -238,8 +247,6 @@ public static class StageObjHandler
     {
         //Obj Table is loaded into memory already
         //look into making changes to Objs like coords and the like
-        BackupStageObjTable(taskName);
-
         Team? team = GameStateHandler.GetCurrentStory(taskName);
         LevelId? level = GameStateHandler.GetCurrentLevel(taskName);
         Act? act = GameStateHandler.GetCurrentAct(taskName);
@@ -250,11 +257,13 @@ public static class StageObjHandler
             return;
         }
         
+        BackupStageObjTable((Team)team, (LevelId)level, (Act)act, taskName);
+        
         HandleStageObjs((Team)team, (LevelId)level, (Act)act, taskName);
     }
 
 
-    public static void BackupStageObjTable(string taskName)
+    public static void BackupStageObjTable(Team team, LevelId level, Act act, string taskName)
     {
         try
         {
@@ -295,6 +304,8 @@ public static class StageObjHandler
                 {
                     case StageObjTypes.SingleSpring:
                         var singleSpring = (SingleSpringSpawnData)spawnData;
+                        //preprocess here
+                        
                         StageObjData.BackupStageObjSpawnData[spawnData.Type].Add(singleSpring);
                         break;
 
@@ -513,34 +524,17 @@ public static class StageObjHandler
             {
                 cageObj.SpawnOrDespawnObj(false, taskName);
             }
-
-            switch (level)
-            {
-                case LevelId.SeasideHill:
-
-                    
-                    //Seaside Hill Dark
-
-                    //Dash Panels to Unspawn (move down 1000)
-                    
-                    //27.0046f, 30f, -4897f
-                    //1.9955f, 30f, -4911f
-                    //30.9955f, 30f, -4897f 
-                    
-                    //105f, 30f, -5345f
-                    //130f, 30f, -5370f
-                    //156f, 30.1880f, -5345f 
-                    
-                    //102.0002f, 32.3710f, -5930.8240f      <- should keep this one
-                    //129.0002f, 34.2878f, -5955.8240f
-                    //154.0002f, 32.3710f, -5930.8240f 
-                    
-                    
-                    break;
-                
-                
-                
-            }
+            
+            SingleSpringHandler.HandleDarkSingleSpringAfterBackup(level, act, taskName);
+            //TripleSpringHandler.Handle
+            RingHandler.HandleDarkRingAfterBackup(level, act, taskName);
+            HintRingHandler.HandleDarkHintRingAfterBackup(level, act, taskName);
+            DashPanelHandler.HandleDarkDashPanelAfterBackup(level, act, taskName);
+            
+            
+            MovingRuinPlatformHandler.HandleDarkMovingRuinsAfterBackup(level, act, taskName);
+            
+            
         }
         catch (Exception e)
         {
@@ -585,5 +579,4 @@ public static class StageObjHandler
         }
         
     }
-    
 }

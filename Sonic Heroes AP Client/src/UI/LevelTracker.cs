@@ -1204,36 +1204,36 @@ public class LevelTracker
                 switch (ability)
                 {
                     //Triangle Jump needs both Jump and Homing Attack (have neither)
-                    case Ability.TriangleJump when !Mod.SaveDataHandler.CustomSaveData.UnlockSaveData[team].AbilityUnlocks[region][Ability.Jump] && !Mod.SaveDataHandler.CustomSaveData.UnlockSaveData[team].AbilityUnlocks[region][Ability.HomingAttack]:
+                    case Ability.TriangleJump when !AbilityCharacterManager.HasAbilityForTeamRegion(team, region, Ability.Jump, taskName) && !AbilityCharacterManager.HasAbilityForTeamRegion(team, region, Ability.HomingAttack, taskName):
                     //Invis needs Jump and Tornado (have neither)
-                    case Ability.Invisibility when !Mod.SaveDataHandler.CustomSaveData.UnlockSaveData[team].AbilityUnlocks[region][Ability.Jump] && !Mod.SaveDataHandler.CustomSaveData.UnlockSaveData[team].AbilityUnlocks[region][Ability.Tornado]:
+                    case Ability.Invisibility when !AbilityCharacterManager.HasAbilityForTeamRegion(team, region, Ability.Jump, taskName) && !AbilityCharacterManager.HasAbilityForTeamRegion(team, region, Ability.Tornado, taskName):
                     //Ultimate Fire Dunk needs both Jump and Fire Dunk (have neither)
-                    case Ability.UltimateFireDunk when !Mod.SaveDataHandler.CustomSaveData.UnlockSaveData[team].AbilityUnlocks[region][Ability.Jump] && !Mod.SaveDataHandler.CustomSaveData.UnlockSaveData[team].AbilityUnlocks[region][Ability.FireDunk]:
+                    case Ability.UltimateFireDunk when !AbilityCharacterManager.HasAbilityForTeamRegion(team, region, Ability.Jump, taskName) && !AbilityCharacterManager.HasAbilityForTeamRegion(team, region, Ability.FireDunk, taskName):
                         return _needsMultipleItemsColor;
                     
                     
                     //Homing Attack needs Jump
-                    case Ability.HomingAttack when !Mod.SaveDataHandler.CustomSaveData.UnlockSaveData[team].AbilityUnlocks[region][Ability.Jump]:
+                    case Ability.HomingAttack when !AbilityCharacterManager.HasAbilityForTeamRegion(team, region, Ability.Jump, taskName):
                     //Tornado needs Jump
-                    case Ability.Tornado when !Mod.SaveDataHandler.CustomSaveData.UnlockSaveData[team].AbilityUnlocks[region][Ability.Jump]:
+                    case Ability.Tornado when !AbilityCharacterManager.HasAbilityForTeamRegion(team, region, Ability.Jump, taskName):
                     //Rocket Accel needs second character
                     case Ability.RocketAccel when !(Mod.SaveDataHandler.CustomSaveData.UnlockSaveData[team].CharsUnlocked[FormationChar.Power] || Mod.SaveDataHandler.CustomSaveData.UnlockSaveData[team].CharsUnlocked[FormationChar.Flying]):
                     //Light Attack Needs Jump
-                    case Ability.LightAttack when !Mod.SaveDataHandler.CustomSaveData.UnlockSaveData[team].AbilityUnlocks[region][Ability.Jump]:
+                    case Ability.LightAttack when !AbilityCharacterManager.HasAbilityForTeamRegion(team, region, Ability.Jump, taskName):
                     //Amy Hammer Hover needs Jump
-                    case Ability.AmyHammerHover when !Mod.SaveDataHandler.CustomSaveData.UnlockSaveData[team].AbilityUnlocks[region][Ability.Jump]:
+                    case Ability.AmyHammerHover when !AbilityCharacterManager.HasAbilityForTeamRegion(team, region, Ability.Jump, taskName):
                     //Flight needs Thundershoot
-                    case Ability.Flight when !Mod.SaveDataHandler.CustomSaveData.UnlockSaveData[team].AbilityUnlocks[region][Ability.Thundershoot]:
+                    case Ability.Flight when !AbilityCharacterManager.HasAbilityForTeamRegion(team, region, Ability.Thundershoot, taskName):
                     //Triangle Jump needs both Jump and Homing Attack (have one but not both)
-                    case Ability.TriangleJump when !Mod.SaveDataHandler.CustomSaveData.UnlockSaveData[team].AbilityUnlocks[region][Ability.Jump] || !Mod.SaveDataHandler.CustomSaveData.UnlockSaveData[team].AbilityUnlocks[region][Ability.HomingAttack]:
+                    case Ability.TriangleJump when !AbilityCharacterManager.HasAbilityForTeamRegion(team, region, Ability.Jump, taskName) || !AbilityCharacterManager.HasAbilityForTeamRegion(team, region, Ability.HomingAttack, taskName):
                     //Combo Needs Power Attack
-                    case Ability.ComboFinisher when !Mod.SaveDataHandler.CustomSaveData.UnlockSaveData[team].AbilityUnlocks[region][Ability.PowerAttack]:
+                    case Ability.ComboFinisher when !AbilityCharacterManager.HasAbilityForTeamRegion(team, region, Ability.PowerAttack, taskName):
                     //Fire Dunk Needs Jump
-                    case Ability.FireDunk when !Mod.SaveDataHandler.CustomSaveData.UnlockSaveData[team].AbilityUnlocks[region][Ability.Jump]:
+                    case Ability.FireDunk when !AbilityCharacterManager.HasAbilityForTeamRegion(team, region, Ability.Jump, taskName):
                     //Ultimate Fire Dunk needs both Jump and Fire Dunk (have one but not both)
-                    case Ability.UltimateFireDunk when !Mod.SaveDataHandler.CustomSaveData.UnlockSaveData[team].AbilityUnlocks[region][Ability.Jump] || !Mod.SaveDataHandler.CustomSaveData.UnlockSaveData[team].AbilityUnlocks[region][Ability.FireDunk]:
+                    case Ability.UltimateFireDunk when !AbilityCharacterManager.HasAbilityForTeamRegion(team, region, Ability.Jump, taskName) || !AbilityCharacterManager.HasAbilityForTeamRegion(team, region, Ability.FireDunk, taskName):
                     //Belly Flop Needs Jump
-                    case Ability.BellyFlop when !Mod.SaveDataHandler.CustomSaveData.UnlockSaveData[team].AbilityUnlocks[region][Ability.Jump]:
+                    case Ability.BellyFlop when !AbilityCharacterManager.HasAbilityForTeamRegion(team, region, Ability.Jump, taskName):
                         return _needsAnotherItemColor;
 
                     case Ability.Jump:

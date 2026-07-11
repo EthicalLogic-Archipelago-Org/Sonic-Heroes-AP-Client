@@ -385,9 +385,7 @@ public static class ObjSanityHandler
                 ChaotixChecksCompleted[((int)levelId - 2) + (14 * (int)act)] = newCount;
             }
 
-            var checkSize = storyId == Team.Dark
-                ? Mod.ArchipelagoHandler.SlotData.DarksanityCheckSize
-                : 1;
+            var checkSize = storyId == Team.Dark ? Mod.ArchipelagoHandler.SlotData.DarksanityCheckSize : 1;
             var levelOffset = ((int)levelId - 2) * 100;
             if (storyId == Team.Chaotix && levelId == LevelId.GrandMetropolis)
                 levelOffset = act == Act.Act1 ? 0x1086 : 0x10DB;

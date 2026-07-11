@@ -103,6 +103,7 @@ public static class ItemHandler
             if (handled)
             {
                 LoggingHandler.LogMessage($"Item Handled in HandleItem", taskName, LogLevel.SuperDebug);
+                StageObjHandler.StageObjRefreshSpawnStatus(taskName);
                 Mod.LevelSelectManager.RecalculateOpenLevels(taskName: taskName);
                 Mod.ArchipelagoHandler.Save(taskName);
                 return;

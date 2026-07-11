@@ -31,7 +31,7 @@ public struct ObjSpawnData
     public int PaddingInt2;
     public int PtrPrevObj;
     public int PtrNextObj;
-    public int PtrDynamicMem;
+    public UIntPtr PtrDynamicMem;
     
     public string ToString(string taskName)
     {

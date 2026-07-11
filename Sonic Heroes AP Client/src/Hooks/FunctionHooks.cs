@@ -726,7 +726,7 @@ public static class FunctionHooks
             }
                 
 
-            if (Mod.SaveDataHandler.CustomSaveData!.UnlockSaveData[team].AbilityUnlocks[region][Ability.PowerAttack])
+            if (AbilityCharacterManager.HasAbilityForTeamRegion(team, region, Ability.PowerAttack, TaskName))
             {
                 LoggingHandler.LogMessage($"PowerAttackGiveSFAMeter End (Have Power Attack)", TaskName, LogLevel.SuperDebug);
                 //do nothing if have power attack
@@ -877,7 +877,7 @@ public static class FunctionHooks
             }
                 
 
-            var canFly = AbilityCharacterManager.CanFly((Team)team!, region, TaskName);
+            var canFly = AbilityCharacterManager.HasAbilityForTeamRegion((Team)team, region, Ability.Flight, TaskName);
             
             if (!canFly)
                 Memory.Instance.SafeWrite((UIntPtr)(eax + 0x994), BitConverter.GetBytes(AbilityCharacterGameWrites.LockedFlightMeterValue));

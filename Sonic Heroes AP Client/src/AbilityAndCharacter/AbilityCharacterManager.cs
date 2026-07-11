@@ -90,15 +90,30 @@ public static class AbilityCharacterManager
         return hasChars && hasAbilities;
     }
 
-    public static bool CanFly(Team team, Region region, string taskName)
+    public static bool HasAbilityForTeamRegion(Team team, Region region, Ability ability, string taskName)
     {
         if (Mod.SaveDataHandler.CustomSaveData == null)
         {
-            LoggingHandler.LogMessage($"Custom Save Data Null in CanFly", taskName, LogLevel.Error);
+            LoggingHandler.LogMessage($"Custom Save Data Null in HasAbilityForTeamRegion", taskName, LogLevel.Error);
             return false;
         }
 
-        return Mod.SaveDataHandler.CustomSaveData.UnlockSaveData[team].AbilityUnlocks[region][Ability.Flight] && Mod.SaveDataHandler.CustomSaveData.UnlockSaveData[team].AbilityUnlocks[region][Ability.Thundershoot];
+        if (ability is Ability.Flight)
+        {
+            return HasAbilityForTeamRegion(team, region, Ability.Thundershoot, taskName) && Mod.SaveDataHandler.CustomSaveData.UnlockSaveData[team].AbilityUnlocks[region][ability];
+        }
+        return Mod.SaveDataHandler.CustomSaveData.UnlockSaveData[team].AbilityUnlocks[region][ability];
+    }
+
+    public static bool HasComboHeightForTeamRegion(Team team, Region region, string taskName)
+    {
+        return team is Team.Sonic or Team.SuperHardMode && HasAbilityForTeamRegion(team, region, Ability.ComboFinisher, taskName);
+    }
+
+    public static bool CanBypassDashPanelInBadSpot(Team team, Region region, string taskName)
+    {
+        return HasAbilityForTeamRegion(team, region, Ability.Jump, taskName);
+        //return HasAbilityForTeamRegion(team, region, Ability.Jump, taskName) || (HasAbilityForTeamRegion(team, region, Ability.Thundershoot, taskName) && Mod.SaveDataHandler.CustomSaveData.UnlockSaveData[team].CharsUnlocked[FormationChar.Flying] && (Mod.SaveDataHandler.CustomSaveData.UnlockSaveData[team].CharsUnlocked[FormationChar.Flying] || Mod.SaveDataHandler.CustomSaveData.UnlockSaveData[team].CharsUnlocked[FormationChar.Power]));
     }
 
 
@@ -230,8 +245,8 @@ public static class AbilityCharacterManager
                 {
                     //Homing
                     //Triangle Jump
-                    bool hasHoming = Mod.SaveDataHandler.CustomSaveData.UnlockSaveData[(Team)team].AbilityUnlocks[(Region)region][Ability.HomingAttack];
-                    bool hasTriangleJump = Mod.SaveDataHandler.CustomSaveData.UnlockSaveData[(Team)team].AbilityUnlocks[(Region)region][Ability.TriangleJump];
+                    bool hasHoming = HasAbilityForTeamRegion((Team)team, (Region)region, Ability.HomingAttack, taskName);
+                    bool hasTriangleJump = HasAbilityForTeamRegion((Team)team, (Region)region, Ability.TriangleJump, taskName);
                     if (hasHoming && hasTriangleJump)
                     {
                         UnlockAbilityForRegion((Team)team, (Region)region, Ability.HomingAttack, taskName);
@@ -252,8 +267,8 @@ public static class AbilityCharacterManager
                 {
                     //Tornado
                     //Invis
-                    bool hasTornado = Mod.SaveDataHandler.CustomSaveData.UnlockSaveData[(Team)team].AbilityUnlocks[(Region)region][Ability.Tornado];
-                    bool hasInvis = Mod.SaveDataHandler.CustomSaveData.UnlockSaveData[(Team)team].AbilityUnlocks[(Region)region][Ability.Invisibility];
+                    bool hasTornado = HasAbilityForTeamRegion((Team)team, (Region)region, Ability.Tornado, taskName);
+                    bool hasInvis = HasAbilityForTeamRegion((Team)team, (Region)region, Ability.Invisibility, taskName);
                     if (hasTornado && hasInvis)
                     {
                         UnlockAbilityForRegion((Team)team, (Region)region, Ability.Tornado, taskName);
@@ -274,7 +289,7 @@ public static class AbilityCharacterManager
                 {
                     //Thundershoot
                     //Flight
-                    bool hasThundershoot = Mod.SaveDataHandler.CustomSaveData.UnlockSaveData[(Team)team].AbilityUnlocks[(Region)region][Ability.Thundershoot];
+                    bool hasThundershoot = HasAbilityForTeamRegion((Team)team, (Region)region, Ability.Thundershoot, taskName);
                     bool hasFlight = Mod.SaveDataHandler.CustomSaveData.UnlockSaveData[(Team)team].AbilityUnlocks[(Region)region][Ability.Flight];
                     
                     if (hasThundershoot && hasFlight)
@@ -305,8 +320,8 @@ public static class AbilityCharacterManager
                     //Combo Finisher
                     
                     //currently not doing Fire Dunk/Belly Flop
-                    bool hasPowerAttack = Mod.SaveDataHandler.CustomSaveData.UnlockSaveData[(Team)team].AbilityUnlocks[(Region)region][Ability.PowerAttack];
-                    bool hasCombo = Mod.SaveDataHandler.CustomSaveData.UnlockSaveData[(Team)team].AbilityUnlocks[(Region)region][Ability.ComboFinisher];
+                    bool hasPowerAttack = HasAbilityForTeamRegion((Team)team, (Region)region, Ability.PowerAttack, taskName);
+                    bool hasCombo = HasAbilityForTeamRegion((Team)team, (Region)region, Ability.ComboFinisher, taskName);
                     if (hasPowerAttack && hasCombo)
                     {
                         UnlockAbilityForRegion((Team)team, (Region)region, Ability.PowerAttack, taskName);
