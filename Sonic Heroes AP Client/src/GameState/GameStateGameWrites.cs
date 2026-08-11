@@ -103,7 +103,7 @@ public static class GameStateGameWrites
     /// <summary>
     /// Writes over the Game Assembly to change the functionality of losing rings when getting hit.
     /// </summary>
-    /// <param name="ringsLost">Number of rings to loss when getting hit. If negative, restore vanilla behavior (all rings)</param>
+    /// <param name="ringsLost">Number of rings to loss when getting hit. If less than 20, restore vanilla behavior (all rings)</param>
     public static void SetRingLoss(int ringsLost)
     {
         byte[] classicRingLoss = [0x8B, 0xC, 0x85, 0xC, 0xD7, 0x9D, 0x0];

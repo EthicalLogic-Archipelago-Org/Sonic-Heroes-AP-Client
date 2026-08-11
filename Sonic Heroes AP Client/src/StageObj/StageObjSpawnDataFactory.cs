@@ -36,9 +36,12 @@ public static class StageObjSpawnDataFactory
                 return new RainbowHoopsSpawnData(spawnDataPtr);
             case StageObjTypes.Checkpoint:
                 return new CheckpointSpawnData(spawnDataPtr);
+            
+            
+            // case StageObjTypes.Alligator:
+            //     return new StageObjSpawnData(spawnDataPtr);
             default:
                 return new StageObjSpawnData(spawnDataPtr);
         }
     }
-    
 }

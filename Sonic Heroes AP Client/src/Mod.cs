@@ -90,6 +90,7 @@ public class Mod: ModBase
     //tasks here
     //main task/thread exists as well (obv)
     public static CancellationTokenSource? Cts;
+    public static CancellationTokenSource? CheckBobsledCts;
     
     public static Task ConnectionTask = new (Tasks.ConnectionTask.APConnectionTask);
     public static Task CheckReceivedItemsTask;
@@ -98,7 +99,6 @@ public class Mod: ModBase
     public static Task FreezeTrapTask = new (TrapTask.FreezeTrapTask);
     public static Task CharmyTrapTask = new (TrapTask.CharmyTrapTask);
     
-    public static CancellationTokenSource? CheckBobsledCts;
     public static Task CheckBobsledOnEnterLevelTask;
     
     //public static Task PositionMappingTask = new (Tasks.ConnectionTask.APConnectionTask);

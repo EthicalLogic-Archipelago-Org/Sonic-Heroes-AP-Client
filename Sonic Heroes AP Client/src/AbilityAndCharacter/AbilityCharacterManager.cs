@@ -36,7 +36,6 @@ public static class AbilityCharacterManager
                 }
             }
             
-            
             HandleAbilityUnlockCheck(Team.Sonic, Region.Ocean, taskName, true);
         }
         catch (Exception e)
@@ -374,7 +373,7 @@ public static class AbilityCharacterManager
         }
         else
         {
-            UnlockAbilityForRegion((Team)team, (Region)region, (Ability)ability, taskName);
+            UnlockAbilityForRegion((Team)team, (Region)region, (Ability)ability, taskName, forceunlock, forcelock);
             PollUpdates(taskName);
         }
     }
