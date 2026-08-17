@@ -55,7 +55,7 @@ public static class LoggingHandler
             message = $"ImGuiHook Not Initialized (did you add d3d8.dll to game directory?";
             level = LogLevel.Error;
             log = new (source: source, message: message, logLevel: level, taskSource: taskName);
-            log.LogMessage();
+            // log.LogMessage();
             _imguiHookInitializedWarning = true;
             return;
         }

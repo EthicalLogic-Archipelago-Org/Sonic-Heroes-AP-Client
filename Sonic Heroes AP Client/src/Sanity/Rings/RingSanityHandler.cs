@@ -40,7 +40,7 @@ public static class RingSanityHandler
         {
             if (team is not Team.SuperHardMode && (bool)Mod.LevelSelectManager.IsThisSanityEnabled(team, SanityType.RingSanityGroup, taskName, true))
             {
-                var idToSend = act is Act.Act1 ? SonicHeroesDefinitions.RingSanityGroupAct1StartId + ringData.StartIDOffset + RingsData.AllRings.IndexOf(ringData) - ringData.ID_offset : SonicHeroesDefinitions.RingSanityGroupAct2StartId + RingsData.AllRings.IndexOf(ringData) - ringData.ID_offset;
+                var idToSend = act is Act.Act1 ? SonicHeroesDefinitions.RingSanityGroupAct1StartId + RingsData.AllRings.IndexOf(ringData) - ringData.ID_offset : SonicHeroesDefinitions.RingSanityGroupAct2StartId + RingsData.AllRings.IndexOf(ringData) - ringData.ID_offset;
                 LoggingHandler.LogMessage($"Sending Location ID: 0x{idToSend:X} ", taskName, LogLevel.Debug);
                 Mod.ArchipelagoHandler.CheckLocation(id: idToSend);
                 return;
@@ -48,7 +48,7 @@ public static class RingSanityHandler
             
             if ((bool)Mod.LevelSelectManager.IsThisSanityEnabled(team, SanityType.RingSanityGroup, taskName))
             {
-                var idToSend = SonicHeroesDefinitions.RingSanityGroupNoActStartId + ringData.StartIDOffset + RingsData.AllRings.IndexOf(ringData) - ringData.ID_offset;
+                var idToSend = SonicHeroesDefinitions.RingSanityGroupNoActStartId + RingsData.AllRings.IndexOf(ringData) - ringData.ID_offset;
                 LoggingHandler.LogMessage($"Sending Location ID: 0x{idToSend:X} ", taskName, LogLevel.Debug);
                 Mod.ArchipelagoHandler.CheckLocation(id: idToSend);
                 return;
