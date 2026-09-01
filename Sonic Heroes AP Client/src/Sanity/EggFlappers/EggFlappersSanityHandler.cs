@@ -10,46 +10,6 @@ namespace Sonic_Heroes_AP_Client.Sanity.EggFlappers;
 
 public static class EggFlappersSanityHandler
 {
-
-    public static void CheckEggFlapper(EggFlappersData.EggFlapperData eggFlapper, Act act, string taskName)
-    {
-        try
-        {
-            var log = $"Got Team {eggFlapper.Team} {eggFlapper.LevelId} Act {act} {eggFlapper.LocName} At {eggFlapper.Region}";
-            LoggingHandler.LogMessage(log, taskName, LogLevel.APAction);
-
-            int enemyIndex = EggFlappersData.AllEggFlappers.IndexOf(eggFlapper);
-            
-            var baseEnemy = EnemyData.AllEnemies.First(x => x.Team ==  eggFlapper.Team && x.LevelId == eggFlapper.LevelId && x.StageObjType == StageObjTypes.EggFlapper && x.EnemyIndex == enemyIndex);
-            
-            ObjSanityHandler.HandleEnemyKilledObjSanity(baseEnemy, act, taskName);
-
-            if (eggFlapper.Team is not Team.SuperHardMode && (bool)Mod.LevelSelectManager.IsThisSanityEnabled(eggFlapper.Team, SanityType.EggFlapperSanity, taskName, true))
-            {
-                var idToSend = act is Act.Act1
-                    ? SonicHeroesDefinitions.EggFlapperAct1StartId + enemyIndex
-                    : SonicHeroesDefinitions.EggFlapperAct2StartId + enemyIndex;
-                LoggingHandler.LogMessage($"Sending Location ID: 0x{idToSend:X} ", taskName, LogLevel.Debug);
-                Mod.ArchipelagoHandler.CheckLocation(id: idToSend);
-                return;
-            }
-
-            if ((bool)Mod.LevelSelectManager.IsThisSanityEnabled(eggFlapper.Team, SanityType.EggFlapperSanity, taskName))
-            {
-                var idToSend = SonicHeroesDefinitions.EggFlapperNoActStartId + enemyIndex;
-                LoggingHandler.LogMessage($"Sending Location ID: 0x{idToSend:X} ", taskName, LogLevel.Debug);
-                Mod.ArchipelagoHandler.CheckLocation(id: idToSend);
-                return;
-            }
-            
-        }
-        catch (Exception e)
-        {
-            LoggingHandler.LogMessage($"{e}", taskName, LogLevel.Error);
-        }
-    }
-
-    
     public static unsafe void HandleEggFlapperKilledStaticPtr(UIntPtr staticPtr, string taskName)
     {
         try
@@ -75,7 +35,7 @@ public static class EggFlappersSanityHandler
                 if (distance < StageObjData.DistanceForMatchingStageObj)
                 {
                     numMatched++;
-                    CheckEggFlapper(enemyData, (Act)act, taskName);
+                    CheckEggFlapper(enemyData, (Team)team, (LevelId)level, (Act)act, taskName);
                 }
             }
 
@@ -91,5 +51,113 @@ public static class EggFlappersSanityHandler
         }
         
     }
+    
+    
+    
+    private static void CheckEggFlapper(EggFlappersData.EggFlapperData eggFlapper, Team team, LevelId level, Act act, string taskName)
+    {
+        try
+        {
+            var log = $"Got Team {team} {level} Act {act} {eggFlapper.LocName} At {eggFlapper.Region}";
+            LoggingHandler.LogMessage(log, taskName, LogLevel.Debug);
+            
+            EnemyData.BaseEnemyData baseEnemy = EnemyData.AllEnemies.First(x => x.Team == eggFlapper.Team && x.LevelId == eggFlapper.LevelId && x.StageObjType == StageObjTypes.EggFlapper && x.SpawnCoords == eggFlapper.SpawnCoords);
+            ObjSanityHandler.HandleEnemyKilledObjSanity(baseEnemy, act, taskName);
+            
+            if (Mod.LevelSelectManager.EnabledSanities[team][SanityType.EggFlapperSanityGroup] is not SanityEnableStatus.Disabled)
+            {
+                CheckEggFlapperGroup(eggFlapper, team, level, act, taskName);
+            }
+        
+            if (Mod.LevelSelectManager.EnabledSanities[team][SanityType.EggFlapperSanityFull] is not SanityEnableStatus.Disabled)
+            {
+                CheckEggFlapperFull(eggFlapper, team, level, act, taskName);
+            }
+
+        }
+        catch (Exception e)
+        {
+            LoggingHandler.LogMessage($"{e}", taskName, LogLevel.Error);
+        }
+        
+    }
+    
+    
+    public static void CheckEggFlapperGroup(EggFlappersData.EggFlapperData eggFlapperData, Team team, LevelId level, Act act, string taskName)
+    {
+        try
+        {
+            EggFlappersData.EggFlapperData eggFlapper = eggFlapperData;
+
+            if (eggFlapper.IdOffsetGroup == StageObjData.IdOffsetInvalid)
+            {
+                eggFlapper = EggFlappersData.AllEggFlappers.First(x => x.Group == eggFlapper.Group * -1);
+            }
+            
+            bool oneSetEnabled = (bool)Mod.LevelSelectManager.IsThisSanityEnabled(team, SanityType.EggFlapperSanityGroup, taskName, oneSet: true)!;
+            bool bothActsEnabled = team is not Team.SuperHardMode && (bool)Mod.LevelSelectManager.IsThisSanityEnabled(team, SanityType.EggFlapperSanityGroup, taskName, bothActs: true)!;
+            
+            if (oneSetEnabled)
+            {
+                var startOffset = SonicHeroesDefinitions.EggFlapperSanityGroupNoActStartIdOffset;
+                var idToSend = startOffset + EggFlappersData.AllEggFlappers.IndexOf(eggFlapper) - eggFlapper.IdOffsetGroup;
+                LoggingHandler.LogMessage($"Sending Location ID: 0x{idToSend:X} ", taskName, LogLevel.Debug);
+                Mod.ArchipelagoHandler.CheckLocation(id: idToSend);
+            }
+
+            if (bothActsEnabled)
+            {
+                var startOffset = act is Act.Act1 ? SonicHeroesDefinitions.EggFlapperSanityGroupActAStartIdOffset : SonicHeroesDefinitions.EggFlapperSanityGroupActBStartIdOffset;
+                var idToSend = startOffset + EggFlappersData.AllEggFlappers.IndexOf(eggFlapper) - eggFlapper.IdOffsetGroup;
+                LoggingHandler.LogMessage($"Sending Location ID: 0x{idToSend:X} ", taskName, LogLevel.Debug);
+                Mod.ArchipelagoHandler.CheckLocation(id: idToSend);
+            }
+
+        }
+        catch (Exception e)
+        {
+            LoggingHandler.LogMessage($"{e}", taskName, LogLevel.Error);
+        }
+    }
+    
+    
+    public static void CheckEggFlapperFull(EggFlappersData.EggFlapperData eggFlapperData, Team team, LevelId level, Act act, string taskName)
+    {
+        try
+        {
+            EggFlappersData.EggFlapperData eggFlapper = eggFlapperData;
+            if (eggFlapper.IdOffsetFull < 0)
+            {
+                //this should never happen
+                LoggingHandler.LogMessage($"Egg Flapper Full matched on invalid Egg Flapper", taskName, LogLevel.Error);
+                return;
+            }
+            
+            bool oneSetEnabled = (bool)Mod.LevelSelectManager.IsThisSanityEnabled(team, SanityType.EggFlapperSanityFull, taskName, oneSet: true)!;
+            bool bothActsEnabled = team is not Team.SuperHardMode && (bool)Mod.LevelSelectManager.IsThisSanityEnabled(team, SanityType.EggFlapperSanityFull, taskName, bothActs: true)!;
+            
+            if (oneSetEnabled)
+            {
+                var startOffset = SonicHeroesDefinitions.EggFlapperSanityFullNoActStartIdOffset;
+                var idToSend = startOffset + EggFlappersData.AllEggFlappers.IndexOf(eggFlapper) - eggFlapper.IdOffsetFull;
+                LoggingHandler.LogMessage($"Sending Location ID: 0x{idToSend:X} ", taskName, LogLevel.Debug);
+                Mod.ArchipelagoHandler.CheckLocation(id: idToSend);
+            }
+
+            if (bothActsEnabled)
+            {
+                var startOffset = act is Act.Act1 ? SonicHeroesDefinitions.EggFlapperSanityFullActAStartIdOffset : SonicHeroesDefinitions.EggFlapperSanityFullActBStartIdOffset;
+                var idToSend = startOffset + EggFlappersData.AllEggFlappers.IndexOf(eggFlapper) - eggFlapper.IdOffsetFull;
+                LoggingHandler.LogMessage($"Sending Location ID: 0x{idToSend:X} ", taskName, LogLevel.Debug);
+                Mod.ArchipelagoHandler.CheckLocation(id: idToSend);
+            }
+        }
+        catch (Exception e)
+        {
+            LoggingHandler.LogMessage($"{e}", taskName, LogLevel.Error);
+        }
+        
+    }
+    
     
 }

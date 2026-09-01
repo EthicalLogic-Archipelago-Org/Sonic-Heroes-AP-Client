@@ -5,6 +5,7 @@ using Sonic_Heroes_AP_Client.Definitions;
 using Sonic_Heroes_AP_Client.GameState;
 using Sonic_Heroes_AP_Client.LevelSpawnPosition;
 using Sonic_Heroes_AP_Client.Logging;
+using Sonic_Heroes_AP_Client.StageObj;
 using Sonic_Heroes_AP_Client.UI;
 
 namespace Sonic_Heroes_AP_Client.Sanity.Checkpoints;
@@ -49,43 +50,54 @@ public static class CheckpointSanityHandler
                     if  (distance < minDistance)
                         minDistance = distance;
 
-                    if (distance < 100f || matchingcheckpoints.Count() == 1)
+                    if (distance < StageObjData.DistanceForMatchingStageObj || matchingcheckpoints.Count() == 1)
                     {
                         var log = $"Got Team {team} {level} {act} Checkpoint #{checkpointsinlevel.IndexOf(matchingcheckpoints[i]) + 1}";
                         LoggingHandler.LogMessage(log, taskName, LogLevel.APAction);
 
                         LevelSpawnUnlockHandler.UnlockSpecificSpawnData((Team)team!, (LevelId)level!, checkpointsinlevel.IndexOf(matchingcheckpoints[i]) + 1, taskName);
 
+                        
+                        bool oneSetEnabled = (bool)Mod.LevelSelectManager.IsThisSanityEnabled((Team)team, SanityType.CheckpointSanity, taskName, oneSet: true)!;
+                        bool bothActsEnabled = team is not Team.SuperHardMode && (bool)Mod.LevelSelectManager.IsThisSanityEnabled((Team)team, SanityType.CheckpointSanity, taskName, bothActs: true)!;
 
                         if (team is Team.SuperHardMode)
                         {
-                            if (!(bool)Mod.LevelSelectManager.IsThisSanityEnabled((Team)team, SanityType.CheckpointSanity, taskName)!)
+                            if (!oneSetEnabled)
                                 return;
                             
                             Mod.ArchipelagoHandler.CheckLocation(SonicHeroesDefinitions.CheckpointAct2StartId + CheckpointData.AllCheckpoints.IndexOf(matchingcheckpoints[i]));
                         }
                         else
                         {
-                            if (!(bool)Mod.LevelSelectManager.IsThisSanityEnabled((Team)team, SanityType.CheckpointSanity, taskName)! && !(bool)Mod.LevelSelectManager.IsThisSanityEnabled((Team)team, SanityType.CheckpointSanity, taskName, true)!)
+                            if (!oneSetEnabled && !bothActsEnabled)
                             {
                                 LoggingHandler.LogMessage($"Checkpoint Sanity is Disabled", taskName, LogLevel.Debug);
                                 return;
                             }
 
-                            if ((bool)Mod.LevelSelectManager.IsThisSanityEnabled((Team)team, SanityType.CheckpointSanity, taskName)! && !(bool)Mod.LevelSelectManager.IsThisSanityEnabled((Team)team, SanityType.CheckpointSanity, taskName, true)!)
-                                //1 set
+                            if (oneSetEnabled)
+                            {
                                 Mod.ArchipelagoHandler.CheckLocation(SonicHeroesDefinitions.CheckpointNoActStartId + CheckpointData.AllCheckpoints.IndexOf(matchingcheckpoints[i]));
-                            else if (act is Act.Act1)
-                                Mod.ArchipelagoHandler.CheckLocation(SonicHeroesDefinitions.CheckpointAct1StartId + CheckpointData.AllCheckpoints.IndexOf(matchingcheckpoints[i]));
-                            else
-                                Mod.ArchipelagoHandler.CheckLocation(SonicHeroesDefinitions.CheckpointAct2StartId + CheckpointData.AllCheckpoints.IndexOf(matchingcheckpoints[i]));
+                            }
+
+                            if (bothActsEnabled)
+                            {
+                                if (act is Act.Act1)
+                                {
+                                    Mod.ArchipelagoHandler.CheckLocation(SonicHeroesDefinitions.CheckpointAct1StartId + CheckpointData.AllCheckpoints.IndexOf(matchingcheckpoints[i]));
+                                }
+                                else
+                                {
+                                    Mod.ArchipelagoHandler.CheckLocation(SonicHeroesDefinitions.CheckpointAct2StartId + CheckpointData.AllCheckpoints.IndexOf(matchingcheckpoints[i]));
+                                }
+                            }
                         }
                         break;
                     }
                     if (i == matchingcheckpoints.Count() - 1)
                     {
-                        var log =
-                            $"No Matching Checkpoint Found: {team} {level} {act} {priority} with coords: {checkPointPos}. Smallest Distance is {minDistance}";
+                        var log = $"No Matching Checkpoint Found: {team} {level} {act} {priority} with coords: {checkPointPos}. Smallest Distance is {minDistance}";
                         LoggingHandler.LogMessage(log, taskName, LogLevel.APAction);
                     }
                 }

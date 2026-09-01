@@ -29,6 +29,7 @@ public enum FillerSHItem
     FlyLevelUp,
     TeamLevelUp,
     TeamBlastFiller,
+    RingMagnet,
     
     StealthTrap = 0x8100,
     FreezeTrap,

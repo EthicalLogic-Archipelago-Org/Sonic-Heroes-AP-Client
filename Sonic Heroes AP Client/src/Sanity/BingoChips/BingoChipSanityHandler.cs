@@ -18,7 +18,7 @@ public static class BingoChipSanityHandler
             //var chipNum = *(byte*)*(varPtr + 0x4);
             var chipNum = *(byte*)(chip->PtrVars + 0x4);
             
-            LoggingHandler.LogMessage($"Congrats on Getting Chip! VarPtr: 0x{chip->PtrVars:X} ChipNum: {chipNum} LinkID: {chip->LinkId} Static Addr: 0x{(int)staticPtr:x} Dynamic Ptr: 0x{chip->PtrDynamicMem:X}", taskName, LogLevel.Info);
+            LoggingHandler.LogMessage($"Congrats on Getting Chip! VarPtr: 0x{chip->PtrVars:X} ChipNum: {chipNum} LinkID: {chip->LinkId} Static Addr: 0x{(int)staticPtr:x} Dynamic Ptr: 0x{chip->PtrDynamicMem:X}", taskName, LogLevel.Debug);
         }
         catch (Exception e)
         {

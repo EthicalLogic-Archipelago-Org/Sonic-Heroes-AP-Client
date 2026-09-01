@@ -8,88 +8,6 @@ namespace Sonic_Heroes_AP_Client.Sanity.Rings;
 
 public static class RingSanityHandler
 {
-    public static unsafe void CheckRing(RingsData.RingData ringData, UIntPtr staticPtr, int ringIndex, Team team, Act act, string taskName)
-    {
-        try
-        {
-            // var staticRingCount =  *(byte*)(*(int*)(staticPtr + 0x2C) + 0x2);
-            //LoggingHandler.LogMessage($"StaticRingCount: {staticRingCount}", TaskName, LogLevel.SuperDebug);
-            LoggingHandler.LogMessage($"Got {ringData.LevelId} {team} Act {act} {ringData.Region} {ringData.LocName} Ring # {ringIndex + 1}", taskName, LogLevel.GameAction);
-
-            if (Mod.LevelSelectManager.EnabledSanities[team][SanityType.RingSanityGroup] is not SanityEnableStatus.Disabled)
-            {
-                CheckRingGroup(ringData, ringIndex, team, act, taskName);
-            }
-            
-            if (Mod.LevelSelectManager.EnabledSanities[team][SanityType.RingSanityIndividual] is not SanityEnableStatus.Disabled)
-            {
-                CheckRingIndividual(ringData, ringIndex, team, act, taskName);
-            }
-        }
-        catch (Exception e)
-        {
-            LoggingHandler.LogMessage($"{e}", taskName, LogLevel.Error);
-        }
-    }
-
-
-
-    public static unsafe void CheckRingGroup(RingsData.RingData ringData, int ringIndex, Team team, Act act, string taskName)
-    {
-        try
-        {
-            if (team is not Team.SuperHardMode && (bool)Mod.LevelSelectManager.IsThisSanityEnabled(team, SanityType.RingSanityGroup, taskName, true))
-            {
-                var idToSend = act is Act.Act1 ? SonicHeroesDefinitions.RingSanityGroupAct1StartId + RingsData.AllRings.IndexOf(ringData) - ringData.ID_offset : SonicHeroesDefinitions.RingSanityGroupAct2StartId + RingsData.AllRings.IndexOf(ringData) - ringData.ID_offset;
-                LoggingHandler.LogMessage($"Sending Location ID: 0x{idToSend:X} ", taskName, LogLevel.Debug);
-                Mod.ArchipelagoHandler.CheckLocation(id: idToSend);
-                return;
-            }
-            
-            if ((bool)Mod.LevelSelectManager.IsThisSanityEnabled(team, SanityType.RingSanityGroup, taskName))
-            {
-                var idToSend = SonicHeroesDefinitions.RingSanityGroupNoActStartId + RingsData.AllRings.IndexOf(ringData) - ringData.ID_offset;
-                LoggingHandler.LogMessage($"Sending Location ID: 0x{idToSend:X} ", taskName, LogLevel.Debug);
-                Mod.ArchipelagoHandler.CheckLocation(id: idToSend);
-                return;
-            }
-        }
-        catch (Exception e)
-        {
-            LoggingHandler.LogMessage($"{e}", taskName, LogLevel.Error);
-        }
-    }
-    
-    public static unsafe void CheckRingIndividual(RingsData.RingData ringData, int ringIndex, Team team, Act act, string taskName)
-    {
-        try
-        {
-            if (team is not Team.SuperHardMode && (bool)Mod.LevelSelectManager.IsThisSanityEnabled(team, SanityType.RingSanityIndividual, taskName, true))
-            {
-                var idToSend = act is Act.Act1 ? SonicHeroesDefinitions.RingSanityIndividualAct1StartId + ringData.StartIDOffset + ringIndex : SonicHeroesDefinitions.RingSanityIndividualAct2StartId + ringData.StartIDOffset + ringIndex;
-                LoggingHandler.LogMessage($"Sending Location ID: 0x{idToSend:X} ", taskName, LogLevel.Debug);
-                Mod.ArchipelagoHandler.CheckLocation(id: idToSend);
-                return;
-            }
-            
-            if ((bool)Mod.LevelSelectManager.IsThisSanityEnabled(team, SanityType.HintRingSanity, taskName))
-            {
-                var idToSend = SonicHeroesDefinitions.RingSanityIndividualNoActStartId + ringData.StartIDOffset + ringIndex;
-                LoggingHandler.LogMessage($"Sending Location ID: 0x{idToSend:X} ", taskName, LogLevel.Debug);
-                Mod.ArchipelagoHandler.CheckLocation(id: idToSend);
-                return;
-            }
-        }
-        catch (Exception e)
-        {
-            LoggingHandler.LogMessage($"{e}", taskName, LogLevel.Error);
-        }
-        
-        
-        
-    }
-    
-
     public static unsafe void HandleRingSanity(UIntPtr dynamicPtr, int ringIndex, string taskName)
     {
         try
@@ -137,7 +55,7 @@ public static class RingSanityHandler
 
                 if (distance < StageObjData.DistanceForMatchingStageObj)
                 {
-                    CheckRing(ringGroupData, (UIntPtr)staticPtr, ringIndex, (Team)team, (Act)act, taskName);
+                    CheckRing(ringGroupData, (UIntPtr)staticPtr, ringIndex, (Team)team, (LevelId)level, (Act)act, taskName);
                 }
             }
         }
@@ -146,6 +64,127 @@ public static class RingSanityHandler
             LoggingHandler.LogMessage($"{e}", taskName, LogLevel.Error);
         }
     }
+        
+    
+    
+    public static void CheckRing(RingsData.RingData ringData, UIntPtr staticPtr, int ringIndex, Team team, LevelId level, Act act, string taskName)
+    {
+        try
+        {
+            // var staticRingCount =  *(byte*)(*(int*)(staticPtr + 0x2C) + 0x2);
+            // LoggingHandler.LogMessage($"StaticRingCount: {staticRingCount}", TaskName, LogLevel.SuperDebug);
+            LoggingHandler.LogMessage($"Got {ringData.LevelId} {team} Act {act} {ringData.Region} {ringData.LocName} Ring # {ringIndex + 1}", taskName, LogLevel.Debug);
+
+            if (Mod.LevelSelectManager.EnabledSanities[team][SanityType.RingSanityGroup] is not SanityEnableStatus.Disabled)
+            {
+                CheckRingGroup(ringData, ringIndex, team, level, act, taskName);
+            }
+            
+            if (Mod.LevelSelectManager.EnabledSanities[team][SanityType.RingSanityFull] is not SanityEnableStatus.Disabled)
+            {
+                CheckRingFull(ringData, ringIndex, team, act, taskName);
+            }
+        }
+        catch (Exception e)
+        {
+            LoggingHandler.LogMessage($"{e}", taskName, LogLevel.Error);
+        }
+    }
+
+    public static void CheckRingGroup(RingsData.RingData ringData, int ringIndex, Team team, LevelId level, Act act, string taskName)
+    {
+        try
+        {
+            RingsData.RingData ring = ringData;
+
+            if (ring.IdOffsetGroup == StageObjData.IdOffsetInvalid)
+            {
+                ring = RingsData.AllRings.First(x => x.Group == ring.Group * -1);
+            }
+            
+            bool oneSetEnabled = (bool)Mod.LevelSelectManager.IsThisSanityEnabled(team, SanityType.RingSanityGroup, taskName, oneSet: true)!;
+            bool bothActsEnabled = team is not Team.SuperHardMode && (bool)Mod.LevelSelectManager.IsThisSanityEnabled(team, SanityType.RingSanityGroup, taskName, bothActs: true)!;
+
+
+            if (oneSetEnabled)
+            {
+                var startOffset = SonicHeroesDefinitions.RingSanityGroupNoActStartIdOffset;
+                var idToSend = startOffset + RingsData.AllRings.IndexOf(ring) - ring.IdOffsetGroup;
+                LoggingHandler.LogMessage($"Sending Location ID: 0x{idToSend:X} ", taskName, LogLevel.Debug);
+                Mod.ArchipelagoHandler.CheckLocation(id: idToSend);
+            }
+
+            if (bothActsEnabled)
+            {
+                var startOffset = act is Act.Act1 ? SonicHeroesDefinitions.RingSanityGroupActAStartIdOffset : SonicHeroesDefinitions.RingSanityGroupActBStartIdOffset;
+                var idToSend = startOffset + RingsData.AllRings.IndexOf(ring) - ring.IdOffsetGroup;
+                LoggingHandler.LogMessage($"Sending Location ID: 0x{idToSend:X} ", taskName, LogLevel.Debug);
+                Mod.ArchipelagoHandler.CheckLocation(id: idToSend);
+            }
+        }
+        catch (Exception e)
+        {
+            LoggingHandler.LogMessage($"{e}", taskName, LogLevel.Error);
+        }
+    }
+    
+    public static unsafe void CheckRingFull(RingsData.RingData ringData, int ringIndex, Team team, Act act, string taskName)
+    {
+        try
+        {
+            RingsData.RingData ring = ringData;
+
+            if (ring.IdOffsetFull == StageObjData.IdOffsetInvalid)
+            {
+                //this should never happen
+                LoggingHandler.LogMessage($"Ring Full matched on invalid Ring", taskName, LogLevel.Error);
+                return;
+            }
+            
+            bool oneSetEnabled = (bool)Mod.LevelSelectManager.IsThisSanityEnabled(team, SanityType.RingSanityFull, taskName, oneSet: true)!;
+            bool bothActsEnabled = team is not Team.SuperHardMode && (bool)Mod.LevelSelectManager.IsThisSanityEnabled(team, SanityType.RingSanityFull, taskName, bothActs: true)!;
+            
+            if (oneSetEnabled)
+            {
+                var startOffset = SonicHeroesDefinitions.RingSanityFullNoActStartIdOffset;
+
+                if (ring.IdOffsetFull < 0)
+                {
+                    startOffset += ring.IdOffsetFull * -1;
+                }
+                else
+                {
+                    startOffset += ring.IdOffsetFull;
+                }
+                var idToSend = startOffset + ringIndex;
+                LoggingHandler.LogMessage($"Sending Location ID: 0x{idToSend:X} ", taskName, LogLevel.Debug);
+                Mod.ArchipelagoHandler.CheckLocation(id: idToSend);
+            }
+
+            if (bothActsEnabled)
+            {
+                var startOffset = act is Act.Act1 ? SonicHeroesDefinitions.RingSanityFullActAStartIdOffset : SonicHeroesDefinitions.RingSanityFullActBStartIdOffset;
+                
+                if (ring.IdOffsetFull < 0)
+                {
+                    startOffset += ring.IdOffsetFull * -1;
+                }
+                else
+                {
+                    startOffset += ring.IdOffsetFull;
+                }
+                var idToSend = startOffset + ringIndex;
+                LoggingHandler.LogMessage($"Sending Location ID: 0x{idToSend:X} ", taskName, LogLevel.Debug);
+                Mod.ArchipelagoHandler.CheckLocation(id: idToSend);
+            }
+        }
+        catch (Exception e)
+        {
+            LoggingHandler.LogMessage($"{e}", taskName, LogLevel.Error);
+        }
+    }
+    
+
     
     
     

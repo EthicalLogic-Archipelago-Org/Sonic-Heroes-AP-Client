@@ -628,9 +628,9 @@ public class LevelTracker
             HandleAbilityDisplayForRegion(team, region, taskName);
             
             //ObjSanity
-            if (!(bool)Mod.LevelSelectManager.IsThisSanityEnabled(Team.Dark, SanityType.ObjSanity, taskName)!)
+            if (!((bool)Mod.LevelSelectManager.IsThisSanityEnabled(team, SanityType.ObjSanity, taskName, oneSet: true) || (bool)Mod.LevelSelectManager.IsThisSanityEnabled(team, SanityType.ObjSanity, taskName, bothActs: true)))
                 return;
-            if (!Mod.LevelSelectManager.IsThisTeamActEnabled(Team.Dark, Act.Act2, taskName))
+            if (!Mod.LevelSelectManager.IsThisTeamActEnabled(team, Act.Act2, taskName))
                 return;
             var sanityLevelOffset = SonicHeroesDefinitions.DarkObjSanityStartId + ((int)level - 2) * 100;
             var sanityMax = 100 / Mod.ArchipelagoHandler.SlotData.DarksanityCheckSize;
@@ -698,7 +698,7 @@ public class LevelTracker
             HandleAbilityDisplayForRegion(team, region, taskName);
             
             //ObjSanity
-            if (!(bool)Mod.LevelSelectManager.IsThisSanityEnabled(team, SanityType.ObjSanity, taskName)!)
+            if (!((bool)Mod.LevelSelectManager.IsThisSanityEnabled(team, SanityType.ObjSanity, taskName, oneSet: true) || (bool)Mod.LevelSelectManager.IsThisSanityEnabled(team, SanityType.ObjSanity, taskName, bothActs: true)))
                 return;
             if (!Mod.LevelSelectManager.IsThisTeamActEnabled(team, Act.Act2, taskName))
                 return;
@@ -770,7 +770,7 @@ public class LevelTracker
             
             //ObjSanity
             var chaotixData = _chaotixsanityData[(int)level];
-            if (!(bool)Mod.LevelSelectManager.IsThisSanityEnabled(team, SanityType.ObjSanity, taskName)!)
+            if (!((bool)Mod.LevelSelectManager.IsThisSanityEnabled(team, SanityType.ObjSanity, taskName, oneSet: true) || (bool)Mod.LevelSelectManager.IsThisSanityEnabled(team, SanityType.ObjSanity, taskName, bothActs: true)))
                 return;
 
             if (Mod.LevelSelectManager.IsThisTeamActEnabled(team, Act.Act1, taskName))
@@ -930,7 +930,7 @@ public class LevelTracker
             //Super Hard does not have keys
             if (!(bool)Mod.LevelSelectManager.IsThisTeamEnabled(team, taskName)!)
                 return;
-            if (!((bool)Mod.LevelSelectManager.IsThisSanityEnabled(team, SanityType.KeySanity, taskName)! || (bool)Mod.LevelSelectManager.IsThisSanityEnabled(team, SanityType.KeySanity, taskName, true)!))
+            if (!((bool)Mod.LevelSelectManager.IsThisSanityEnabled(team, SanityType.KeySanity, taskName, oneSet: true) || (bool)Mod.LevelSelectManager.IsThisSanityEnabled(team, SanityType.KeySanity, taskName, bothActs: true)))
                 return;
             
             var text = $"Bonus Keys";
@@ -958,7 +958,7 @@ public class LevelTracker
                 //draw left circles
                 for (var i = 0; i < keylist.Count; i++)
                 {
-                    var bonusKeyChecked = (bool)Mod.LevelSelectManager.IsThisSanityEnabled(team, SanityType.KeySanity, taskName)! 
+                    var bonusKeyChecked = (bool)Mod.LevelSelectManager.IsThisSanityEnabled(team, SanityType.KeySanity, taskName, oneSet: true)
                         //1 set
                         ? Mod.ArchipelagoHandler.IsLocationChecked(SonicHeroesDefinitions.BonusKeyNoActStartId + bonusKeyOffset + i) 
                         //both sets
@@ -974,7 +974,7 @@ public class LevelTracker
                 //draw right circles
                 for (var i = 0; i < keylist.Count; i++)
                 {
-                    var bonusKeyChecked = (bool)Mod.LevelSelectManager.IsThisSanityEnabled(team, SanityType.KeySanity, taskName)! 
+                    var bonusKeyChecked = (bool)Mod.LevelSelectManager.IsThisSanityEnabled(team, SanityType.KeySanity, taskName, oneSet: true)
                         //1 set
                         ? Mod.ArchipelagoHandler.IsLocationChecked(SonicHeroesDefinitions.BonusKeyNoActStartId + bonusKeyOffset + i) 
                         //both sets
@@ -1002,16 +1002,16 @@ public class LevelTracker
                 if (!((bool)Mod.LevelSelectManager.IsThisTeamEnabled(team, taskName)! || (bool)Mod.LevelSelectManager.IsThisTeamEnabled(Team.SuperHardMode, taskName)!))
                     return;
                 
-                if (!((bool)Mod.LevelSelectManager.IsThisSanityEnabled(team, SanityType.CheckpointSanity, taskName)! ||
-                      (bool)Mod.LevelSelectManager.IsThisSanityEnabled(team, SanityType.CheckpointSanity, taskName, true)! ||
-                      (bool)Mod.LevelSelectManager.IsThisSanityEnabled(Team.SuperHardMode, SanityType.CheckpointSanity, taskName)!))
+                if (!((bool)Mod.LevelSelectManager.IsThisSanityEnabled(team, SanityType.CheckpointSanity, taskName, oneSet: true)! ||
+                      (bool)Mod.LevelSelectManager.IsThisSanityEnabled(team, SanityType.CheckpointSanity, taskName, bothActs: true)! ||
+                      (bool)Mod.LevelSelectManager.IsThisSanityEnabled(Team.SuperHardMode, SanityType.CheckpointSanity, taskName, oneSet: true)!))
                     return;
             }
             else
             {
                 if (!(bool)Mod.LevelSelectManager.IsThisTeamEnabled(team, taskName)!)
                     return;
-                if (!((bool)Mod.LevelSelectManager.IsThisSanityEnabled(team, SanityType.CheckpointSanity, taskName)! || (bool)Mod.LevelSelectManager.IsThisSanityEnabled(team, SanityType.CheckpointSanity, taskName, true)!))
+                if (!((bool)Mod.LevelSelectManager.IsThisSanityEnabled(team, SanityType.CheckpointSanity, taskName, oneSet: true)! || (bool)Mod.LevelSelectManager.IsThisSanityEnabled(team, SanityType.CheckpointSanity, taskName, bothActs: true)!))
                     return;
             }
             
@@ -1034,12 +1034,12 @@ public class LevelTracker
             
             //if not Sonic, then draw if Act 1 enabled (already checked sanity enabled)
             //if Sonic, then draw if Sonic Sanity on and Act 1 enabled
-            if (team is not Team.Sonic && Mod.LevelSelectManager.IsThisTeamActEnabled(team, Act.Act1, taskName) || (team is Team.Sonic && ((bool)Mod.LevelSelectManager.IsThisSanityEnabled(team, SanityType.CheckpointSanity, taskName)! || (bool)Mod.LevelSelectManager.IsThisSanityEnabled(team, SanityType.CheckpointSanity, taskName, true)!) && Mod.LevelSelectManager.IsThisTeamActEnabled(team, Act.Act1, taskName)))
+            if ((team is not Team.Sonic && Mod.LevelSelectManager.IsThisTeamActEnabled(team, Act.Act1, taskName)) || (team is Team.Sonic && ((bool)Mod.LevelSelectManager.IsThisSanityEnabled(team, SanityType.CheckpointSanity, taskName, oneSet: true)! || (bool)Mod.LevelSelectManager.IsThisSanityEnabled(team, SanityType.CheckpointSanity, taskName, bothActs: true)!) && Mod.LevelSelectManager.IsThisTeamActEnabled(team, Act.Act1, taskName)))
             {
                 //draw left circles
                 for (var i = 0; i < checkpointlist.Count; i++)
                 {
-                    var checkpointChecked = (bool)Mod.LevelSelectManager.IsThisSanityEnabled(team, SanityType.CheckpointSanity, taskName)! 
+                    var checkpointChecked = (bool)Mod.LevelSelectManager.IsThisSanityEnabled(team, SanityType.CheckpointSanity, taskName, oneSet: true)! 
                         //1 set
                         ? Mod.ArchipelagoHandler.IsLocationChecked(SonicHeroesDefinitions.CheckpointNoActStartId + checkpointOffset + i) 
                         //both sets
@@ -1049,14 +1049,14 @@ public class LevelTracker
                 }
             }
 
-            if (Mod.LevelSelectManager.IsThisTeamActEnabled(team, Act.Act2, taskName) || (team is Team.Sonic && (bool)Mod.LevelSelectManager.IsThisTeamEnabled(Team.SuperHardMode, taskName)! && (bool)Mod.LevelSelectManager.IsThisSanityEnabled(Team.SuperHardMode, SanityType.CheckpointSanity, taskName)!))
+            if (Mod.LevelSelectManager.IsThisTeamActEnabled(team, Act.Act2, taskName) || (team is Team.Sonic && (bool)Mod.LevelSelectManager.IsThisTeamEnabled(Team.SuperHardMode, taskName)! && (bool)Mod.LevelSelectManager.IsThisSanityEnabled(Team.SuperHardMode, SanityType.CheckpointSanity, taskName, oneSet: true)!))
             {
                 if (Mod.LevelSelectManager.IsThisTeamActEnabled(team, Act.Act2, taskName))
                 {
                     //Sonic Here
                     for (var i = 0; i < checkpointlist.Count; i++)
                     {
-                        var checkpointChecked = (bool)Mod.LevelSelectManager.IsThisSanityEnabled(team, SanityType.CheckpointSanity, taskName)! 
+                        var checkpointChecked = (bool)Mod.LevelSelectManager.IsThisSanityEnabled(team, SanityType.CheckpointSanity, taskName, oneSet: true)! 
                             //1 set
                             ? Mod.ArchipelagoHandler.IsLocationChecked(SonicHeroesDefinitions.CheckpointNoActStartId + checkpointOffset + i) 
                             //both sets

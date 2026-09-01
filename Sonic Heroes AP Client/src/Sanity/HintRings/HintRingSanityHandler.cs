@@ -8,38 +8,6 @@ namespace Sonic_Heroes_AP_Client.Sanity.HintRings;
 
 public static class HintRingSanityHandler
 {
-
-    public static unsafe void CheckHintRing(HintRingsData.HintRingData hintRingData, Act act, string taskName)
-    {
-        try
-        {
-            var log = $"Got Team {hintRingData.Team} {hintRingData.LevelId} Act {act} Hint Ring At {hintRingData.Region}";
-            LoggingHandler.LogMessage(log, taskName, LogLevel.APAction);
-
-            if (hintRingData.Team is not Team.SuperHardMode && (bool)Mod.LevelSelectManager.IsThisSanityEnabled(hintRingData.Team, SanityType.HintRingSanity, taskName, true))
-            {
-                var idToSend = act is Act.Act1
-                    ? SonicHeroesDefinitions.HintRingAct1StartId + HintRingsData.AllHintRings.IndexOf(hintRingData)
-                    : SonicHeroesDefinitions.HintRingAct2StartId + HintRingsData.AllHintRings.IndexOf(hintRingData);
-                LoggingHandler.LogMessage($"Sending Location ID: 0x{idToSend:X} ", taskName, LogLevel.Debug);
-                Mod.ArchipelagoHandler.CheckLocation(id: idToSend);
-                return;
-            }
-
-            if ((bool)Mod.LevelSelectManager.IsThisSanityEnabled(hintRingData.Team, SanityType.HintRingSanity, taskName))
-            {
-                var idToSend = SonicHeroesDefinitions.HintRingNoActStartId + HintRingsData.AllHintRings.IndexOf(hintRingData);
-                LoggingHandler.LogMessage($"Sending Location ID: 0x{idToSend:X} ", taskName, LogLevel.Debug);
-                Mod.ArchipelagoHandler.CheckLocation(id: idToSend);
-                return;
-            }
-        }
-        catch (Exception e)
-        {
-            LoggingHandler.LogMessage($"{e}", taskName, LogLevel.Error);
-        }
-    }
-    
     
     public static unsafe void HandleHintRingSanity(UIntPtr dynamicPtr, string taskName)
     {
@@ -66,7 +34,7 @@ public static class HintRingSanityHandler
 
                 if (distance < StageObjData.DistanceForMatchingStageObj)
                 {
-                    CheckHintRing(hintRingData, (Act)act, taskName);
+                    CheckHintRing(hintRingData, (Team)team, (LevelId)level, (Act)act, taskName);
                 }
             }
         }
@@ -77,5 +45,96 @@ public static class HintRingSanityHandler
     }
     
     
+    public static void CheckHintRing(HintRingsData.HintRingData hintRingData, Team team, LevelId level, Act act, string taskName)
+    {
+        var log = $"Got Team {team} {level} Act {act} Hint Ring At {hintRingData.Region}";
+        LoggingHandler.LogMessage(log, taskName, LogLevel.Debug);
+        
+        if (Mod.LevelSelectManager.EnabledSanities[team][SanityType.HintRingSanityGroup] is not SanityEnableStatus.Disabled)
+        {
+            CheckHintRingGroup(hintRingData, team, level, act, taskName);
+        }
+        
+        if (Mod.LevelSelectManager.EnabledSanities[team][SanityType.HintRingSanityFull] is not SanityEnableStatus.Disabled)
+        {
+            CheckHintRingFull(hintRingData, team, level, act, taskName);
+        }
+    }
+
+
+    public static void CheckHintRingGroup(HintRingsData.HintRingData hintRingData, Team team, LevelId level, Act act, string taskName)
+    {
+        try
+        {
+            HintRingsData.HintRingData hintRing = hintRingData;
+            if (hintRing.IdOffsetGroup == StageObjData.IdOffsetInvalid)
+            {
+                hintRing = HintRingsData.AllHintRings.First(x => x.Group == hintRing.Group * -1);
+            }
+            
+            
+            bool oneSetEnabled = (bool)Mod.LevelSelectManager.IsThisSanityEnabled(team, SanityType.HintRingSanityGroup, taskName, oneSet: true)!;
+            bool bothActsEnabled = team is not Team.SuperHardMode && (bool)Mod.LevelSelectManager.IsThisSanityEnabled(team, SanityType.HintRingSanityGroup, taskName, bothActs: true)!;
+
+
+            if (oneSetEnabled)
+            {
+                var startOffset = SonicHeroesDefinitions.HintRingSanityGroupNoActStartIdOffset;
+                var idToSend = startOffset + HintRingsData.AllHintRings.IndexOf(hintRing) - hintRing.IdOffsetGroup;
+                LoggingHandler.LogMessage($"Sending Location ID: 0x{idToSend:X} ", taskName, LogLevel.Debug);
+                Mod.ArchipelagoHandler.CheckLocation(id: idToSend);
+            }
+
+            if (bothActsEnabled)
+            {
+                var startOffset = act is Act.Act1 ? SonicHeroesDefinitions.HintRingSanityGroupActAStartIdOffset : SonicHeroesDefinitions.HintRingSanityGroupActBStartIdOffset;
+                var idToSend = startOffset + HintRingsData.AllHintRings.IndexOf(hintRing) - hintRing.IdOffsetGroup;
+                LoggingHandler.LogMessage($"Sending Location ID: 0x{idToSend:X} ", taskName, LogLevel.Debug);
+                Mod.ArchipelagoHandler.CheckLocation(id: idToSend);
+            }
+        }
+        catch (Exception e)
+        {
+            LoggingHandler.LogMessage($"{e}", taskName, LogLevel.Error);
+        }
+    }
+
+
+    public static void CheckHintRingFull(HintRingsData.HintRingData hintRingData, Team team, LevelId level, Act act, string taskName)
+    {
+        try
+        {
+            HintRingsData.HintRingData hintRing = hintRingData;
+            if (hintRing.IdOffsetFull < 0)
+            {
+                //this should never happen
+                LoggingHandler.LogMessage($"Hint Ring Full matched on invalid Hint Ring", taskName, LogLevel.Error);
+                return;
+            }
+            
+            bool oneSetEnabled = (bool)Mod.LevelSelectManager.IsThisSanityEnabled(team, SanityType.HintRingSanityFull, taskName, oneSet: true)!;
+            bool bothActsEnabled = team is not Team.SuperHardMode && (bool)Mod.LevelSelectManager.IsThisSanityEnabled(team, SanityType.HintRingSanityFull, taskName, bothActs: true)!;
+            
+            if (oneSetEnabled)
+            {
+                var startOffset = SonicHeroesDefinitions.HintRingSanityFullNoActStartIdOffset;
+                var idToSend = startOffset + HintRingsData.AllHintRings.IndexOf(hintRing) - hintRing.IdOffsetFull;
+                LoggingHandler.LogMessage($"Sending Location ID: 0x{idToSend:X} ", taskName, LogLevel.Debug);
+                Mod.ArchipelagoHandler.CheckLocation(id: idToSend);
+            }
+
+            if (bothActsEnabled)
+            {
+                var startOffset = act is Act.Act1 ? SonicHeroesDefinitions.HintRingSanityFullActAStartIdOffset : SonicHeroesDefinitions.HintRingSanityFullActBStartIdOffset;
+                var idToSend = startOffset + HintRingsData.AllHintRings.IndexOf(hintRing) - hintRing.IdOffsetFull;
+                LoggingHandler.LogMessage($"Sending Location ID: 0x{idToSend:X} ", taskName, LogLevel.Debug);
+                Mod.ArchipelagoHandler.CheckLocation(id: idToSend);
+            }
+        }
+        catch (Exception e)
+        {
+            LoggingHandler.LogMessage($"{e}", taskName, LogLevel.Error);
+        }
+    }
     
 }

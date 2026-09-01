@@ -124,7 +124,8 @@ public static class ObjSanityHandler
             }
 
             int currentAmount = Mod.SaveDataHandler.CustomSaveData.DarkObjSanityEnemyKills[(LevelId)levelId].Count(x => x);
-            currentAmount = Math.Min(currentAmount, 90);
+            // TODO handle this better
+            currentAmount = Math.Min(currentAmount, 99);
             SetTEnemyScoreManagerEnemyKilledCount(currentAmount, taskName);
         }
         catch (Exception e)
@@ -156,12 +157,12 @@ public static class ObjSanityHandler
             {
                 return;
             }
-            if (enemyData.Team is Team.Dark && !(act is Act.Act2 && Mod.LevelSelectManager.IsThisTeamActEnabled(enemyData.Team, act, taskName) && (bool)Mod.LevelSelectManager.IsThisSanityEnabled(enemyData.Team, SanityType.ObjSanity, taskName)))
+            if (enemyData.Team is Team.Dark && !(act is Act.Act2 && Mod.LevelSelectManager.IsThisTeamActEnabled(enemyData.Team, act, taskName) && (bool)Mod.LevelSelectManager.IsThisSanityEnabled(enemyData.Team, SanityType.ObjSanity, taskName, oneSet: true)))
             {
                 LoggingHandler.LogMessage($"Team Dark but no ObjSanity in HandleEnemyKilledObjSanity", taskName,  LogLevel.Debug);
                 return;
             }
-            if (enemyData.Team is Team.Chaotix && !(Mod.LevelSelectManager.IsThisTeamActEnabled(enemyData.Team, act, taskName) && (bool)Mod.LevelSelectManager.IsThisSanityEnabled(enemyData.Team, SanityType.ObjSanity, taskName)))
+            if (enemyData.Team is Team.Chaotix && !(Mod.LevelSelectManager.IsThisTeamActEnabled(enemyData.Team, act, taskName) && ((bool)Mod.LevelSelectManager.IsThisSanityEnabled(enemyData.Team, SanityType.ObjSanity, taskName, oneSet: true) || (bool)Mod.LevelSelectManager.IsThisSanityEnabled(enemyData.Team, SanityType.ObjSanity, taskName, bothActs: true))))
             {
                 LoggingHandler.LogMessage($"Team Chaotix but no ObjSanity in HandleEnemyKilledObjSanity", taskName,  LogLevel.Debug); 
                 return;
@@ -226,10 +227,6 @@ public static class ObjSanityHandler
     
     
     
-    
-    
-    
-    
     public static void CheckRingSanity(int newCount, string taskName)
     {
         try
@@ -238,15 +235,14 @@ public static class ObjSanityHandler
                 return;
             var storyId = GameStateHandler.GetCurrentStory(taskName);
 
-            if (storyId != Team.Rose && storyId != Team.Chaotix || !(bool)Mod.LevelSelectManager.IsThisSanityEnabled((Team)storyId, SanityType.ObjSanity, taskName)!)
+            if ((storyId != Team.Rose && storyId != Team.Chaotix) || !((bool)Mod.LevelSelectManager.IsThisSanityEnabled((Team)storyId, SanityType.ObjSanity, taskName, oneSet: true) || (bool)Mod.LevelSelectManager.IsThisSanityEnabled((Team)storyId, SanityType.ObjSanity, taskName, bothActs: true)))
                 return;
         
             var levelId = GameStateHandler.GetCurrentLevel(taskName);
             if (!Enum.IsDefined(typeof(LevelId), levelId) || (int)levelId > 15)
                 return;
             var act = GameStateHandler.GetCurrentAct(taskName);
-            if (storyId == Team.Rose && act != Act.Act2
-                || storyId != Team.Rose && (storyId != Team.Chaotix || levelId != LevelId.CasinoPark))
+            if ((storyId == Team.Rose && act != Act.Act2) || (storyId != Team.Rose && (storyId != Team.Chaotix || levelId != LevelId.CasinoPark)))
                 return;
 
             var maxRingCheck = storyId == Team.Rose || act == Act.Act1 ? 200 : 500;
@@ -290,11 +286,13 @@ public static class ObjSanityHandler
         {
             if (!GameStateHandler.InGame(taskName))
                 return;
-            if (!(bool)Mod.LevelSelectManager.IsThisSanityEnabled(Team.Chaotix, SanityType.ObjSanity, taskName)!)
-                return;
-            var storyId = GameStateHandler.GetCurrentStory(taskName);
+            Team? storyId = GameStateHandler.GetCurrentStory(taskName);
             if (storyId != Team.Chaotix)
                 return;
+            
+            if (!((bool)Mod.LevelSelectManager.IsThisSanityEnabled((Team)storyId, SanityType.ObjSanity, taskName, oneSet: true) || (bool)Mod.LevelSelectManager.IsThisSanityEnabled((Team)storyId, SanityType.ObjSanity, taskName, bothActs: true)))
+                return;
+            
             var levelId = GameStateHandler.GetCurrentLevel(taskName);
             var act = GameStateHandler.GetCurrentAct(taskName);
             switch (levelId)
@@ -355,7 +353,7 @@ public static class ObjSanityHandler
             if (!GameStateHandler.InGame(taskName))
                 return;
             var storyId = GameStateHandler.GetCurrentStory(taskName);
-            if (storyId != Team.Dark && storyId != Team.Chaotix || !(bool)Mod.LevelSelectManager.IsThisSanityEnabled((Team)storyId, SanityType.ObjSanity, taskName)!)
+            if (storyId != Team.Dark && storyId != Team.Chaotix || !((bool)Mod.LevelSelectManager.IsThisSanityEnabled((Team)storyId, SanityType.ObjSanity, taskName, oneSet: true) || (bool)Mod.LevelSelectManager.IsThisSanityEnabled((Team)storyId, SanityType.ObjSanity, taskName, bothActs: true)))
                 return;
             var levelId = GameStateHandler.GetCurrentLevel(taskName);
             if (!Enum.IsDefined(typeof(LevelId), levelId!) || (int)levelId > 15)
@@ -404,37 +402,53 @@ public static class ObjSanityHandler
     
     public static void HandleBSCapsuleCountIncreased(int newCount, string taskName)
     {
-        if (!GameStateHandler.InGame(taskName))
-            return;
-        if (!(bool)Mod.LevelSelectManager.IsThisSanityEnabled(Team.Chaotix, SanityType.ObjSanity, taskName)!)
-            return;
-        var storyId = GameStateHandler.GetCurrentStory(taskName);
-        if (storyId != Team.Chaotix)
-            return;
-        var levelId = GameStateHandler.GetCurrentLevel(taskName);
-        var act = GameStateHandler.GetCurrentAct(taskName);
-        if (levelId != LevelId.BulletStation)
-            return; 
-        HandleChaotixsanity(act == Act.Act1 ? 0x1561 : 0x157F, 
-            act == Act.Act1 ? 30 : 50 , newCount, (LevelId)levelId, (Act)act!);
+        try
+        {
+            if (!GameStateHandler.InGame(taskName))
+                return;
+            var storyId = GameStateHandler.GetCurrentStory(taskName);
+            if (storyId != Team.Chaotix)
+                return;
+            if (!((bool)Mod.LevelSelectManager.IsThisSanityEnabled((Team)storyId, SanityType.ObjSanity, taskName, oneSet: true) || (bool)Mod.LevelSelectManager.IsThisSanityEnabled((Team)storyId, SanityType.ObjSanity, taskName, bothActs: true)))
+                return;
+            
+            var levelId = GameStateHandler.GetCurrentLevel(taskName);
+            var act = GameStateHandler.GetCurrentAct(taskName);
+            if (levelId != LevelId.BulletStation)
+                return; 
+            HandleChaotixsanity(act == Act.Act1 ? 0x1561 : 0x157F,act == Act.Act1 ? 30 : 50 , newCount, (LevelId)levelId, (Act)act!);
+
+        }
+        catch (Exception e)
+        {
+            LoggingHandler.LogMessage($"{e}", taskName, LogLevel.Error);
+        }
     }
 
     
     public static void HandleGoldBeetleCountIncreased(int newCount, string taskName)
     {
-        if (!GameStateHandler.InGame(taskName))
-            return;
-        if (!(bool)Mod.LevelSelectManager.IsThisSanityEnabled(Team.Chaotix, SanityType.ObjSanity, taskName)!)
-            return;
-        var storyId = GameStateHandler.GetCurrentStory(taskName);
-        if (storyId != Team.Chaotix)
-            return;
-        var levelId = GameStateHandler.GetCurrentLevel(taskName);
-        var act = GameStateHandler.GetCurrentAct(taskName);
-        if (levelId != LevelId.PowerPlant)
-            return; 
-        HandleChaotixsanity(act == Act.Act1 ? 0x127F : 0x1282, 
-            act == Act.Act1 ? 3 : 5, newCount, (LevelId)levelId, (Act)act!);
+        try
+        {
+            if (!GameStateHandler.InGame(taskName))
+                return;
+            var storyId = GameStateHandler.GetCurrentStory(taskName);
+            if (storyId != Team.Chaotix)
+                return;
+            if (!((bool)Mod.LevelSelectManager.IsThisSanityEnabled((Team)storyId, SanityType.ObjSanity, taskName, oneSet: true) || (bool)Mod.LevelSelectManager.IsThisSanityEnabled((Team)storyId, SanityType.ObjSanity, taskName, bothActs: true)))
+                return;
+            var levelId = GameStateHandler.GetCurrentLevel(taskName);
+            var act = GameStateHandler.GetCurrentAct(taskName);
+            if (levelId != LevelId.PowerPlant)
+                return; 
+            HandleChaotixsanity(act == Act.Act1 ? 0x127F : 0x1282,act == Act.Act1 ? 3 : 5, newCount, (LevelId)levelId, (Act)act!);
+
+        }
+        catch (Exception e)
+        {
+            LoggingHandler.LogMessage($"{e}", taskName, LogLevel.Error);
+        }
+        
     }
     
 }

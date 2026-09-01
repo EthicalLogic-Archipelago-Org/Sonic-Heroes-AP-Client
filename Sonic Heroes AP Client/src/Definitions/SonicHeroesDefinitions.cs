@@ -9,22 +9,50 @@ public enum SanityType
     ObjSanity,
     KeySanity,
     CheckpointSanity,
-    BingoChipSanity,
-    HintRingSanity,
-    ItemBoxSanity,
-    ItemBalloonSanity,
-    EggFlapperSanity,
-    EggPawnSanity,
-    KlagenSanity,
-    FalcoSanity,
-    EggHammerSanity,
-    CameronSanity,
-    RhinoLinerSanity,
-    EggBishopSanity,
-    E2000Sanity,
+    
+    BingoChipSanityGroup,
+    BingoChipSanityFull,
+    
+    HintRingSanityGroup,
+    HintRingSanityFull,
+    
+    ItemBoxSanityGroup,
+    ItemBoxSanityFull,
+    
+    ItemBalloonSanityGroup,
+    ItemBalloonSanityFull,
+    
+    
+    EggFlapperSanityGroup,
+    EggFlapperSanityFull,
+    
+    EggPawnSanityGroup,
+    EggPawnSanityFull,
+    
+    KlagenSanityGroup,
+    KlagenSanityFull,
+    
+    FalcoSanityGroup,
+    FalcoSanityFull,
+    
+    EggHammerSanityGroup,
+    EggHammerSanityFull,
+    
+    CameronSanityGroup,
+    CameronSanityFull,
+    
+    RhinoLinerSanityGroup,
+    RhinoLinerSanityFull,
+    
+    EggBishopSanityGroup,
+    EggBishopSanityFull,
+    
+    E2000SanityGroup,
+    E2000SanityFull,
+    
     
     RingSanityGroup,
-    RingSanityIndividual,
+    RingSanityFull,
 }
 
 
@@ -847,33 +875,50 @@ public static class SonicHeroesDefinitions
     public const int CheckpointAct2StartId = 0x2200;
     
     
-    public const int HintRingNoActStartId = 0x2400;
-    public const int HintRingAct1StartId = 0x2600;
-    public const int HintRingAct2StartId = 0x2800;
+    public const int RingSanityGroupNoActStartIdOffset = 0x100000;
+    public const int RingSanityGroupActAStartIdOffset = 0x110000;
+    public const int RingSanityGroupActBStartIdOffset = 0x120000;
+    public const int RingSanityFullNoActStartIdOffset = 0x130000;
+    public const int RingSanityFullActAStartIdOffset = 0x140000;
+    public const int RingSanityFullActBStartIdOffset = 0x150000;
+
+    public const int HintRingSanityGroupNoActStartIdOffset = 0x2400;
+    public const int HintRingSanityGroupActAStartIdOffset = 0x2600;
+    public const int HintRingSanityGroupActBStartIdOffset = 0x2800;
+    public const int HintRingSanityFullNoActStartIdOffset = 0x2A00;
+    public const int HintRingSanityFullActAStartIdOffset = 0x2C00;
+    public const int HintRingSanityFullActBStartIdOffset = 0x2E00;
+
+    public const int ItemBoxSanityGroupNoActStartIdOffset = 0x3000;
+    public const int ItemBoxSanityGroupActAStartIdOffset = 0x3500;
+    public const int ItemBoxSanityGroupActBStartIdOffset = 0x3A00;
+    public const int ItemBoxSanityFullNoActStartIdOffset = 0x4000;
+    public const int ItemBoxSanityFullActAStartIdOffset = 0x4500;
+    public const int ItemBoxSanityFullActBStartIdOffset = 0x4A00;
+
+    public const int ItemBalloonSanityGroupNoActStartIdOffset = 0x5000;
+    public const int ItemBalloonSanityGroupActAStartIdOffset = 0x5500;
+    public const int ItemBalloonSanityGroupActBStartIdOffset = 0x5A00;
+    public const int ItemBalloonSanityFullNoActStartIdOffset = 0x6000;
+    public const int ItemBalloonSanityFullActAStartIdOffset = 0x6500;
+    public const int ItemBalloonSanityFullActBStartIdOffset = 0x6A00;
+
+    public const int EggFlapperSanityGroupNoActStartIdOffset = 0x10000;
+    public const int EggFlapperSanityGroupActAStartIdOffset = 0x14000;
+    public const int EggFlapperSanityGroupActBStartIdOffset = 0x18000;
+    public const int EggFlapperSanityFullNoActStartIdOffset = 0x1C000;
+    public const int EggFlapperSanityFullActAStartIdOffset = 0x20000;
+    public const int EggFlapperSanityFullActBStartIdOffset = 0x24000;
+
+    public const int EggPawnSanityGroupNoActStartIdOffset = 0x28000;
+    public const int EggPawnSanityGroupActAStartIdOffset = 0x2C000;
+    public const int EggPawnSanityGroupActBStartIdOffset = 0x30000;
+    public const int EggPawnSanityFullNoActStartIdOffset = 0x34000;
+    public const int EggPawnSanityFullActAStartIdOffset = 0x38000;
+    public const int EggPawnSanityFullActBStartIdOffset = 0x3C000;
     
-    public const int ItemBoxNoActStartId = 0x3000;
-    public const int ItemBoxAct1StartId = 0x4000;
-    public const int ItemBoxAct2StartId = 0x5000;
     
-    public const int ItemBalloonNoActStartId = 0x6000;
-    public const int ItemBalloonAct1StartId = 0x7000;
-    public const int ItemBalloonAct2StartId = 0x8000;
     
-    public const int EggFlapperNoActStartId = 0x10000;
-    public const int EggFlapperAct1StartId = 0x11000;
-    public const int EggFlapperAct2StartId = 0x12000;
-    
-    public const int EggPawnNoActStartId = 0x13000;
-    public const int EggPawnAct1StartId = 0x14000;
-    public const int EggPawnAct2StartId = 0x15000;
-    
-    public const int RingSanityGroupNoActStartId = 0x30000;
-    public const int RingSanityGroupAct1StartId = 0x31000;
-    public const int RingSanityGroupAct2StartId = 0x32000;
-    
-    public const int RingSanityIndividualNoActStartId = 0x40000;
-    public const int RingSanityIndividualAct1StartId = 0x50000;
-    public const int RingSanityIndividualAct2StartId = 0x60000;
 
 
     public static bool IsValidPtr(UIntPtr address)

@@ -9,6 +9,7 @@ using Sonic_Heroes_AP_Client.Sanity.EggPawns;
 using Sonic_Heroes_AP_Client.Sanity.Falcos;
 using Sonic_Heroes_AP_Client.Sanity.Klagens;
 using Sonic_Heroes_AP_Client.Sanity.RhinoLiners;
+using Sonic_Heroes_AP_Client.StageObj;
 
 namespace Sonic_Heroes_AP_Client.Sanity.Enemy;
 
@@ -25,13 +26,13 @@ public static class EnemyData
     
 
     public static List<BaseEnemyData> AllEnemies = 
-        EggFlappersData.AllEggFlappers.Select((x, index) => new BaseEnemyData(x.Team, x.LevelId, StageObjTypes.EggFlapper, x.SpawnCoords, index))
-        .Concat(EggPawnsData.AllEggPawns.Select((x, index) => new BaseEnemyData(x.Team, x.LevelId, StageObjTypes.EggPawn, x.SpawnCoords, index)))
-        .Concat(KlagensData.AllKlagens.Select((x, index) => new BaseEnemyData(x.Team, x.LevelId, StageObjTypes.Klagen, x.SpawnCoords, index)))
-        .Concat(FalcosData.AllFalcos.Select((x, index) => new BaseEnemyData(x.Team, x.LevelId, StageObjTypes.Falco, x.SpawnCoords, index)))
-        .Concat(EggHammersData.AllEggHammers.Select((x, index) => new BaseEnemyData(x.Team, x.LevelId, StageObjTypes.EggHammer, x.SpawnCoords, index)))
-        .Concat(CameronsData.AllCamerons.Select((x, index) => new BaseEnemyData(x.Team, x.LevelId, StageObjTypes.Cameron, x.SpawnCoords, index)))
-        .Concat(RhinoLinersData.AllRhinoLiners.Select((x, index) => new BaseEnemyData(x.Team, x.LevelId, StageObjTypes.RhinoLiner, x.SpawnCoords, index)))
-        .Concat(EggBishopsData.AllEggBishops.Select((x, index) => new BaseEnemyData(x.Team, x.LevelId, StageObjTypes.EggBishop, x.SpawnCoords, index)))
-        .Concat(E2000sData.AllE2000s.Select((x, index) => new BaseEnemyData(x.Team, x.LevelId, StageObjTypes.E2000, x.SpawnCoords, index))).ToList();
+        EggFlappersData.AllEggFlappers.Where(enemy => enemy.IdOffsetFull != StageObjData.IdOffsetInvalid).Select((x, index) => new BaseEnemyData(x.Team, x.LevelId, StageObjTypes.EggFlapper, x.SpawnCoords, index))
+        .Concat(EggPawnsData.AllEggPawns.Where(enemy => enemy.IdOffsetFull != StageObjData.IdOffsetInvalid).Select((x, index) => new BaseEnemyData(x.Team, x.LevelId, StageObjTypes.EggPawn, x.SpawnCoords, index)))
+        .Concat(KlagensData.AllKlagens.Where(enemy => enemy.IdOffsetFull != StageObjData.IdOffsetInvalid).Select((x, index) => new BaseEnemyData(x.Team, x.LevelId, StageObjTypes.Klagen, x.SpawnCoords, index)))
+        .Concat(FalcosData.AllFalcos.Where(enemy => enemy.IdOffsetFull != StageObjData.IdOffsetInvalid).Select((x, index) => new BaseEnemyData(x.Team, x.LevelId, StageObjTypes.Falco, x.SpawnCoords, index)))
+        .Concat(EggHammersData.AllEggHammers.Where(enemy => enemy.IdOffsetFull != StageObjData.IdOffsetInvalid).Select((x, index) => new BaseEnemyData(x.Team, x.LevelId, StageObjTypes.EggHammer, x.SpawnCoords, index)))
+        .Concat(CameronsData.AllCamerons.Where(enemy => enemy.IdOffsetFull != StageObjData.IdOffsetInvalid).Select((x, index) => new BaseEnemyData(x.Team, x.LevelId, StageObjTypes.Cameron, x.SpawnCoords, index)))
+        .Concat(RhinoLinersData.AllRhinoLiners.Where(enemy => enemy.IdOffsetFull != StageObjData.IdOffsetInvalid).Select((x, index) => new BaseEnemyData(x.Team, x.LevelId, StageObjTypes.RhinoLiner, x.SpawnCoords, index)))
+        .Concat(EggBishopsData.AllEggBishops.Where(enemy => enemy.IdOffsetFull != StageObjData.IdOffsetInvalid).Select((x, index) => new BaseEnemyData(x.Team, x.LevelId, StageObjTypes.EggBishop, x.SpawnCoords, index)))
+        .Concat(E2000sData.AllE2000s.Where(enemy => enemy.IdOffsetFull != StageObjData.IdOffsetInvalid).Select((x, index) => new BaseEnemyData(x.Team, x.LevelId, StageObjTypes.E2000, x.SpawnCoords, index))).ToList();
 }

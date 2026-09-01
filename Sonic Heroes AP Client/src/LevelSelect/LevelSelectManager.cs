@@ -340,10 +340,18 @@ public class LevelSelectManager
     /// </summary>
     /// <param name="team">Which Team?</param>
     /// <param name="sanity">Which Specific sanity to check for</param>
-    /// <param name="bothActs">Should Both Acts be required? If False, 1 Set is checked for</param>
-    /// <returns>Null if invalid, True if enabled, false if not. Will return false for 1 set if checking for both acts (and not ObjSanity).</returns>
-    public bool? IsThisSanityEnabled(Team team, SanityType sanity, string taskName, bool bothActs = false)
+    /// <param name="taskName">Which Task (Thread) is running this (used for logging)</param>
+    /// <param name="oneSet">Check for only 1 Set</param>
+    /// <param name="bothActs">Check for Both Acts</param>
+    /// <returns>Null if invalid, True if enabled, false if not</returns>
+    public bool? IsThisSanityEnabled(Team team, SanityType sanity, string taskName, bool oneSet = false, bool bothActs = false)
     {
+        if (!oneSet && !bothActs)
+        {
+            LoggingHandler.LogMessage("Need to check for either oneSet or bothActs in IsThisSanityEnabled.", taskName, LogLevel.Error, 3);
+            return false;
+        }
+        
         if (team is Team.SuperHardMode && bothActs)
         {
             LoggingHandler.LogMessage("Both Acts for SuperHard in IsThisSanityEnabled.", taskName, LogLevel.Error, 3);
@@ -355,105 +363,30 @@ public class LevelSelectManager
             LoggingHandler.LogMessage($"Obj Sanity asked for team: {team} in IsThisSanityEnabled.", taskName, LogLevel.Error, 3);
             return null;
         }
-
-        switch (bothActs)
-        {
-            case true:
-                return sanity switch
-                {
-                    SanityType.ObjSanity => EnabledSanities[team][SanityType.ObjSanity] is SanityEnableStatus.BothActs,
-                    SanityType.KeySanity => EnabledSanities[team][SanityType.KeySanity] is SanityEnableStatus.BothActs,
-                    SanityType.CheckpointSanity => EnabledSanities[team][SanityType.CheckpointSanity] is SanityEnableStatus.BothActs,
-                    SanityType.BingoChipSanity => EnabledSanities[team][SanityType.BingoChipSanity] is SanityEnableStatus.BothActs,
-                    SanityType.HintRingSanity => EnabledSanities[team][SanityType.HintRingSanity] is SanityEnableStatus.BothActs,
-                    SanityType.ItemBoxSanity => EnabledSanities[team][SanityType.ItemBoxSanity] is SanityEnableStatus.BothActs,
-                    SanityType.ItemBalloonSanity => EnabledSanities[team][SanityType.ItemBalloonSanity] is SanityEnableStatus.BothActs,
-                    SanityType.EggFlapperSanity => EnabledSanities[team][SanityType.EggFlapperSanity] is SanityEnableStatus.BothActs,
-                    SanityType.EggPawnSanity => EnabledSanities[team][SanityType.EggPawnSanity] is SanityEnableStatus.BothActs,
-                    SanityType.KlagenSanity => EnabledSanities[team][SanityType.KlagenSanity] is SanityEnableStatus.BothActs,
-                    SanityType.FalcoSanity => EnabledSanities[team][SanityType.FalcoSanity] is SanityEnableStatus.BothActs,
-                    SanityType.EggHammerSanity => EnabledSanities[team][SanityType.EggHammerSanity] is SanityEnableStatus.BothActs,
-                    SanityType.CameronSanity => EnabledSanities[team][SanityType.CameronSanity] is SanityEnableStatus.BothActs,
-                    SanityType.RhinoLinerSanity => EnabledSanities[team][SanityType.RhinoLinerSanity] is SanityEnableStatus.BothActs,
-                    SanityType.EggBishopSanity => EnabledSanities[team][SanityType.EggBishopSanity] is SanityEnableStatus.BothActs,
-                    SanityType.E2000Sanity => EnabledSanities[team][SanityType.E2000Sanity] is SanityEnableStatus.BothActs,
-                    SanityType.RingSanityGroup => EnabledSanities[team][SanityType.RingSanityGroup] is SanityEnableStatus.BothActs,
-                    SanityType.RingSanityIndividual => EnabledSanities[team][SanityType.RingSanityIndividual] is SanityEnableStatus.BothActs,
-                    _ => false
-                };
-            case false:
-                return sanity switch
-                {
-                    SanityType.ObjSanity => EnabledSanities[team][SanityType.ObjSanity] is not SanityEnableStatus.Disabled,
-                    SanityType.KeySanity => EnabledSanities[team][SanityType.KeySanity] is not SanityEnableStatus.Disabled,
-                    SanityType.CheckpointSanity => EnabledSanities[team][SanityType.CheckpointSanity] is not SanityEnableStatus.Disabled,
-                    SanityType.BingoChipSanity => EnabledSanities[team][SanityType.BingoChipSanity] is not SanityEnableStatus.Disabled,
-                    SanityType.HintRingSanity => EnabledSanities[team][SanityType.HintRingSanity] is not SanityEnableStatus.Disabled,
-                    SanityType.ItemBoxSanity => EnabledSanities[team][SanityType.ItemBoxSanity] is not SanityEnableStatus.Disabled,
-                    SanityType.ItemBalloonSanity => EnabledSanities[team][SanityType.ItemBalloonSanity] is not SanityEnableStatus.Disabled,
-                    SanityType.EggFlapperSanity => EnabledSanities[team][SanityType.EggFlapperSanity] is not SanityEnableStatus.Disabled,
-                    SanityType.EggPawnSanity => EnabledSanities[team][SanityType.EggPawnSanity] is not SanityEnableStatus.Disabled,
-                    SanityType.KlagenSanity => EnabledSanities[team][SanityType.KlagenSanity] is not SanityEnableStatus.Disabled,
-                    SanityType.FalcoSanity => EnabledSanities[team][SanityType.FalcoSanity] is not SanityEnableStatus.Disabled,
-                    SanityType.EggHammerSanity => EnabledSanities[team][SanityType.EggHammerSanity] is not SanityEnableStatus.Disabled,
-                    SanityType.CameronSanity => EnabledSanities[team][SanityType.CameronSanity] is not SanityEnableStatus.Disabled,
-                    SanityType.RhinoLinerSanity => EnabledSanities[team][SanityType.RhinoLinerSanity] is not SanityEnableStatus.Disabled,
-                    SanityType.EggBishopSanity => EnabledSanities[team][SanityType.EggBishopSanity] is not SanityEnableStatus.Disabled,
-                    SanityType.E2000Sanity => EnabledSanities[team][SanityType.E2000Sanity] is not SanityEnableStatus.Disabled,
-                    SanityType.RingSanityGroup => EnabledSanities[team][SanityType.RingSanityGroup] is not SanityEnableStatus.Disabled,
-                    SanityType.RingSanityIndividual => EnabledSanities[team][SanityType.RingSanityIndividual] is not SanityEnableStatus.Disabled,
-                    _ => false
-                };
-        }
         
-        LoggingHandler.LogMessage($"HOW DID WE GET HERE???. {team} {sanity} {bothActs} in IsThisSanityEnabled", taskName, LogLevel.Error, 3);
-        return false;
+        bool result = true;
+        
+        if (oneSet)
+        {
+            result &= IsThisOneSetSanityEnabled(team, sanity, taskName);
+        }
+
+        if (bothActs)
+        {
+            result &= IsThisBothSetsSanityEnabled(team, sanity, taskName);
+        }
+        //LoggingHandler.LogMessage($"IsThisSanityEnabled: Team {team} Sanity {sanity} oneSet {oneSet} bothActs {bothActs} result {result}", taskName, LogLevel.SuperDebug);
+        return result;
+    }
+
+    private bool IsThisOneSetSanityEnabled(Team team, SanityType sanity, string taskName)
+    {
+        return EnabledSanities[team][sanity] is SanityEnableStatus.Only1Set;
     }
 
 
-
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="team"></param>
-    /// <returns></returns>
-    // public MissionsActive GetMissionsActiveForTeam(Team team, string taskName)
-    // { 
-    //     var result = MissionsActive.None;
-    //     switch (team)
-    //     {
-    //         case Team.SuperHardMode:
-    //             if ((bool)IsThisTeamEnabled(Team.SuperHardMode, taskName)!)
-    //                 result = MissionsActive.SuperHard;
-    //             break;
-    //         case Team.Sonic:
-    //             if (EnabledStoriesAndSanities.HasFlag(StoriesAndSanities.SonicActA))
-    //                 result |= MissionsActive.Act1;
-    //             if (EnabledStoriesAndSanities.HasFlag(StoriesAndSanities.SonicActB))
-    //                 result |= MissionsActive.Act2;
-    //             break;
-    //         case Team.Dark:
-    //             if (EnabledStoriesAndSanities.HasFlag(StoriesAndSanities.DarkActA))
-    //                 result |= MissionsActive.Act1;
-    //             if (EnabledStoriesAndSanities.HasFlag(StoriesAndSanities.DarkActB))
-    //                 result |= MissionsActive.Act2;
-    //             break;
-    //         case Team.Rose:
-    //             if (EnabledStoriesAndSanities.HasFlag(StoriesAndSanities.RoseActA))
-    //                 result |= MissionsActive.Act1;
-    //             if (EnabledStoriesAndSanities.HasFlag(StoriesAndSanities.RoseActB))
-    //                 result |= MissionsActive.Act2;
-    //             break;
-    //         case Team.Chaotix:
-    //             if (EnabledStoriesAndSanities.HasFlag(StoriesAndSanities.ChaotixActA))
-    //                 result |= MissionsActive.Act1;
-    //             if (EnabledStoriesAndSanities.HasFlag(StoriesAndSanities.ChaotixActB))
-    //                 result |= MissionsActive.Act2;
-    //             break;
-    //         default:
-    //             break;
-    //     }
-    //     return result;
-    // }
-    
+    private bool IsThisBothSetsSanityEnabled(Team team, SanityType sanity, string taskName)
+    {
+        return EnabledSanities[team][sanity] is SanityEnableStatus.BothActs;
+    }
 }

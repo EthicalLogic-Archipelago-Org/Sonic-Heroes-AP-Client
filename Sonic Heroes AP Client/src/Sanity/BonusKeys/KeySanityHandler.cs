@@ -4,6 +4,7 @@ using Sonic_Heroes_AP_Client.Definitions;
 using Sonic_Heroes_AP_Client.GameState;
 using Sonic_Heroes_AP_Client.LevelSpawnPosition;
 using Sonic_Heroes_AP_Client.Logging;
+using Sonic_Heroes_AP_Client.StageObj;
 
 namespace Sonic_Heroes_AP_Client.Sanity.BonusKeys;
 
@@ -36,7 +37,7 @@ public static class KeySanityHandler
 
             for (int i = 0; i < keylist.Count(); i++)
             {
-                if (Vector3.Distance(keyPos, keylist[i].Pos) > 100.0f)
+                if (Vector3.Distance(keyPos, keylist[i].Pos) > StageObjData.DistanceForMatchingStageObj)
                 {
                     if (Vector3.Distance(keyPos, keylist[i].Pos) < minDistance)
                     {
@@ -71,16 +72,20 @@ public static class KeySanityHandler
                         }
                     }
                 }
+
+                bool oneSetEnabled = (bool)Mod.LevelSelectManager.IsThisSanityEnabled((Team)team, SanityType.KeySanity, taskName, oneSet: true)!;
+                bool bothActsEnabled = team is not Team.SuperHardMode && (bool)Mod.LevelSelectManager.IsThisSanityEnabled((Team)team, SanityType.KeySanity, taskName, bothActs: true)!;
                 
-                if (!(bool)Mod.LevelSelectManager.IsThisSanityEnabled((Team)team, SanityType.KeySanity, taskName)! && !(bool)Mod.LevelSelectManager.IsThisSanityEnabled((Team)team, SanityType.KeySanity, taskName, true)!)
+                
+                if (!oneSetEnabled && !bothActsEnabled)
                     return;
 
-                if (!(bool)Mod.LevelSelectManager.IsThisSanityEnabled((Team)team, SanityType.KeySanity, taskName, true)!)
+                if (oneSetEnabled)
                 {
                     Mod.ArchipelagoHandler.CheckLocation(SonicHeroesDefinitions.BonusKeyNoActStartId + BonusKeyData.AllKeyPositions.IndexOf(keylist[i]));
                 }
 
-                else
+                if (bothActsEnabled)
                 {
                     if (act == Act.Act1)
                     {

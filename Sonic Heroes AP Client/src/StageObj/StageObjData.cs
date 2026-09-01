@@ -1,7 +1,6 @@
 
 using System.Reflection;
 using System.Runtime.InteropServices;
-using Microsoft.VisualBasic.ApplicationServices;
 using Sonic_Heroes_AP_Client.Definitions;
 using Sonic_Heroes_AP_Client.Logging;
 
@@ -70,6 +69,8 @@ public static class StageObjData
     public const byte DespawnObjRenderDistance = 0x00;
 
     public const float DistanceForMatchingStageObj = 10f;
+
+    public const int IdOffsetInvalid = -999999;
     
     /// <summary>
     /// Dict of StageObjType to Dict of address to saved copy of ObjSpawnData

@@ -8,37 +8,18 @@ namespace Sonic_Heroes_AP_Client.Sanity.ItemBoxes;
 
 public static class ItemBoxesSanityHandler
 {
-    private static void CheckItemBox(ItemBoxesData.ItemBoxData itemBoxData, StageObjTypes objType, Team team, Act act, string taskName)
+    public static unsafe void HandleItemBoxSanity(UIntPtr dynamicPtr, string taskName)
     {
         try
         {
-            var log = $"Got Team {itemBoxData.Team} {itemBoxData.LevelId} Act {act} {itemBoxData.Reward} {objType} ({itemBoxData.LocName}) At {itemBoxData.Region}";
-            LoggingHandler.LogMessage(log, taskName, LogLevel.APAction);
-
-            if (team is not Team.SuperHardMode && (bool)Mod.LevelSelectManager.IsThisSanityEnabled(team, SanityType.ItemBoxSanity, taskName, true))
-            {
-                var idToSend = act is Act.Act1
-                    ? SonicHeroesDefinitions.ItemBoxAct1StartId + ItemBoxesData.AllItemBoxes.IndexOf(itemBoxData)
-                    : SonicHeroesDefinitions.ItemBoxAct2StartId + ItemBoxesData.AllItemBoxes.IndexOf(itemBoxData);
-                LoggingHandler.LogMessage($"Sending Location ID: 0x{idToSend:X} ", taskName, LogLevel.Debug);
-                Mod.ArchipelagoHandler.CheckLocation(id: idToSend);
-                return;
-            }
-
-            if ((bool)Mod.LevelSelectManager.IsThisSanityEnabled(team, SanityType.ItemBoxSanity, taskName))
-            {
-                var idToSend = SonicHeroesDefinitions.ItemBoxNoActStartId + ItemBoxesData.AllItemBoxes.IndexOf(itemBoxData);
-                LoggingHandler.LogMessage($"Sending Location ID: 0x{idToSend:X} ", taskName, LogLevel.Debug);
-                Mod.ArchipelagoHandler.CheckLocation(id: idToSend);
-                return;
-            }
-
+            var staticPtr = *(int*)(dynamicPtr + 0x2C);
+            LoggingHandler.LogMessage($"StaticPtr: 0x{staticPtr:x}", taskName, LogLevel.SuperDebug);
+            HandleItemBoxStaticPtr((UIntPtr)staticPtr, StageObjTypes.ItemBox,  taskName);
         }
         catch (Exception e)
         {
             LoggingHandler.LogMessage($"{e}", taskName, LogLevel.Error);
         }
-        
     }
     
     
@@ -65,7 +46,7 @@ public static class ItemBoxesSanityHandler
 
                 if (distance < StageObjData.DistanceForMatchingStageObj)
                 {
-                    CheckItemBox(itemBalloonBoxData, objType, (Team)team, (Act)act, taskName);
+                    CheckItemBox(itemBalloonBoxData, objType, (Team)team, (LevelId)level, (Act)act, taskName);
                 }
             }
         }
@@ -76,18 +57,106 @@ public static class ItemBoxesSanityHandler
     }
     
     
-    public static unsafe void HandleItemBoxSanity(UIntPtr dynamicPtr, string taskName)
+    private static void CheckItemBox(ItemBoxesData.ItemBoxData itemBoxData, StageObjTypes objType, Team team, LevelId level, Act act, string taskName)
     {
         try
         {
-            var staticPtr = *(int*)(dynamicPtr + 0x2C);
-            LoggingHandler.LogMessage($"StaticPtr: 0x{staticPtr:x}", taskName, LogLevel.SuperDebug);
-            HandleItemBoxStaticPtr((UIntPtr)staticPtr, StageObjTypes.ItemBox,  taskName);
+            var log = $"Got Team {team} {level} Act {act} {itemBoxData.Reward} {objType} ({itemBoxData.LocName}) At {itemBoxData.Region}";
+            LoggingHandler.LogMessage(log, taskName, LogLevel.Debug);
+            
+            if (Mod.LevelSelectManager.EnabledSanities[team][SanityType.ItemBoxSanityGroup] is not SanityEnableStatus.Disabled)
+            {
+                CheckItemBoxGroup(itemBoxData, team, level, act, taskName);
+            }
+        
+            if (Mod.LevelSelectManager.EnabledSanities[team][SanityType.ItemBoxSanityFull] is not SanityEnableStatus.Disabled)
+            {
+                CheckItemBoxFull(itemBoxData, team, level, act, taskName);
+            }
+
+        }
+        catch (Exception e)
+        {
+            LoggingHandler.LogMessage($"{e}", taskName, LogLevel.Error);
+        }
+        
+    }
+
+
+    public static void CheckItemBoxGroup(ItemBoxesData.ItemBoxData itemBoxData, Team team, LevelId level, Act act, string taskName)
+    {
+        try
+        {
+            ItemBoxesData.ItemBoxData itemBox = itemBoxData;
+
+            if (itemBox.IdOffsetGroup == StageObjData.IdOffsetInvalid)
+            {
+                itemBox = ItemBoxesData.AllItemBoxes.First(x => x.Group == itemBox.Group * -1);
+            }
+            
+            bool oneSetEnabled = (bool)Mod.LevelSelectManager.IsThisSanityEnabled(team, SanityType.ItemBoxSanityGroup, taskName, oneSet: true)!;
+            bool bothActsEnabled = team is not Team.SuperHardMode && (bool)Mod.LevelSelectManager.IsThisSanityEnabled(team, SanityType.ItemBoxSanityGroup, taskName, bothActs: true)!;
+            
+            if (oneSetEnabled)
+            {
+                var startOffset = SonicHeroesDefinitions.ItemBoxSanityGroupNoActStartIdOffset;
+                var idToSend = startOffset + ItemBoxesData.AllItemBoxes.IndexOf(itemBox) - itemBox.IdOffsetGroup;
+                LoggingHandler.LogMessage($"Sending Location ID: 0x{idToSend:X} ", taskName, LogLevel.Debug);
+                Mod.ArchipelagoHandler.CheckLocation(id: idToSend);
+            }
+
+            if (bothActsEnabled)
+            {
+                var startOffset = act is Act.Act1 ? SonicHeroesDefinitions.ItemBoxSanityGroupActAStartIdOffset : SonicHeroesDefinitions.ItemBoxSanityGroupActBStartIdOffset;
+                var idToSend = startOffset + ItemBoxesData.AllItemBoxes.IndexOf(itemBox) - itemBox.IdOffsetGroup;
+                LoggingHandler.LogMessage($"Sending Location ID: 0x{idToSend:X} ", taskName, LogLevel.Debug);
+                Mod.ArchipelagoHandler.CheckLocation(id: idToSend);
+            }
+
         }
         catch (Exception e)
         {
             LoggingHandler.LogMessage($"{e}", taskName, LogLevel.Error);
         }
     }
+
+    public static void CheckItemBoxFull(ItemBoxesData.ItemBoxData itemBoxData, Team team, LevelId level, Act act, string taskName)
+    {
+        try
+        {
+            ItemBoxesData.ItemBoxData itemBox = itemBoxData;
+            if (itemBox.IdOffsetFull < 0)
+            {
+                //this should never happen
+                LoggingHandler.LogMessage($"Item Box Full matched on invalid Item Box", taskName, LogLevel.Error);
+                return;
+            }
+            
+            bool oneSetEnabled = (bool)Mod.LevelSelectManager.IsThisSanityEnabled(team, SanityType.ItemBoxSanityFull, taskName, oneSet: true)!;
+            bool bothActsEnabled = team is not Team.SuperHardMode && (bool)Mod.LevelSelectManager.IsThisSanityEnabled(team, SanityType.ItemBoxSanityFull, taskName, bothActs: true)!;
+            
+            if (oneSetEnabled)
+            {
+                var startOffset = SonicHeroesDefinitions.ItemBoxSanityFullNoActStartIdOffset;
+                var idToSend = startOffset + ItemBoxesData.AllItemBoxes.IndexOf(itemBox) - itemBox.IdOffsetFull;
+                LoggingHandler.LogMessage($"Sending Location ID: 0x{idToSend:X} ", taskName, LogLevel.Debug);
+                Mod.ArchipelagoHandler.CheckLocation(id: idToSend);
+            }
+
+            if (bothActsEnabled)
+            {
+                var startOffset = act is Act.Act1 ? SonicHeroesDefinitions.ItemBoxSanityFullActAStartIdOffset : SonicHeroesDefinitions.ItemBoxSanityFullActBStartIdOffset;
+                var idToSend = startOffset + ItemBoxesData.AllItemBoxes.IndexOf(itemBox) - itemBox.IdOffsetFull;
+                LoggingHandler.LogMessage($"Sending Location ID: 0x{idToSend:X} ", taskName, LogLevel.Debug);
+                Mod.ArchipelagoHandler.CheckLocation(id: idToSend);
+            }
+        }
+        catch (Exception e)
+        {
+            LoggingHandler.LogMessage($"{e}", taskName, LogLevel.Error);
+        }
+        
+    }
+    
     
 }
