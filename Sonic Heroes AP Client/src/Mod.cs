@@ -193,6 +193,7 @@ public class Mod: ModBase
     {
         var modVersion = ModConfig.ModVersion.Split(".");
         var otherVersion = version.Split(".");
+        return true;
         return modVersion[0] == otherVersion[0] && modVersion[1] == otherVersion[1];
     }
 
