@@ -15,12 +15,9 @@ name: Build and Publish Reloaded Mod
 
 on:
   push:
-    branches: [ main ]
     tags:
-      - '*'
-  pull_request:
-    branches: [ main ]
-  workflow_dispatch:
+      - 'test-*'
+
 
 env: 
   PUBLISH_COMMON_PATH: ./Publish/ToUpload/
