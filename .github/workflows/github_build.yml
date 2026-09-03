@@ -11,23 +11,23 @@ jobs:
     build:
         runs-on: ubuntu-latest
 
-    steps:
-        - uses: actions/checkout@v7
-        with:
-            fetch-depth: 0
-            submodules: 'recursive'
-
-
-        - name: Setup .NET Core SDK (5.0)
-        uses: actions/setup-dotnet@v4
-        with:
-            dotnet-version: 5.0.x
-
-        - name: Setup .NET Core SDK (8.0)
-        uses: actions/setup-dotnet@v4
-        with:
-            dotnet-version: 8.0.x
-
-
-        - name: Run Build
-        run: dotnet build
+        steps:
+            - uses: actions/checkout@v7
+            with:
+                fetch-depth: 0
+                submodules: 'recursive'
+    
+    
+            - name: Setup .NET Core SDK (5.0)
+            uses: actions/setup-dotnet@v4
+            with:
+                dotnet-version: 5.0.x
+    
+            - name: Setup .NET Core SDK (8.0)
+            uses: actions/setup-dotnet@v4
+            with:
+                dotnet-version: 8.0.x
+    
+    
+            - name: Run Build
+            run: dotnet build
