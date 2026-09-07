@@ -55,7 +55,7 @@ public static class CheckpointSanityHandler
                         var log = $"Got Team {team} {level} {act} Checkpoint #{checkpointsinlevel.IndexOf(matchingcheckpoints[i]) + 1}";
                         LoggingHandler.LogMessage(log, taskName, LogLevel.APAction);
 
-                        LevelSpawnUnlockHandler.UnlockSpecificSpawnData((Team)team!, (LevelId)level!, checkpointsinlevel.IndexOf(matchingcheckpoints[i]) + 1, taskName);
+                        LevelSpawnUnlockHandler.UnlockOrLockSpawnPosition((Team)team!, (LevelId)level!, checkpointsinlevel.IndexOf(matchingcheckpoints[i]) + 1, taskName, forceUnlock: true);
 
                         
                         bool oneSetEnabled = (bool)Mod.LevelSelectManager.IsThisSanityEnabled((Team)team, SanityType.CheckpointSanity, taskName, oneSet: true)!;

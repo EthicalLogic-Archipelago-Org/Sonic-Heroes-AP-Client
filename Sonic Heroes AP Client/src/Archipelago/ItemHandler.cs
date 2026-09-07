@@ -395,34 +395,34 @@ public static class ItemHandler
         {
             if (handled)
                 return;
-            Team? team;
-            LevelId? levelId;
+            if (!itemName.Contains("Spawn Position", StringComparison.InvariantCultureIgnoreCase)) 
+                return;
             
-            if (itemName.Contains("Spawn Position", StringComparison.InvariantCultureIgnoreCase))
-            {
-                team = CheckTeamItemName(itemName, taskName);
-                levelId = CheckLevelIdItemName(itemName, taskName);
-                if (team == null || levelId == null)
-                    return;
+            Team? team = CheckTeamItemName(itemName, taskName);
+            LevelId? levelId = CheckLevelIdItemName(itemName, taskName);
+            bool forceUnlock = itemName.Contains("Force Unlock", StringComparison.InvariantCultureIgnoreCase); 
+            bool forceLock = itemName.Contains("Force Lock", StringComparison.InvariantCultureIgnoreCase);
                 
-                if (itemName.Contains("Start of Level", StringComparison.InvariantCultureIgnoreCase))
-                {
-                    LoggingHandler.LogMessage($"Unlocking Start of Level Spawn for: {levelId} {team}", taskName, LogLevel.Debug);
-                    LevelSpawnUnlockHandler.UnlockSpecificSpawnData((Team)team, (LevelId)levelId, 0, taskName);
-                    LoggingHandler.LogMessage($"Got Item: {itemName}", taskName, LogLevel.APAction);
-                    handled = true;
-                    return;
-                }
-
-                if (itemName.Contains("Checkpoint", StringComparison.InvariantCultureIgnoreCase))
-                {
-                    var checkpointNumber = int.Parse(Regex.Matches(itemName, @"-?\d+").Last().Value);
-                    LoggingHandler.LogMessage($"Unlocking Checkpoint {checkpointNumber} Spawn for: {levelId} {team}", taskName, LogLevel.Debug);
-                    LevelSpawnUnlockHandler.UnlockSpecificSpawnData((Team)team, (LevelId)levelId, checkpointNumber, taskName);
-                    handled = true;
-                    return;
-                }
+            if (itemName.Contains("Start of Level", StringComparison.InvariantCultureIgnoreCase))
+            {
+                LevelSpawnUnlockHandler.UnlockOrLockSpawnPosition(team: team, level: levelId, index: 0, taskName: taskName, forceUnlock: forceUnlock, forceLock: forceLock);
+                LoggingHandler.LogMessage($"Got Item: {itemName}", taskName, LogLevel.APAction);
+                handled = true;
+                return;
             }
+
+            if (itemName.Contains("Checkpoint", StringComparison.InvariantCultureIgnoreCase))
+            {
+                var checkpointNumber = int.Parse(Regex.Matches(itemName, @"-?\d+").Last().Value);
+                LevelSpawnUnlockHandler.UnlockOrLockSpawnPosition(team: team, level: levelId, index: checkpointNumber, taskName: taskName, forceUnlock: forceUnlock, forceLock: forceLock);
+                LoggingHandler.LogMessage($"Got Item: {itemName}", taskName, LogLevel.APAction);
+                handled = true;
+                return;
+            }
+            
+            LevelSpawnUnlockHandler.UnlockOrLockSpawnPosition(team: team, level: levelId, index: null, taskName: taskName, forceUnlock: forceUnlock, forceLock: forceLock);
+            LoggingHandler.LogMessage($"Got Item: {itemName}", taskName, LogLevel.APAction);
+            handled = true;
         }
         catch (Exception e)
         {

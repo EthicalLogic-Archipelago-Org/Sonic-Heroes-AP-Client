@@ -178,33 +178,97 @@ public static class LevelSpawnUnlockHandler
             LoggingHandler.LogMessage($"{e}", taskName, LogLevel.Error);
         }
     }
-    
-    public static void UnlockSpecificSpawnData(Team team, LevelId level, int index, string taskName, bool secret = false)
+
+    public static void UnlockOrLockSpawnPosition(Team? team, LevelId? level, int? index, string taskName, bool secret = false, bool forceUnlock = false, bool forceLock = false)
     {
         try
         {
-            if (!LevelSpawnData.AllSpawnData.TryGetValue(team, out var teamSpawnData))
+            if (team is null)
             {
-                LoggingHandler.LogMessage($"Team {team} does not have any spawn data.", taskName, LogLevel.Error);
-                return;
+                foreach (var t in Enum.GetValues<Team>())
+                {
+                    UnlockOrLockSpawnPosition(team: t, level: level, index: index, taskName: taskName, secret: secret, forceUnlock: forceUnlock, forceLock: forceLock);
+                }
             }
-            if (!teamSpawnData.ContainsKey(level))
+            else if (level is null)
             {
-                LoggingHandler.LogMessage($"Team {team} does not have any spawn data for Level {level}.", taskName, LogLevel.Error);
-                return;
+                foreach (var l in Enum.GetValues<LevelId>().Where(x => x is >= LevelId.SeasideHill and <= LevelId.FinalFortress))
+                {
+                    UnlockOrLockSpawnPosition(team: team, level: l, index: index, taskName: taskName, secret: secret, forceUnlock: forceUnlock, forceLock: forceLock);
+                }
             }
-        
-            Mod.SaveDataHandler.CustomSaveData.SpawnDataUnlocks[team][level][index] = true;
-        
-            var entry = LevelSpawnData.AllSpawnData[team][level][index];
-            LoggingHandler.LogMessage($"Unlocked spawn data for Team {team} and Level {level}. Pos is {entry.Pos}, Index in List is {LevelSpawnData.AllSpawnData[team][level].IndexOf(entry)}, Index is {index}", taskName, LogLevel.SuperDebug);
-            Mod.ArchipelagoHandler.Save(taskName);
+
+            else
+            {
+                if (!LevelSpawnData.AllSpawnData.TryGetValue((Team)team, out var teamSpawnData))
+                {
+                    LoggingHandler.LogMessage($"Team {team} does not have any spawn data.", taskName, LogLevel.Error);
+                    return;
+                }
+                if (!teamSpawnData.ContainsKey((LevelId)level))
+                {
+                    LoggingHandler.LogMessage($"Team {team} does not have any spawn data for Level {level}.", taskName, LogLevel.Error);
+                    return;
+                }
+
+                if (index is null)
+                {
+                    for (var i = 0; i < LevelSpawnData.AllSpawnData[(Team)team][(LevelId)level].Count(x => x.Secret == secret && !x.Bonusstage); i++)
+                    {
+                        UnlockOrLockSpawnPosition(team: team, level: level, index: i, taskName: taskName, secret: secret, forceUnlock: forceUnlock, forceLock: forceLock);
+                    }
+                }
+
+                else
+                {
+                    bool currState = Mod.SaveDataHandler.CustomSaveData.SpawnDataUnlocks[(Team)team][(LevelId)level][(int)index];
+                    if (forceUnlock || !Mod.IsDebug)
+                        currState = false;
+                    if (forceLock)
+                        currState = true;
+                    string messageFront = !currState ? "Unlocking" : "Locking";
+                    var entry = LevelSpawnData.AllSpawnData[(Team)team][(LevelId)level][(int)index];
+                    LoggingHandler.LogMessage($"{messageFront} spawn data for Team {(Team)team} and Level {(LevelId)level}. Pos is {entry.Pos}, Index in List is {LevelSpawnData.AllSpawnData[(Team)team][(LevelId)level].IndexOf(entry)}, Index is {index}", taskName, LogLevel.Debug);
+                    Mod.SaveDataHandler.CustomSaveData.SpawnDataUnlocks[(Team)team][(LevelId)level][(int)index] = !currState;
+                    Mod.ArchipelagoHandler.Save(taskName);
+                }
+            }
         }
         catch (Exception e)
         {
             LoggingHandler.LogMessage($"{e}", taskName, LogLevel.Error);
         }
     }
+    
+    
+    
+    // public static void UnlockOrLockSpawnPosition(Team team, LevelId level, int index, string taskName, bool unlock = true, bool secret = false)
+    // {
+    //     try
+    //     {
+    //         if (!LevelSpawnData.AllSpawnData.TryGetValue(team, out var teamSpawnData))
+    //         {
+    //             LoggingHandler.LogMessage($"Team {team} does not have any spawn data.", taskName, LogLevel.Error);
+    //             return;
+    //         }
+    //         if (!teamSpawnData.ContainsKey(level))
+    //         {
+    //             LoggingHandler.LogMessage($"Team {team} does not have any spawn data for Level {level}.", taskName, LogLevel.Error);
+    //             return;
+    //         }
+    //     
+    //         Mod.SaveDataHandler.CustomSaveData.SpawnDataUnlocks[team][level][index] = unlock;
+    //     
+    //         var entry = LevelSpawnData.AllSpawnData[team][level][index];
+    //         string messageFront = unlock ? "Unlocking" : "Locking";
+    //         LoggingHandler.LogMessage($"{messageFront} spawn data for Team {team} and Level {level}. Pos is {entry.Pos}, Index in List is {LevelSpawnData.AllSpawnData[team][level].IndexOf(entry)}, Index is {index}", taskName, LogLevel.Debug);
+    //         Mod.ArchipelagoHandler.Save(taskName);
+    //     }
+    //     catch (Exception e)
+    //     {
+    //         LoggingHandler.LogMessage($"{e}", taskName, LogLevel.Error);
+    //     }
+    // }
 
     public static void BonusStageUnlockCallback(Team team, LevelId level, string taskName, int keynum = 0, bool goal = false)
     {
@@ -221,8 +285,7 @@ public static class LevelSpawnUnlockHandler
                 {
                     //unlocking bonus stage spawn here
                     LoggingHandler.LogMessage($"Unlocking Bonus Stage Spawn for {team} {level}", taskName, LogLevel.APAction);
-                    Mod.SaveDataHandler.CustomSaveData.SpawnDataUnlocks[team][level]
-                        [Mod.SaveDataHandler.CustomSaveData.SpawnDataUnlocks[team][level].Count - 1] = true;
+                    Mod.SaveDataHandler.CustomSaveData.SpawnDataUnlocks[team][level][Mod.SaveDataHandler.CustomSaveData.SpawnDataUnlocks[team][level].Count - 1] = true;
                 }
             }
 

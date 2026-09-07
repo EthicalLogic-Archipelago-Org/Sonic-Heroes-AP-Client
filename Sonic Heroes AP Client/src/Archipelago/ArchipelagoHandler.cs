@@ -237,6 +237,8 @@ public class ArchipelagoHandler
         const string taskName = "OnMessageReceived";
         LoggingHandler.LogMessage(message.ToString() ?? string.Empty, taskName, LogLevel.APAction);
         //LoggerWindow.Log(message.ToString() ?? string.Empty);
+        
+        
     }
     
     private static void OnSocketClosed(string reason)
