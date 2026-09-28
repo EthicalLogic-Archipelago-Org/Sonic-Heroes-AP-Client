@@ -10,12 +10,22 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v7
+      - name: Use Checkout V7
+        uses: actions/checkout@v7
 
-      - uses: actions/setup-dotnet@v6
+
+      - name: Install DotNet 8
+        uses: actions/setup-dotnet@v6
         with:
           dotnet-version: 8.0.x
 
 
       - name: Run Build
         run: dotnet build
+        
+      - name: Upload Output DLL
+        uses: actions/upload-artifact@v7
+        with:
+          name: Sonic_Heroes_AP_Client.dll
+          path: ~/Sonic_Heroes_AP_Client/Sonic_Heroes_AP_Client.dll
+          archive: false
