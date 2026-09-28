@@ -27,5 +27,5 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: Sonic_Heroes_AP_Client.dll
-          path: /home/Sonic_Heroes_AP_Client/Sonic_Heroes_AP_Client.dll
+          path: /home/runner/work/Sonic-Heroes-AP-Client/Sonic-Heroes-AP-Client/Sonic Heroes AP Client/~/Sonic_Heroes_AP_Client/Sonic_Heroes_AP_Client.dll
           archive: false
