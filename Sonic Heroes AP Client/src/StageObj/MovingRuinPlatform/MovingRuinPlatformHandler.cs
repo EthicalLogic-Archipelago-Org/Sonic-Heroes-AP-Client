@@ -90,7 +90,13 @@ public static class MovingRuinPlatformHandler
                         spawnData.SpawnOrDespawnObj(hasRuin && hasRuinTrigger, taskName);
                     }
                     
-                    
+                    //Force Spawn Ruin at Whale Blowhole (as Invis Collis Object exists
+                    movingRuinsToForceSpawn = new Vector3(2102.3030f, -90.0000f, -43113.0700f);
+
+                    foreach (var spawnData in StageObjHandler.GetInLevelObjsOfType(StageObjTypes.MovingRuinPlatform, taskName).Where(spawnData => spawnData.IsAtPosition(movingRuinsToForceSpawn, taskName)))
+                    {
+                        spawnData.SpawnOrDespawnObj(true, taskName);
+                    }
                     
                     break;
             }

@@ -407,6 +407,20 @@ public static class LevelSpawnUnlockHandler
         
             LevelSpawnEntry entry = GetAllSpawnDataForLevel(team, level, taskName)[SpawnPosIndex];
             LevelSpawnGameWrites.ChangeSpawnPos(team, level, entry, taskName);
+            
+            
+            // Dark ObjSanity change here
+            if (team is not Team.Dark)
+                return;
+
+            if (level is < LevelId.SeasideHill or > LevelId.FinalFortress)
+                return;
+
+            // TODO handle individual level amounts
+            GameStateGameWrites.ChangeDarkObjSanityRequirements(108, taskName);
+
+
+
         }
         catch (Exception e)
         {

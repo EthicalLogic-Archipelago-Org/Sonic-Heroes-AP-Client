@@ -633,7 +633,7 @@ public class LevelTracker
             if (!Mod.LevelSelectManager.IsThisTeamActEnabled(team, Act.Act2, taskName))
                 return;
             var sanityLevelOffset = SonicHeroesDefinitions.DarkObjSanityStartId + ((int)level - 2) * 100;
-            var sanityMax = 100 / Mod.ArchipelagoHandler.SlotData.DarksanityCheckSize;
+            var sanityMax = 108 / Mod.ArchipelagoHandler.SlotData.DarksanityCheckSize;
             var sanityChecked =
                 Mod.ArchipelagoHandler.CountLocationsCheckedInRange(sanityLevelOffset, sanityLevelOffset + 100);
             HandleSanityLayout("Enemies", sanityChecked, sanityMax, _windowWidth / 2, taskName);
@@ -1103,7 +1103,7 @@ public class LevelTracker
         try
         {
             var text = $"Spawn Position: - {LevelSpawnUnlockHandler.GetLevelSelectUiText(team, level, taskName)}";
-            WriteCenteredText(text, taskName, Color.Empty);
+            WriteCenteredText(text, taskName, Color.Empty, true);
         }
         catch (Exception e)
         {

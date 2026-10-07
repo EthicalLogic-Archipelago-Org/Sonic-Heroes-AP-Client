@@ -6,6 +6,7 @@ using Sonic_Heroes_AP_Client.Definitions;
 using Sonic_Heroes_AP_Client.GameState;
 using Sonic_Heroes_AP_Client.Logging;
 using Sonic_Heroes_AP_Client.StageObj.DashPanel;
+using Sonic_Heroes_AP_Client.StageObj.EggFlapper;
 using Sonic_Heroes_AP_Client.StageObj.HintRing;
 using Sonic_Heroes_AP_Client.StageObj.MovingRuinPlatform;
 using Sonic_Heroes_AP_Client.StageObj.Ring;
@@ -359,7 +360,31 @@ public static class StageObjHandler
             default:
                 break;
         }
+        
+        
+        if (level is LevelId.MetalMadness or LevelId.MetalOverlord or LevelId.SeaGate)
+        {
+            ForceSpawnOrUnSpawnObjs(team, true, taskName);
+        }
     }
+    
+    public static void ForceSpawnOrUnSpawnObjs(Team team, bool unlock, string taskName)
+    {
+        if (Mod.SaveDataHandler.CustomSaveData == null)
+        {
+            LoggingHandler.LogMessage($"Custom SaveData is null in SpawnObjsBasedOnSaveDataForTeam", taskName, LogLevel.Error);
+            return;
+        }
+            
+        foreach (var pair in Mod.SaveDataHandler.CustomSaveData.StageObjSpawnSaveData[team])
+        {
+            foreach (var objData in GetInLevelObjsOfType(pair.Key, taskName))
+            {
+                objData.SpawnOrDespawnObj(unlock, taskName);
+            }
+        }
+    }
+    
 
     public static void SpawnObjsBasedOnSaveDataForTeam(Team team, string taskName)
     {
@@ -401,7 +426,9 @@ public static class StageObjHandler
         }
     }
     
-    //TODO handle Stage Obj Stuff for Level Gates
+    
+    
+
     public static void HandleSonicStageObjs(LevelId level, Act act, string taskName)
     {
         try
@@ -534,7 +561,7 @@ public static class StageObjHandler
             
             MovingRuinPlatformHandler.HandleDarkMovingRuinsAfterBackup(level, act, taskName);
             
-            
+            EggFlapperHandler.HandleDarkEggFlappersAfterBackup(level, act, taskName);
         }
         catch (Exception e)
         {

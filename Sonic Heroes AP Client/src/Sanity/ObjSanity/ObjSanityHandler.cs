@@ -125,7 +125,7 @@ public static class ObjSanityHandler
 
             int currentAmount = Mod.SaveDataHandler.CustomSaveData.DarkObjSanityEnemyKills[(LevelId)levelId].Count(x => x);
             // TODO handle this better
-            currentAmount = Math.Min(currentAmount, 99);
+            currentAmount = Math.Min(currentAmount, 107);
             SetTEnemyScoreManagerEnemyKilledCount(currentAmount, taskName);
         }
         catch (Exception e)
@@ -157,11 +157,14 @@ public static class ObjSanityHandler
             {
                 return;
             }
-            if (enemyData.Team is Team.Dark && !(act is Act.Act2 && Mod.LevelSelectManager.IsThisTeamActEnabled(enemyData.Team, act, taskName) && (bool)Mod.LevelSelectManager.IsThisSanityEnabled(enemyData.Team, SanityType.ObjSanity, taskName, oneSet: true)))
+            if (enemyData.Team is Team.Dark && !(bool)Mod.LevelSelectManager.IsThisSanityEnabled(enemyData.Team, SanityType.ObjSanity, taskName, oneSet: true))
             {
                 LoggingHandler.LogMessage($"Team Dark but no ObjSanity in HandleEnemyKilledObjSanity", taskName,  LogLevel.Debug);
                 return;
             }
+            
+            
+            // TODO think about Chaotix ObjSanity in different Act (annoying for Mystic)
             if (enemyData.Team is Team.Chaotix && !(Mod.LevelSelectManager.IsThisTeamActEnabled(enemyData.Team, act, taskName) && ((bool)Mod.LevelSelectManager.IsThisSanityEnabled(enemyData.Team, SanityType.ObjSanity, taskName, oneSet: true) || (bool)Mod.LevelSelectManager.IsThisSanityEnabled(enemyData.Team, SanityType.ObjSanity, taskName, bothActs: true))))
             {
                 LoggingHandler.LogMessage($"Team Chaotix but no ObjSanity in HandleEnemyKilledObjSanity", taskName,  LogLevel.Debug); 
@@ -171,7 +174,7 @@ public static class ObjSanityHandler
             switch (enemyData.Team)
             {
                 case Team.Dark:
-                    HandleDarkEnemyKilledObjSanity(enemyData, taskName);
+                    HandleDarkEnemyKilledObjSanity(enemyData, act, taskName);
                     break;
                 case Team.Chaotix:
                     break;
@@ -186,7 +189,7 @@ public static class ObjSanityHandler
     }
 
 
-    public static void HandleDarkEnemyKilledObjSanity(EnemyData.BaseEnemyData enemySanityData, string taskName)
+    public static void HandleDarkEnemyKilledObjSanity(EnemyData.BaseEnemyData enemySanityData, Act act, string taskName)
     {
         try
         {
@@ -196,7 +199,7 @@ public static class ObjSanityHandler
 
             if (enemyIndex < 0)
             {
-                LoggingHandler.LogMessage($"Enemy was not found in EnemySanity Data for HandleEnemyKilledObjSanity", taskName, LogLevel.Debug); 
+                LoggingHandler.LogMessage($"Enemy was not found in EnemySanity Data for HandleEnemyKilledObjSanity", taskName, LogLevel.Error); 
                 return;
             }
 
@@ -208,7 +211,7 @@ public static class ObjSanityHandler
                 Mod.ArchipelagoHandler.Save(taskName);
 
             }
-            else
+            else if (act is Act.Act2)
             {
                 var enemyCounter = GetTEnemyScoreManagerEnemyKilledCount(taskName);
                 LoggingHandler.LogMessage($"Team Dark Level: {enemySanityData.LevelId} Enemy #{enemyIndex + 1} has been killed already.", taskName, LogLevel.Debug);
@@ -363,7 +366,7 @@ public static class ObjSanityHandler
                 (storyId == Team.Dark && act != Act.Act2) ||
                 (storyId == Team.Chaotix && levelId != LevelId.GrandMetropolis))
                 return;
-            var maxEnemyCheck = storyId == Team.Dark ? 100 : 85;
+            var maxEnemyCheck = storyId == Team.Dark ? 108 : 85;
             if (newCount > maxEnemyCheck)
                 newCount = maxEnemyCheck;
 

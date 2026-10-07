@@ -185,6 +185,24 @@ public static class GameStateGameWrites
             LoggingHandler.LogMessage($"{e}", taskName, LogLevel.Error);
         }
     }
+
+    /// <summary>
+    /// Changes the Number of Enemies required to goal 
+    /// </summary>
+    /// <param name="amount"></param>
+    /// <param name="taskName"></param>
+    public static void ChangeDarkObjSanityRequirements(byte amount, string taskName)
+    {
+        try
+        {
+            Memory.Instance.SafeWrite(Mod.ModuleBase + 0x1A9984, [amount]); //UIRequirementByte
+            Memory.Instance.SafeWrite(Mod.ModuleBase + 0x1A9993, [amount]); //RequirementByte
+        }
+        catch (Exception e)
+        {
+            LoggingHandler.LogMessage($"{e}", taskName, LogLevel.Error);
+        }
+    }
     
     
     /// <summary>
