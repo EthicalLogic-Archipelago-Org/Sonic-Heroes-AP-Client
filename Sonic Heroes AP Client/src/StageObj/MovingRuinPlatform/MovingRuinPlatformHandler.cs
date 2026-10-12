@@ -60,11 +60,11 @@ public static class MovingRuinPlatformHandler
                     
                     List<Vector3> invisCollisForBigRuinWithTriggerList =
                     [
-                        //Big Ruin After First Bobsled Center
+                        //Big Special Ruin After First Bobsled Center
                         new Vector3(-940.2097f, 29.6240f, -16150.39f),
-                        //Big Ruin After First Bobsled Left
+                        //Big Special Ruin After First Bobsled Left
                         new Vector3(-940.2097f, 109.6240f, -16283.39f),
-                        //Big Ruin After First Bobsled Right
+                        //Big Special Ruin After First Bobsled Right
                         new Vector3(-940.2097f, 109.6240f, -16017.39f),
                         
                         //Big Special Ruin Before Volcano Center

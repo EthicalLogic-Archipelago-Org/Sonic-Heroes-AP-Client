@@ -44,19 +44,20 @@ public static class EggFlapperHandler
                         //Right Red Flapper
                         new Vector3(-4513.3620f, 130.9900f, -11706.1200f),
                     ];
-                    
-                    foreach (StageObjSpawnData spawnData in StageObjHandler.GetInLevelObjsOfType(StageObjTypes.EggFlapper, taskName))
+
+                    if (!hasRuin)
                     {
-                        foreach (Vector3 spawnPos in eggFlappersThatNeedRuinsNoTriggerList)
+                        foreach (StageObjSpawnData spawnData in StageObjHandler.GetInLevelObjsOfType(StageObjTypes.EggFlapper, taskName))
                         {
-                            if (spawnData.IsAtPosition(spawnPos, taskName))
+                            foreach (Vector3 spawnPos in eggFlappersThatNeedRuinsNoTriggerList)
                             {
-                                spawnData.SpawnOrDespawnObj(hasRuin, taskName);
+                                if (spawnData.IsAtPosition(spawnPos, taskName))
+                                {
+                                    spawnData.SpawnOrDespawnObj(false, taskName);
+                                }
                             }
                         }
                     }
-                    
-                    
                     
                     break;
             }

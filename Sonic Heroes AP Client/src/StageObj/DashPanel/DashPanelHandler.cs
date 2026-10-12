@@ -38,6 +38,7 @@ public static class DashPanelHandler
     {
         try
         {
+            bool canBypassBadSpot = AbilityCharacterManager.CanBypassDashPanelInBadSpot(team, SonicHeroesDefinitions.LevelIdToRegion[level], taskName);
             switch (team)
             {
                 case Team.Sonic when level is LevelId.SeasideHill:
@@ -65,20 +66,22 @@ public static class DashPanelHandler
                         new Vector3(-4509.4070f, 30f, -8035.0040f),
                         new Vector3(-4472f, 30.0896f, -8035.0040f),
                     ];
-                    
-                    foreach (StageObjSpawnData spawnData in StageObjHandler.GetInLevelObjsOfType(StageObjTypes.DashPanel, taskName))
+
+                    if (!canBypassBadSpot)
                     {
-                        DashPanelSpawnData dashPanel = spawnData as DashPanelSpawnData;
-                        foreach (Vector3 spawnPos in sonicDashPanelsToUnSpawn)
+                        foreach (StageObjSpawnData spawnData in StageObjHandler.GetInLevelObjsOfType(StageObjTypes.DashPanel, taskName))
                         {
-                            if (dashPanel.IsAtPosition(spawnPos, taskName))
+                            DashPanelSpawnData dashPanel = spawnData as DashPanelSpawnData;
+                            foreach (Vector3 spawnPos in sonicDashPanelsToUnSpawn)
                             {
-                                dashPanel.SpawnOrDespawnObj(AbilityCharacterManager.CanBypassDashPanelInBadSpot(team, SonicHeroesDefinitions.LevelIdToRegion[level], taskName), taskName);
+                                if (dashPanel.IsAtPosition(spawnPos, taskName))
+                                {
+                                    dashPanel.SpawnOrDespawnObj(false, taskName);
+                                }
                             }
                         }
                     }
                     break;
-                
                 
                 
                 
@@ -112,14 +115,17 @@ public static class DashPanelHandler
                         new Vector3(-4472f, 30.0896f, -8035.0040f),
                     ];
                     
-                    foreach (StageObjSpawnData spawnData in StageObjHandler.GetInLevelObjsOfType(StageObjTypes.DashPanel, taskName))
+                    if (!canBypassBadSpot)
                     {
-                        DashPanelSpawnData dashPanel = spawnData as DashPanelSpawnData;
-                        foreach (Vector3 spawnPos in darkDashPanelsToUnSpawn)
+                        foreach (StageObjSpawnData spawnData in StageObjHandler.GetInLevelObjsOfType(StageObjTypes.DashPanel, taskName))
                         {
-                            if (dashPanel.IsAtPosition(spawnPos, taskName))
+                            DashPanelSpawnData dashPanel = spawnData as DashPanelSpawnData;
+                            foreach (Vector3 spawnPos in darkDashPanelsToUnSpawn)
                             {
-                                dashPanel.SpawnOrDespawnObj(AbilityCharacterManager.CanBypassDashPanelInBadSpot(team, SonicHeroesDefinitions.LevelIdToRegion[level], taskName), taskName);
+                                if (dashPanel.IsAtPosition(spawnPos, taskName))
+                                {
+                                    dashPanel.SpawnOrDespawnObj(false, taskName);
+                                }
                             }
                         }
                     }

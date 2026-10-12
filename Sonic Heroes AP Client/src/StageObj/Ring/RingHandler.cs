@@ -27,6 +27,17 @@ public static class RingHandler
     {
         try
         {
+            Region region = SonicHeroesDefinitions.LevelIdToRegion[level];
+            
+            bool canJump = AbilityCharacterManager.HasAbilityForTeamRegion(team, region, Ability.Jump, taskName);
+            bool hasAnotherChar = AbilityCharacterManager.GetCharUnlock(team, FormationChar.Speed, taskName) || AbilityCharacterManager.GetCharUnlock(team, FormationChar.Power, taskName);
+            bool canThundershoot = AbilityCharacterManager.HasAbilityForTeamRegion(team, region, Ability.Thundershoot, taskName) && AbilityCharacterManager.GetCharUnlock(team, FormationChar.Speed, taskName) || AbilityCharacterManager.GetCharUnlock(team, FormationChar.Power, taskName);
+            bool canFly = AbilityCharacterManager.HasAbilityForTeamRegion(team, region, Ability.Flight, taskName);
+            bool hasComboHeight = AbilityCharacterManager.HasComboHeightForTeamRegion(team, region, taskName);
+            bool hasSingleSpring = StageObjHandler.IsStageObjUnlockedForTeamRegion(StageObjTypes.SingleSpring, team, region, taskName);
+            bool hasTripleSpring = StageObjHandler.IsStageObjUnlockedForTeamRegion(StageObjTypes.TripleSpring, team, region, taskName);
+            bool hasRuinsWithTrigger = StageObjHandler.IsStageObjUnlockedForTeamRegion(StageObjTypes.MovingRuinPlatform, team, region, taskName) && StageObjHandler.IsStageObjUnlockedForTeamRegion(StageObjTypes.TriggerRuins, team, region, taskName);
+            
             switch (team)
             {
                 case Team.Dark when level is LevelId.SeasideHill:
@@ -38,20 +49,16 @@ public static class RingHandler
                         if (ring.IsAtPosition(verticalRingsEggsmansRobotsBottom, taskName))
                         {
                             var shouldSpawn = false;
-                            Region region = SonicHeroesDefinitions.LevelIdToRegion[level];
-                            if (StageObjHandler.IsStageObjUnlockedForTeamRegion(StageObjTypes.Rings, team, SonicHeroesDefinitions.LevelIdToRegion[level], taskName))
+                            //RingsAND(FlyAnyAND(JumpORThundershoot0)OR(JumpANDTripleSpring))
+                            if ((canJump && hasTripleSpring) || (canFly && (canJump || hasAnotherChar)))
                             {
-                                bool canFly = AbilityCharacterManager.HasAbilityForTeamRegion(team, region, Ability.Flight, taskName);
-                                bool canJump = AbilityCharacterManager.HasAbilityForTeamRegion(team, region, Ability.Jump, taskName);
-                                bool hasAnotherChar = AbilityCharacterManager.GetCharUnlock(team, FormationChar.Speed, taskName) || AbilityCharacterManager.GetCharUnlock(team, FormationChar.Power, taskName);
-                                bool hasTripleSpring = StageObjHandler.IsStageObjUnlockedForTeamRegion(StageObjTypes.TripleSpring, team, region, taskName);
-                                //RingsAND(FlyAnyAND(JumpORThundershoot0)OR(JumpANDTripleSpring))
-                                if ((canJump && hasTripleSpring) || (canFly && (canJump || hasAnotherChar)))
-                                {
-                                    shouldSpawn = true;
-                                }
+                                shouldSpawn = true;
                             }
-                            ring.SpawnOrDespawnObj(shouldSpawn, taskName);
+
+                            if (!shouldSpawn)
+                            {
+                                ring.SpawnOrDespawnObj(false, taskName);
+                            }
                         }
                     }
                     
@@ -71,20 +78,16 @@ public static class RingHandler
                             if (ring.IsAtPosition(spawnPos, taskName))
                             {
                                 var shouldSpawn = false;
-                                Region region = SonicHeroesDefinitions.LevelIdToRegion[level];
-                                if (StageObjHandler.IsStageObjUnlockedForTeamRegion(StageObjTypes.Rings, team, SonicHeroesDefinitions.LevelIdToRegion[level], taskName))
+                                //RingsAND(RuinsTriggerAND(FlyAnyORJumpORTripleSpring))
+                                if (hasRuinsWithTrigger && (canFly || canJump || hasTripleSpring))
                                 {
-                                    bool hasRuinsWithTrigger = StageObjHandler.IsStageObjUnlockedForTeamRegion(StageObjTypes.MovingRuinPlatform, team, region, taskName) && StageObjHandler.IsStageObjUnlockedForTeamRegion(StageObjTypes.TriggerRuins, team, region, taskName);
-                                    bool canFly = AbilityCharacterManager.HasAbilityForTeamRegion(team, region, Ability.Flight, taskName);
-                                    bool canJump = AbilityCharacterManager.HasAbilityForTeamRegion(team, region, Ability.Jump, taskName);
-                                    bool hasTripleSpring = StageObjHandler.IsStageObjUnlockedForTeamRegion(StageObjTypes.TripleSpring, team, region, taskName);
-                                    //RingsAND(RuinsTriggerAND(FlyAnyORJumpORTripleSpring))
-                                    if (hasRuinsWithTrigger && (canFly || canJump || hasTripleSpring))
-                                    {
-                                        shouldSpawn = true;
-                                    }
+                                    shouldSpawn = true;
                                 }
-                                ring.SpawnOrDespawnObj(shouldSpawn, taskName);
+                                
+                                if (!shouldSpawn)
+                                {
+                                    ring.SpawnOrDespawnObj(false, taskName);
+                                }
                             }
                         }
                     }
@@ -98,21 +101,16 @@ public static class RingHandler
                         if (ring.IsAtPosition(verticalRingsFirstCliff, taskName))
                         {
                             var shouldSpawn = false;
-                            Region region = SonicHeroesDefinitions.LevelIdToRegion[level];
-                            if (StageObjHandler.IsStageObjUnlockedForTeamRegion(StageObjTypes.Rings, team, SonicHeroesDefinitions.LevelIdToRegion[level], taskName))
+                            //RingsANDSingleSpringAND(FlyAnyORJumpORThundershoot0ORComboHeight)
+                            if (hasSingleSpring && (canFly || canJump || canThundershoot || hasComboHeight))
                             {
-                                bool canFly = AbilityCharacterManager.HasAbilityForTeamRegion(team, region, Ability.Flight, taskName);
-                                bool canJump = AbilityCharacterManager.HasAbilityForTeamRegion(team, region, Ability.Jump, taskName);
-                                bool canThundershoot = AbilityCharacterManager.HasAbilityForTeamRegion(team, region, Ability.Thundershoot, taskName) && AbilityCharacterManager.GetCharUnlock(team, FormationChar.Speed, taskName) || AbilityCharacterManager.GetCharUnlock(team, FormationChar.Power, taskName);
-                                bool hasComboHeight = AbilityCharacterManager.HasComboHeightForTeamRegion(team, region, taskName);
-                                bool hasSingleSpring = StageObjHandler.IsStageObjUnlockedForTeamRegion(StageObjTypes.SingleSpring, team, region, taskName);
-                                //RingsANDSingleSpringAND(FlyAnyORJumpORThundershoot0ORComboHeight)
-                                if (hasSingleSpring && (canFly || canJump || canThundershoot || hasComboHeight))
-                                {
-                                    shouldSpawn = true;
-                                }
+                                shouldSpawn = true;
                             }
-                            ring.SpawnOrDespawnObj(shouldSpawn, taskName);
+                            
+                            if (!shouldSpawn)
+                            {
+                                ring.SpawnOrDespawnObj(false, taskName);
+                            }
                         }
                     }
                     break;
