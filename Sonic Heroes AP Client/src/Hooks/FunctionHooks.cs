@@ -1317,6 +1317,7 @@ public static class FunctionHooks
         //LoggingHandler.LogMessage($"GoToGameFromLevelSelect. Spawn Index: {Mod.LevelSpawnHandler!.SpawnPosIndex}", TaskName, LogLevel.Debug);
         LevelSpawnUnlockHandler.ShouldCheckForInput = false;
         LevelSpawnUnlockHandler.GoToGameSpawnPosCallback(TaskName);
+        AbilityCharacterGameWrites.HandleTeamRosterRando(TaskName);
         LoggingHandler.LogMessage($"GoToGameFromLevelSelect End", TaskName, LogLevel.SuperDebug);
         return 0;
     }

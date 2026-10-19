@@ -298,6 +298,102 @@ public class Config : Configurable<Config>
     
     
     
+    
+    
+    [Category("TeamRosterRando")]
+    [DisplayName("Team Roster Rando")]
+    [Description("Should Team Roster Rando be enabled?")]
+    [DefaultValue(false)]
+    public bool TeamRosterRando { get; set; } = false;
+    
+    
+    [Category("TeamRosterRando")]
+    [DisplayName("Force Full Rando")]
+    [Description("Ignore the options to force specific rando and go random")]
+    [DefaultValue(false)]
+    public bool TeamRosterRandoForceRandom { get; set; } = false;
+    
+    
+    [Category("TeamRosterRando")]
+    [DisplayName("Team Sonic Speed Character Rando")]
+    [Description("Who should replace Team Sonic's Speed Character?")]
+    [DefaultValue(Character.Sonic)]
+    public Character TeamSonicSpeedCharacterRando { get; set; } = Character.Sonic;
+    
+    [Category("TeamRosterRando")]
+    [DisplayName("Team Sonic Power Character Rando")]
+    [Description("Who should replace Team Sonic's Power Character?")]
+    [DefaultValue(Character.Knuckles)]
+    public Character TeamSonicPowerCharacterRando { get; set; } = Character.Knuckles;
+    
+    [Category("TeamRosterRando")]
+    [DisplayName("Team Sonic Flying Character Rando")]
+    [Description("Who should replace Team Sonic's Flying Character?")]
+    [DefaultValue(Character.Tails)]
+    public Character TeamSonicFlyingCharacterRando { get; set; } = Character.Tails;
+    
+    
+    [Category("TeamRosterRando")]
+    [DisplayName("Team Dark Speed Character Rando")]
+    [Description("Who should replace Team Dark's Speed Character?")]
+    [DefaultValue(Character.Shadow)]
+    public Character TeamDarkSpeedCharacterRando { get; set; } = Character.Shadow;
+    
+    [Category("TeamRosterRando")]
+    [DisplayName("Team Dark Power Character Rando")]
+    [Description("Who should replace Team Dark's Power Character?")]
+    [DefaultValue(Character.Omega)]
+    public Character TeamDarkPowerCharacterRando { get; set; } = Character.Omega;
+    
+    [Category("TeamRosterRando")]
+    [DisplayName("Team Dark Flying Character Rando")]
+    [Description("Who should replace Team Dark's Flying Character?")]
+    [DefaultValue(Character.Rouge)]
+    public Character TeamDarkFlyingCharacterRando { get; set; } = Character.Rouge;
+    
+    
+    
+    [Category("TeamRosterRando")]
+    [DisplayName("Team Rose Speed Character Rando")]
+    [Description("Who should replace Team Rose's Speed Character?")]
+    [DefaultValue(Character.Amy)]
+    public Character TeamRoseSpeedCharacterRando { get; set; } = Character.Amy;
+    
+    [Category("TeamRosterRando")]
+    [DisplayName("Team Rose Power Character Rando")]
+    [Description("Who should replace Team Rose's Power Character?")]
+    [DefaultValue(Character.Big)]
+    public Character TeamRosePowerCharacterRando { get; set; } = Character.Big;
+    
+    [Category("TeamRosterRando")]
+    [DisplayName("Team Rose Flying Character Rando")]
+    [Description("Who should replace Team Rose's Flying Character?")]
+    [DefaultValue(Character.Cream)]
+    public Character TeamRoseFlyingCharacterRando { get; set; } = Character.Cream;
+    
+    
+    
+    [Category("TeamRosterRando")]
+    [DisplayName("Team Chaotix Speed Character Rando")]
+    [Description("Who should replace Team Chaotix's Speed Character?")]
+    [DefaultValue(Character.Espio)]
+    public Character TeamChaotixSpeedCharacterRando { get; set; } = Character.Espio;
+    
+    [Category("TeamRosterRando")]
+    [DisplayName("Team Chaotix Power Character Rando")]
+    [Description("Who should replace Team Chaotix's Power Character?")]
+    [DefaultValue(Character.Vector)]
+    public Character TeamChaotixPowerCharacterRando { get; set; } = Character.Vector;
+    
+    [Category("TeamRosterRando")]
+    [DisplayName("Team Chaotix Flying Character Rando")]
+    [Description("Who should replace Team Chaotix's Flying Character?")]
+    [DefaultValue(Character.Charmy)]
+    public Character TeamChaotixFlyingCharacterRando { get; set; } = Character.Charmy;
+    
+    
+    
+    
     //[DisplayName("AP Connection Options")]
     //[Description("AP Connection Options")]
     //public ConnectionOptions ConnectionOptions { get; set; } = new ConnectionOptions();

@@ -10,6 +10,10 @@ public static class AbilityCharacterManager
 {
     public static Dictionary<Team, Dictionary<FormationChar, bool>> ShouldOverrideState = Enum.GetValues<Team>().ToDictionary(x => x, _ => Enum.GetValues<FormationChar>().ToDictionary(y => y, _ => false));
 
+    public static Dictionary<Character, Character> TeamRosterRando = Enum.GetValues<Character>().ToDictionary(x => x, x => x);
+
+    public static bool IsTeamRosterRandomized = false;
+
 
     public static void InitConnect(string taskName)
     {
