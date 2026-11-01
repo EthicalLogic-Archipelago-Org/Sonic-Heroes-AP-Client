@@ -1208,7 +1208,8 @@ public static class FunctionHooks
     private static int OnStartCompleteStage()
     {
         LoggingHandler.LogMessage($"StartCompleteStage Start", TaskName, LogLevel.SuperDebug);
-        ObjSanityHandler.CheckEnemyCount(100, TaskName);
+        // TODO Redo this
+        //ObjSanityHandler.CheckEnemyCount(100, TaskName);
         ObjSanityHandler.CheckRingSanity(500, TaskName);
         GameStateGameWrites.SetBonusKey(false, TaskName);
         LoggingHandler.LogMessage($"StartCompleteStage End", TaskName, LogLevel.SuperDebug);

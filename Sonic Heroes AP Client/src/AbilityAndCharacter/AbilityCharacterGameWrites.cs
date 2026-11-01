@@ -29,25 +29,7 @@ public static class AbilityCharacterGameWrites
         {Character.Vector, 0x28},
         {Character.Charmy, 0x2C},
     };
-
-    /// <summary>
-    /// Switch Case Jump Table Values for each character. Note that Super Hard Mode and Super Sonic use the regular versions. Example for Sonic is: [0x7C, 0xAC, 0x5A, 0x00]
-    /// </summary>
-    private static readonly Dictionary<Character, List<byte>> TeamRosterRandoJumpTableValuessss = new()
-    {
-        {Character.Sonic, [0x7C, 0xAC]},
-        {Character.Knuckles, [0x91, 0xAC]},
-        {Character.Tails, [0xA6, 0xAC]},
-        {Character.Shadow, [0xBB, 0xAC]},
-        {Character.Omega, [0xCD, 0xAC]},
-        {Character.Rouge, [0xE2, 0xAC]},
-        {Character.Amy, [0xF7, 0xAC]},
-        {Character.Big, [0x09, 0xAD]},
-        {Character.Cream, [0x1B, 0xAD]},
-        {Character.Espio, [0x2D, 0xAD]},
-        {Character.Vector, [0x55, 0xAD]},
-        {Character.Charmy, [0x7D, 0xAD]},
-    };
+    
     
     /// <summary>
     /// Switch Case Jump Table Values for each character. Note that Super Hard Mode and Super Sonic use the regular versions. Example for Sonic is: [0x7C, 0xAC, 0x5A, 0x00]

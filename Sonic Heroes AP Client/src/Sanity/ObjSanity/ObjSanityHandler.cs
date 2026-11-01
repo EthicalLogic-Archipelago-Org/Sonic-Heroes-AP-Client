@@ -125,7 +125,10 @@ public static class ObjSanityHandler
 
             int currentAmount = Mod.SaveDataHandler.CustomSaveData.DarkObjSanityEnemyKills[(LevelId)levelId].Count(x => x);
             // TODO handle this better
-            currentAmount = Math.Min(currentAmount, 107);
+            // var locationId = 0xA0 + (int)team * 42 + (levelIndex - 2) * 2 + isMission2;
+            
+            int hasGoaledActB = Mod.ArchipelagoHandler.IsLocationChecked(0xA0 + (int)Team.Dark * 42 + ((int)levelId - 2) * 2 + 1) ? 1 : 0;
+            currentAmount = Math.Min(currentAmount, 108 - hasGoaledActB);
             SetTEnemyScoreManagerEnemyKilledCount(currentAmount, taskName);
         }
         catch (Exception e)
