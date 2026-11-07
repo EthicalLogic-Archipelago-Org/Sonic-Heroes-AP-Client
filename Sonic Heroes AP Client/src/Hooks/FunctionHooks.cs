@@ -724,7 +724,13 @@ public static class FunctionHooks
                 LoggingHandler.LogMessage($"PowerAttackGiveSFAMeter End (Level not In Region)", TaskName, LogLevel.SuperDebug);
                 return 0;
             }
-                
+            
+            var teamBlastPtr = (float*)(Mod.ModuleBase + 0x5DD72C);
+
+            if (Mod.Configuration.PowerAttackGiveSFA)
+            {
+                (*teamBlastPtr) += 100.0f;
+            }
 
             if (AbilityCharacterManager.HasAbilityForTeamRegion(team, region, Ability.PowerAttack, TaskName))
             {
@@ -732,10 +738,7 @@ public static class FunctionHooks
                 //do nothing if have power attack
                 return 0;
             }
-                
-
-            var teamBlastPtr = (float*)(Mod.ModuleBase + 0x5DD72C);
-
+            
             (*teamBlastPtr) -= 1.0f;
         }
         catch (Exception e)
@@ -1318,7 +1321,7 @@ public static class FunctionHooks
         //LoggingHandler.LogMessage($"GoToGameFromLevelSelect. Spawn Index: {Mod.LevelSpawnHandler!.SpawnPosIndex}", TaskName, LogLevel.Debug);
         LevelSpawnUnlockHandler.ShouldCheckForInput = false;
         LevelSpawnUnlockHandler.GoToGameSpawnPosCallback(TaskName);
-        AbilityCharacterGameWrites.HandleTeamRosterRando(TaskName);
+        TeamRosterRandoGameWrites.HandleTeamRosterRandoCallback(TaskName);
         LoggingHandler.LogMessage($"GoToGameFromLevelSelect End", TaskName, LogLevel.SuperDebug);
         return 0;
     }

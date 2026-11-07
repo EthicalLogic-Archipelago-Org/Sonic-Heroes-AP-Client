@@ -180,7 +180,7 @@ public class LevelTracker
             _outerWidth = outerWidth;
             _uiScale = uiScale;
             _windowWidth = 0.35f * _outerWidth;
-            _windowHeight = 0.60f * _outerHeight;
+            _windowHeight = 0.65f * _outerHeight;
             _windowPosX = _outerWidth - _windowWidth;
             _windowPosY = 0.0f;
             var trackerPos = new ImVec2.__Internal { x = _windowPosX, y = _windowPosY };
@@ -1146,6 +1146,27 @@ public class LevelTracker
             List<Ability> handledAbilities = [];
             List<Ability> superHardAbilities = AbilityCharacterManager.GetAbilitiesForTeam(Team.SuperHardMode, taskName, true);
             List<Ability> handledSuperHardAbilities = [];
+
+            if (Mod.IsDebug)
+            {
+                List<Ability> tempList = [];
+                foreach (var tempTeam in Enum.GetValues<Team>())
+                {
+                    foreach (var tempAbility in AbilityCharacterManager.GetAbilitiesForTeam(tempTeam, taskName, true))
+                    {
+                        if (tempList.Contains(tempAbility))
+                        {
+                            continue;
+                        }
+                        tempList.Add(tempAbility);
+                    }
+                }
+                tempList = tempList.OrderBy(x => x).ToList();
+                teamAbilities = tempList;
+                superHardAbilities = tempList;
+            }
+            
+            
 
             foreach (var ability in teamAbilities)
             {

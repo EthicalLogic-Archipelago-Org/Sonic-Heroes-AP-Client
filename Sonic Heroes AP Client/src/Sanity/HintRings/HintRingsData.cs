@@ -41,7 +41,15 @@ public static class HintRingsData
     };
     public static List<HintRingData> ChaotixHintRings = new()
     {
-
+        new HintRingData(team: Team.Chaotix, levelid: LevelId.SeasideHill, region: "Eggmans Robots Bottom Before Checkpoint 1", voicelineid: 91, group: 0, id_offset_group: 0, id_offset_full: 0, linkid: 0, x: -430.127f, y: 330f, z: -6601.082f),
+        new HintRingData(team: Team.Chaotix, levelid: LevelId.SeasideHill, region: "Eggmans Robots Top Before Checkpoint 1", voicelineid: 414, group: 0, id_offset_group: 0, id_offset_full: 0, linkid: 0, x: -772.8177f, y: 530f, z: -6660.057f),
+        new HintRingData(team: Team.Chaotix, levelid: LevelId.SeasideHill, region: "Eggmans Robots Top After Block Before Checkpoint 1", voicelineid: 84, group: 0, id_offset_group: 0, id_offset_full: 0, linkid: 0, x: -1088.87f, y: 480f, z: -6662.69f),
+        new HintRingData(team: Team.Chaotix, levelid: LevelId.SeasideHill, region: "Staircase Before Corner Cave Bottom At Checkpoint 1", voicelineid: 77, group: 0, id_offset_group: 0, id_offset_full: 0, linkid: 0, x: -2165.655f, y: 480f, z: -6447.778f),
+        new HintRingData(team: Team.Chaotix, levelid: LevelId.SeasideHill, region: "First Island After Checkpoint 1", voicelineid: 24, group: 0, id_offset_group: 0, id_offset_full: 0, linkid: 0, x: -4506.383f, y: 6.5013f, z: -10433.47f),
+        new HintRingData(team: Team.Chaotix, levelid: LevelId.SeasideHill, region: "First Island After Checkpoint 1", voicelineid: 78, group: 0, id_offset_group: 0, id_offset_full: 0, linkid: 0, x: -4484.391f, y: 8.5f, z: -10867.28f),
+        new HintRingData(team: Team.Chaotix, levelid: LevelId.SeasideHill, region: "Second Island After Checkpoint 1", voicelineid: 417, group: 0, id_offset_group: 0, id_offset_full: 0, linkid: 0, x: -4558.368f, y: 100f, z: -12153f),
+        new HintRingData(team: Team.Chaotix, levelid: LevelId.SeasideHill, region: "Middle Ruins After Second Island After Checkpoint 1", voicelineid: 121, group: 0, id_offset_group: 0, id_offset_full: 0, linkid: 0, x: -4465.796f, y: 40.8432f, z: -12881.11f),
+        new HintRingData(team: Team.Chaotix, levelid: LevelId.SeasideHill, region: "Lower Cliff Before Big Ruin Beach After Checkpoint 3", voicelineid: 7, group: 0, id_offset_group: 0, id_offset_full: 0, linkid: 0, x: 1250.417f, y: 343.1801f, z: -16835.14f),
     };
     public static List<HintRingData> SuperHardModeHintRings = new()
     {

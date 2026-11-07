@@ -12,48 +12,6 @@ public static class AbilityCharacterGameWrites
     public const float LockedFlightMeterValue = 999f;
     
     
-    private static readonly UIntPtr TeamRosterRandoJumpTableAddr = Mod.ModuleBase + 0x1AAEB0;
-    
-    private static readonly Dictionary<Character, int> TeamRosterRandoJumpTableOffsets = new()
-    {
-        {Character.Sonic, 0},
-        {Character.Knuckles, 0x4},
-        {Character.Tails, 0x8},
-        {Character.Shadow, 0xC},
-        {Character.Omega, 0x10},
-        {Character.Rouge, 0x14},
-        {Character.Amy, 0x18},
-        {Character.Big, 0x1C},
-        {Character.Cream, 0x20},
-        {Character.Espio, 0x24},
-        {Character.Vector, 0x28},
-        {Character.Charmy, 0x2C},
-    };
-    
-    
-    /// <summary>
-    /// Switch Case Jump Table Values for each character. Note that Super Hard Mode and Super Sonic use the regular versions. Example for Sonic is: [0x7C, 0xAC, 0x5A, 0x00]
-    /// </summary>
-    private static readonly Dictionary<Character, ushort> TeamRosterRandoJumpTableValues = new()
-    {
-        {Character.Sonic, 0xAC7C},
-        {Character.Knuckles, 0xAC91},
-        {Character.Tails, 0xACA6},
-        {Character.Shadow, 0xACBB},
-        {Character.Omega, 0xACCD},
-        {Character.Rouge, 0xACE2},
-        {Character.Amy, 0xACF7},
-        {Character.Big, 0xAD09},
-        {Character.Cream, 0xAD1B},
-        {Character.Espio, 0xAD2D},
-        {Character.Vector, 0xAD55},
-        {Character.Charmy, 0xAD7D},
-    };
-    
-    
-    
-    
-    
     
     /// <summary>
     /// Unlocks or Locks Character.
@@ -82,86 +40,15 @@ public static class AbilityCharacterGameWrites
         }
     }
 
-    
-    public static unsafe void HandleTeamRosterRando(string taskName)
+
+
+
+
+
+    public static void SetOpenWarpFlowerForAllFlyingCharacters(string taskName)
     {
-        try
-        {
-            if (!Mod.Configuration.TeamRosterRando)
-            {
-                LoggingHandler.LogMessage($"Team Roster Rando is disabled, checking original bytes now", taskName, LogLevel.Debug);
-                foreach (var character in Enum.GetValues<Character>())
-                {
-                    int addr = (int)TeamRosterRandoJumpTableAddr + TeamRosterRandoJumpTableOffsets[character];
-                    ushort correctValue = TeamRosterRandoJumpTableValues[character];
-                    ushort currentValue = *(ushort*)addr;
-                    if (currentValue != correctValue)
-                    {
-                        LoggingHandler.LogMessage($"Writing Bytes: 0x{correctValue:X} to addr: 0x{addr:X}", taskName, LogLevel.SuperDebug);
-                        Memory.Instance.SafeWrite((UIntPtr)addr, BitConverter.GetBytes(correctValue));
-                    }
-                    
-                }
-                LoggingHandler.LogMessage($"Team Roster Rando is disabled, leaving HandleTeamRosterRando", taskName,
-                    LogLevel.SuperDebug);
-                return;
-            }
-
-            if (Mod.Configuration.TeamRosterRandoForceRandom && !AbilityCharacterManager.IsTeamRosterRandomized)
-            {
-                LoggingHandler.LogMessage($"Shuffling Team Roster Rando now", taskName, LogLevel.SuperDebug);
-                Character[] tempArray = Enum.GetValues<Character>();
-                Random.Shared.Shuffle(tempArray);
-                List<Character> tempList = tempArray.ToList();
-                foreach (var pair in AbilityCharacterManager.TeamRosterRando)
-                {
-                    AbilityCharacterManager.TeamRosterRando[pair.Key] = tempList.First();
-                    tempList.RemoveAt(0);
-                }
-                AbilityCharacterManager.IsTeamRosterRandomized = true;
-            }
-
-
-            if (!Mod.Configuration.TeamRosterRandoForceRandom)
-            {
-                // make sure mapping is correct
-                AbilityCharacterManager.TeamRosterRando[Character.Sonic] = Mod.Configuration.TeamSonicSpeedCharacterRando;
-                AbilityCharacterManager.TeamRosterRando[Character.Knuckles] = Mod.Configuration.TeamSonicPowerCharacterRando;
-                AbilityCharacterManager.TeamRosterRando[Character.Tails] = Mod.Configuration.TeamSonicFlyingCharacterRando;
-                
-                AbilityCharacterManager.TeamRosterRando[Character.Shadow] = Mod.Configuration.TeamDarkSpeedCharacterRando;
-                AbilityCharacterManager.TeamRosterRando[Character.Omega] = Mod.Configuration.TeamDarkPowerCharacterRando;
-                AbilityCharacterManager.TeamRosterRando[Character.Rouge] = Mod.Configuration.TeamDarkFlyingCharacterRando;
-                
-                AbilityCharacterManager.TeamRosterRando[Character.Amy] = Mod.Configuration.TeamRoseSpeedCharacterRando;
-                AbilityCharacterManager.TeamRosterRando[Character.Big] = Mod.Configuration.TeamRosePowerCharacterRando;
-                AbilityCharacterManager.TeamRosterRando[Character.Cream] = Mod.Configuration.TeamRoseFlyingCharacterRando;
-                
-                AbilityCharacterManager.TeamRosterRando[Character.Espio] = Mod.Configuration.TeamChaotixSpeedCharacterRando;
-                AbilityCharacterManager.TeamRosterRando[Character.Vector] = Mod.Configuration.TeamChaotixPowerCharacterRando;
-                AbilityCharacterManager.TeamRosterRando[Character.Charmy] = Mod.Configuration.TeamChaotixFlyingCharacterRando;
-            }
-            
-            
-            
-            
-            LoggingHandler.LogMessage($"Handling Team Roster Rando now", taskName, LogLevel.SuperDebug);
-            
-            foreach (var pair in AbilityCharacterManager.TeamRosterRando)
-            {
-                int addr = (int)TeamRosterRandoJumpTableAddr + TeamRosterRandoJumpTableOffsets[pair.Key];
-                ushort correctValue = TeamRosterRandoJumpTableValues[pair.Value];
-                LoggingHandler.LogMessage($"Writing Bytes: 0x{correctValue:X} to addr: 0x{addr:X}", taskName, LogLevel.SuperDebug);
-                Memory.Instance.SafeWrite((UIntPtr)addr, BitConverter.GetBytes(correctValue));
-            }
-        }
-        catch (Exception e)
-        {
-            LoggingHandler.LogMessage($"{e}", taskName, LogLevel.Error);
-        }
+        
     }
-    
-    
     
     
     
@@ -315,12 +202,24 @@ public static class AbilityCharacterGameWrites
     
     public static void SetFlowerSting(bool value)
     {
-        //in stack
-        var bytes = value ? new byte[] { 0x74 } : new byte[] { 0xEB };
-        Memory.Instance.SafeWrite(Mod.ModuleBase + 0x1A62EA, bytes);
-        //independent
-        bytes = value ? new byte[] { 0xE8, 0xDB, 0x80, 0xFF, 0xFF } : new byte[] { 0x90, 0x90, 0x90, 0x90, 0x90 };
+        // Open Warp Flower
+        // Sting Attack
+        byte[] bytes = value ? [0x00] : [0x9F];
+        Memory.Instance.SafeWrite(Mod.ModuleBase + 0x71E70, bytes);
+        // Open Flower
+        bytes = value ? [0x00] : [0x4B];
+        Memory.Instance.SafeWrite(Mod.ModuleBase + 0x1A62F4, bytes);
+        
+        
+        // PlayerModeChangeToFlowerSting
+        // independent
+        bytes = value ? [0xE8, 0xDB, 0x80, 0xFF, 0xFF] : [0x90, 0x90, 0x90, 0x90, 0x90];
         Memory.Instance.SafeWrite(Mod.ModuleBase + 0x1AF660, bytes);
+        
+        // THIS IS OLD
+        // in stack
+        // bytes = value ? new byte[] { 0x74 } : new byte[] { 0xEB };
+        // Memory.Instance.SafeWrite(Mod.ModuleBase + 0x1A62EA, bytes);
     }
     
     public static void SetCheeseCannon(bool value)

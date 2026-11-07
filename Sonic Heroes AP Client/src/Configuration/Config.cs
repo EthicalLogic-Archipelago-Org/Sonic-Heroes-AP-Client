@@ -315,6 +315,13 @@ public class Config : Configurable<Config>
     
     
     [Category("TeamRosterRando")]
+    [DisplayName("Power Attack Gives Team Blast Meter")]
+    [Description("Debug Option to make Power Attack give Team Blast Meter")]
+    [DefaultValue(false)]
+    public bool PowerAttackGiveSFA { get; set; } = false;
+    
+    
+    [Category("TeamRosterRando")]
     [DisplayName("Team Sonic Speed Character Rando")]
     [Description("Who should replace Team Sonic's Speed Character?")]
     [DefaultValue(Character.Sonic)]

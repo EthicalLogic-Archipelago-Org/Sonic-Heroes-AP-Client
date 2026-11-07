@@ -39,7 +39,7 @@ public static class AbilityCharacterManager
                     UnlockAllCharsAndAbilitiesForAllRegionsForTeam(team, taskName);
                 }
             }
-            
+            TeamRosterRandoGameWrites.TeamRosterRandoInitConnect(taskName);
             HandleAbilityUnlockCheck(Team.Sonic, Region.Ocean, taskName, true);
         }
         catch (Exception e)
