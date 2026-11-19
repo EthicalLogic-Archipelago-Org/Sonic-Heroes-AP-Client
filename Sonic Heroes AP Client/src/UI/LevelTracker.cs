@@ -350,7 +350,8 @@ public class LevelTracker
             // var bossCompleteId = SonicHeroesDefinitions.MetalMadnessId;
             //var isBossComplete = Mod.ArchipelagoHandler.IsLocationChecked(bossCompleteId);
 
-            var isBossComplete = Mod.ArchipelagoHandler.Session.DataStorage.GetClientStatus() is ArchipelagoClientState.ClientGoal;
+            var isBossComplete = LocationHelper.IsMetalMadnessFillerLocationSent(taskName);
+            
             
             var cursorPos = new ImVec2();
             ImGui.GetCursorScreenPos(cursorPos);
