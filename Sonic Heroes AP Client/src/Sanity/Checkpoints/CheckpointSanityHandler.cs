@@ -1,6 +1,7 @@
 
 
 using System.Numerics;
+using Sonic_Heroes_AP_Client.Archipelago;
 using Sonic_Heroes_AP_Client.Definitions;
 using Sonic_Heroes_AP_Client.GameState;
 using Sonic_Heroes_AP_Client.LevelSpawnPosition;
@@ -56,43 +57,46 @@ public static class CheckpointSanityHandler
                         LoggingHandler.LogMessage(log, taskName, LogLevel.APAction);
 
                         LevelSpawnUnlockHandler.UnlockOrLockSpawnPosition((Team)team!, (LevelId)level!, checkpointsinlevel.IndexOf(matchingcheckpoints[i]) + 1, taskName, forceUnlock: true);
-
                         
-                        bool oneSetEnabled = (bool)Mod.LevelSelectManager.IsThisSanityEnabled((Team)team, SanityType.CheckpointSanity, taskName, oneSet: true)!;
-                        bool bothActsEnabled = team is not Team.SuperHardMode && (bool)Mod.LevelSelectManager.IsThisSanityEnabled((Team)team, SanityType.CheckpointSanity, taskName, bothActs: true)!;
+                        
+                        LocationHelper.SendCheckpointSanityLocation((Team)team, (LevelId)level, (Act)act, checkpointsinlevel.IndexOf(matchingcheckpoints[i]) + 1, taskName);
+                        
+                        
+                        // bool oneSetEnabled = (bool)Mod.LevelSelectManager.IsThisSanityEnabled((Team)team, SanityType.CheckpointSanity, taskName, oneSet: true)!;
+                        // bool bothActsEnabled = team is not Team.SuperHardMode && (bool)Mod.LevelSelectManager.IsThisSanityEnabled((Team)team, SanityType.CheckpointSanity, taskName, bothActs: true)!;
 
-                        if (team is Team.SuperHardMode)
-                        {
-                            if (!oneSetEnabled)
-                                return;
-                            
-                            Mod.ArchipelagoHandler.CheckLocation(SonicHeroesDefinitions.CheckpointAct2StartId + CheckpointData.AllCheckpoints.IndexOf(matchingcheckpoints[i]));
-                        }
-                        else
-                        {
-                            if (!oneSetEnabled && !bothActsEnabled)
-                            {
-                                LoggingHandler.LogMessage($"Checkpoint Sanity is Disabled", taskName, LogLevel.Debug);
-                                return;
-                            }
-
-                            if (oneSetEnabled)
-                            {
-                                Mod.ArchipelagoHandler.CheckLocation(SonicHeroesDefinitions.CheckpointNoActStartId + CheckpointData.AllCheckpoints.IndexOf(matchingcheckpoints[i]));
-                            }
-
-                            if (bothActsEnabled)
-                            {
-                                if (act is Act.Act1)
-                                {
-                                    Mod.ArchipelagoHandler.CheckLocation(SonicHeroesDefinitions.CheckpointAct1StartId + CheckpointData.AllCheckpoints.IndexOf(matchingcheckpoints[i]));
-                                }
-                                else
-                                {
-                                    Mod.ArchipelagoHandler.CheckLocation(SonicHeroesDefinitions.CheckpointAct2StartId + CheckpointData.AllCheckpoints.IndexOf(matchingcheckpoints[i]));
-                                }
-                            }
-                        }
+                        // if (team is Team.SuperHardMode)
+                        // {
+                        //     if (!oneSetEnabled)
+                        //         return;
+                        //     
+                        //     Mod.ArchipelagoHandler.CheckLocation(SonicHeroesDefinitions.CheckpointAct2StartId + CheckpointData.AllCheckpoints.IndexOf(matchingcheckpoints[i]));
+                        // }
+                        // else
+                        // {
+                        //     if (!oneSetEnabled && !bothActsEnabled)
+                        //     {
+                        //         LoggingHandler.LogMessage($"Checkpoint Sanity is Disabled", taskName, LogLevel.Debug);
+                        //         return;
+                        //     }
+                        //
+                        //     if (oneSetEnabled)
+                        //     {
+                        //         Mod.ArchipelagoHandler.CheckLocation(SonicHeroesDefinitions.CheckpointNoActStartId + CheckpointData.AllCheckpoints.IndexOf(matchingcheckpoints[i]));
+                        //     }
+                        //
+                        //     if (bothActsEnabled)
+                        //     {
+                        //         if (act is Act.Act1)
+                        //         {
+                        //             Mod.ArchipelagoHandler.CheckLocation(SonicHeroesDefinitions.CheckpointAct1StartId + CheckpointData.AllCheckpoints.IndexOf(matchingcheckpoints[i]));
+                        //         }
+                        //         else
+                        //         {
+                        //             Mod.ArchipelagoHandler.CheckLocation(SonicHeroesDefinitions.CheckpointAct2StartId + CheckpointData.AllCheckpoints.IndexOf(matchingcheckpoints[i]));
+                        //         }
+                        //     }
+                        // }
                         break;
                     }
                     if (i == matchingcheckpoints.Count() - 1)

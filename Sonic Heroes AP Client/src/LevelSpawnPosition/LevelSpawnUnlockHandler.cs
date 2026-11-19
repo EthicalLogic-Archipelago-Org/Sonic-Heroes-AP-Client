@@ -281,7 +281,7 @@ public static class LevelSpawnUnlockHandler
             
             if (keynum > 0)
             {
-                if (Mod.LevelSelectManager.GetIfLevelGoaled(team, level))
+                if (Mod.LevelSelectManager.GetIfLevelGoaled(team, level, taskName))
                 {
                     //unlocking bonus stage spawn here
                     LoggingHandler.LogMessage($"Unlocking Bonus Stage Spawn for {team} {level}", taskName, LogLevel.APAction);
@@ -297,8 +297,7 @@ public static class LevelSpawnUnlockHandler
                 {
                     //unlocking bonus stage spawn here
                     LoggingHandler.LogMessage($"Unlocking Bonus Stage Spawn for {team} {level}", taskName, LogLevel.Error);
-                    Mod.SaveDataHandler.CustomSaveData.SpawnDataUnlocks[team][level]
-                        [Mod.SaveDataHandler.CustomSaveData.SpawnDataUnlocks[team][level].Count - 1] = true;
+                    Mod.SaveDataHandler.CustomSaveData.SpawnDataUnlocks[team][level][Mod.SaveDataHandler.CustomSaveData.SpawnDataUnlocks[team][level].Count - 1] = true;
                 }
             }
             Mod.ArchipelagoHandler.Save(taskName);

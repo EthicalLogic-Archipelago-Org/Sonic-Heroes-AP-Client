@@ -853,6 +853,8 @@ public enum StageObjTypes : ushort
 
 public static class SonicHeroesDefinitions
 {
+    public const string GameName = "Sonic Heroes";
+    
     // public const long AllIdsStartOffset = 0x93930000;
     public const long AllIdsStartOffset = 0x0;
     
@@ -873,7 +875,6 @@ public static class SonicHeroesDefinitions
     public const int CheckpointNoActStartId = 0x2000;
     public const int CheckpointAct1StartId = 0x2100;
     public const int CheckpointAct2StartId = 0x2200;
-    
     
     public const int RingSanityGroupNoActStartIdOffset = 0x100000;
     public const int RingSanityGroupActAStartIdOffset = 0x110000;
@@ -1229,6 +1230,73 @@ public static class SonicHeroesDefinitions
         { LevelId.FinalFortress, LevelId.EmeraldStage7 },
     
         { LevelId.ChaotixRailCanyon, LevelId.BonusStage4},
+    };
+
+
+    public static readonly Dictionary<LevelId, string> LevelIdToLocationNamePiece = new()
+    {
+        { LevelId.Unk1, "Unknown LevelId 1" },
+        { LevelId.Unk2, "Unknown LevelId 2" },
+        { LevelId.SeasideHill, "Seaside Hill" },
+        { LevelId.OceanPalace, "Ocean Palace" },
+        { LevelId.GrandMetropolis, "Grand Metropolis" },
+        { LevelId.PowerPlant, "Power Plant" },
+        { LevelId.CasinoPark, "Casino Park" },
+        { LevelId.BingoHighway, "Bingo Highway" },
+        { LevelId.RailCanyon, "Rail Canyon" },
+        { LevelId.BulletStation, "Bullet Station" },
+        { LevelId.FrogForest, "Frog Forest" },
+        { LevelId.LostJungle, "Lost Jungle" },
+        { LevelId.HangCastle, "Hang Castle" },
+        { LevelId.MysticMansion, "Mystic Mansion" },
+        { LevelId.EggFleet, "Egg Fleet" },
+        { LevelId.FinalFortress, "Final Fortress" },
+        { LevelId.EggHawk, "Egg Hawk" },
+        { LevelId.TeamFight1, "Team Fight 1" },
+        { LevelId.RobotCarnival, "Robot Carnival" },
+        { LevelId.EggAlbatross, "Egg Albatross" },
+        { LevelId.TeamFight2, "Team Fight 2" },
+        { LevelId.RobotStorm, "Robot Storm" },
+        { LevelId.EggEmperor, "Egg Emperor" },
+        { LevelId.MetalMadness, "Metal Madness" },
+        { LevelId.MetalOverlord, "Metal Overlord" },
+        { LevelId.SeaGate, "Sea Gate" },
+        { LevelId.SeasideBobsledCourse,  "Seaside Bobsled Course" },
+        { LevelId.CityBobsledCourse, "City Bobsled Course" },
+        { LevelId.CasinoBobsledCourse, "Casino Bobsled Course" },
+        { LevelId.BonusStage1, "Seaside Hill Bonus Stage" },
+        { LevelId.BonusStage2, "Grand Metropolis Bonus Stage" },
+        { LevelId.BonusStage3, "Casino Park Bonus Stage" },
+        { LevelId.BonusStage4, "Rail Canyon Bonus Stage" },
+        { LevelId.BonusStage5, "Frog Forest Bonus Stage" },
+        { LevelId.BonusStage6, "Hang Castle Bonus Stage" },
+        { LevelId.BonusStage7, "Egg Fleet Bonus Stage" },
+        { LevelId.ChaotixRailCanyon, "Rail Canyon" },
+        { LevelId.SeasideHillActionRace, "Seaside Hill Action Race" },
+        { LevelId.GrandMetropolisActionRace, "Grand Metropolis Action Race" },
+        { LevelId.BingoHighwayActionRace, "Bingo Highway Action Race" },
+        { LevelId.CityTopBattle, "City Top Battle" },
+        { LevelId.CasinoRingBattle, "Casino Ring Battle" },
+        { LevelId.TurtleShellBattle, "Turtle Shell Battle" },
+        { LevelId.EggTreatRingRace, "Egg Treat Ring Race" },
+        { LevelId.PinballMatchRingRace, "Pinball Match Race" },
+        { LevelId.HotElevatorRingRace, "Hot Elevator Ring Race" },
+        { LevelId.RoadRockQuickRace, "Road Rock Quick Race" },
+        { LevelId.MadExpressQuickRace, "Mad Express Quick Race" },
+        { LevelId.TerrorHallQuickRace, "Terror Hall Quick Race" },
+        { LevelId.RailCanyonExpertRace, "Rail Canyon Expert Race" },
+        { LevelId.FrogForestExpertRace, "Frog Forest Expert Race" },
+        { LevelId.EggFleetExpertRace, "Egg Fleet Expert Race" },
+        { LevelId.EmeraldStage1, "Ocean Palace Emerald Stage" },
+        { LevelId.EmeraldStage2, "Power Plant Emerald Stage" },
+        { LevelId.EmeraldStage3, "Bingo Highway Emerald Stage" },
+        { LevelId.EmeraldStage4, "Bullet Station Emerald Stage" },
+        { LevelId.EmeraldStage5, "Lost Jungle Emerald Stage" },
+        { LevelId.EmeraldStage6, "Mystic Mansion Emerald Stage" },
+        { LevelId.EmeraldStage7, "Final Fortress Emerald Stage" },
+        { LevelId.SpecialStage1Multiplayer, "Special Stage 1 Multiplayer" },
+        { LevelId.SpecialStage2Multiplayer, "Special Stage 2 Multiplayer" },
+        { LevelId.SpecialStage3Multiplayer, "Special Stage 3 Multiplayer" },
     };
     
     public static readonly Dictionary<LevelId, LevelId> BonusStageToLevelId = LevelToBonusStage.Where(x => x.Key is not LevelId.ChaotixRailCanyon).ToDictionary(pair => pair.Value, pair => pair.Key);

@@ -2,8 +2,10 @@
 
 
 using System.Drawing;
+using Archipelago.MultiClient.Net.Enums;
 using DearImguiSharp;
 using Sonic_Heroes_AP_Client.AbilityAndCharacter;
+using Sonic_Heroes_AP_Client.Archipelago;
 using Sonic_Heroes_AP_Client.Definitions;
 using Sonic_Heroes_AP_Client.GameState;
 using Sonic_Heroes_AP_Client.LevelSpawnPosition;
@@ -14,19 +16,21 @@ using Region = Sonic_Heroes_AP_Client.Definitions.Region;
 
 namespace Sonic_Heroes_AP_Client.UI;
 
-internal class ChaotixSanityData
+public class ChaotixSanityData
 {
     public LevelId Level;
     public string Type;
+    public string FlavorText;
     public int Act1Max;
     public int Act2Max;
     public long Act1Offset;
     public long Act2Offset;
 
-    public ChaotixSanityData(LevelId level, string type, int act1Max, int act2Max, long act1Offset, long act2Offset)
+    public ChaotixSanityData(LevelId level, string type, string flavorText, int act1Max, int act2Max, long act1Offset, long act2Offset)
     {
         Level = level;
         Type = type;
+        FlavorText = flavorText;
         Act1Max = act1Max;
         Act2Max = act2Max;
         Act1Offset = act1Offset;
@@ -36,63 +40,63 @@ internal class ChaotixSanityData
 
 public class LevelTracker
 {
-    private Dictionary<int, ChaotixSanityData> _chaotixsanityData = new()
+    public static readonly Dictionary<int, ChaotixSanityData> ChaotixsanityData = new()
     {
         {
             (int)LevelId.SeasideHill, 
-            new ChaotixSanityData(LevelId.SeasideHill, "Crabs", 10, 20, 0x11B8, 0x11C2)
+            new ChaotixSanityData(LevelId.SeasideHill, "Crabs", "Hermit Crabs Collected", 10, 20, 0x11B8, 0x11C2)
         },
         {
             (int)LevelId.OceanPalace, 
-            new ChaotixSanityData(LevelId.OceanPalace, "N/A", 0, 0, 0, 0)
+            new ChaotixSanityData(LevelId.OceanPalace, "N/A", "N/A", 0, 0, 0, 0)
         },
         {
             (int)LevelId.GrandMetropolis, 
-            new ChaotixSanityData(LevelId.GrandMetropolis, "Enemies", 85, 85, 0x11D6, 0x122B)
+            new ChaotixSanityData(LevelId.GrandMetropolis, "Enemies", "Enemies Killed", 85, 85, 0x11D6, 0x122B)
         },
         {
             (int)LevelId.PowerPlant, 
-            new ChaotixSanityData(LevelId.PowerPlant, "Turtles", 3, 5, 0x1280, 0x1283)
+            new ChaotixSanityData(LevelId.PowerPlant, "Turtles", "Gold Turtles Killed",3, 5, 0x1280, 0x1283)
         },
         {
             (int)LevelId.CasinoPark, 
-            new ChaotixSanityData(LevelId.CasinoPark, "Rings", 200, 500, 0x1288, 0x1350)
+            new ChaotixSanityData(LevelId.CasinoPark, "Rings", "Rings Collected",200, 500, 0x1288, 0x1350)
         },
         {
             (int)LevelId.BingoHighway, 
-            new ChaotixSanityData(LevelId.BingoHighway, "Chips", 10, 20, 0x1544, 0x154E)
+            new ChaotixSanityData(LevelId.BingoHighway, "Chips", "Casino Chips Collected",10, 20, 0x1544, 0x154E)
         },
         {
             (int)LevelId.RailCanyon, 
-            new ChaotixSanityData(LevelId.RailCanyon, "N/A", 0, 0, 0, 0)
+            new ChaotixSanityData(LevelId.RailCanyon, "N/A", "N/A", 0, 0, 0, 0)
         },
         {
             (int)LevelId.BulletStation, 
-            new ChaotixSanityData(LevelId.BulletStation, "Capsules", 30, 50, 0x1562, 0x1580)
+            new ChaotixSanityData(LevelId.BulletStation, "Capsules", "Capsules Destroyed", 30, 50, 0x1562, 0x1580)
         },
         {
             (int)LevelId.FrogForest, 
-            new ChaotixSanityData(LevelId.FrogForest, "N/A", 0, 0, 0, 0)
+            new ChaotixSanityData(LevelId.FrogForest, "N/A", "N/A", 0, 0, 0, 0)
         },
         {
             (int)LevelId.LostJungle, 
-            new ChaotixSanityData(LevelId.LostJungle, "Chao", 10, 20, 0x15B2, 0x15BC)
+            new ChaotixSanityData(LevelId.LostJungle, "Chao", "Chao Saved", 10, 20, 0x15B2, 0x15BC)
         },
         {
             (int)LevelId.HangCastle, 
-            new ChaotixSanityData(LevelId.HangCastle, "Keys", 10, 10, 0x15d0, 0x15da)
+            new ChaotixSanityData(LevelId.HangCastle, "Keys", "Keys Collected", 10, 10, 0x15d0, 0x15da)
         },
         {
             (int)LevelId.MysticMansion, 
-            new ChaotixSanityData(LevelId.MysticMansion, "Torches", 60, 46, 0x15e4, 0x1620)
+            new ChaotixSanityData(LevelId.MysticMansion, "Torches", "Torches Extinguished", 60, 46, 0x15e4, 0x1620)
         },
         {
             (int)LevelId.EggFleet, 
-            new ChaotixSanityData(LevelId.EggFleet, "N/A", 0, 0, 0, 0)
+            new ChaotixSanityData(LevelId.EggFleet, "N/A", "N/A", 0, 0, 0, 0)
         },
         {
             (int)LevelId.FinalFortress, 
-            new ChaotixSanityData(LevelId.FinalFortress, "Keys", 5, 10, 0x164e, 0x1653)
+            new ChaotixSanityData(LevelId.FinalFortress, "Keys", "Keys Collected", 5, 10, 0x164e, 0x1653)
         },
     };
     
@@ -343,8 +347,11 @@ public class LevelTracker
     {
         try
         {
-            var bossCompleteId = SonicHeroesDefinitions.MetalMadnessId;
-            var isBossComplete = Mod.ArchipelagoHandler.IsLocationChecked(bossCompleteId);
+            // var bossCompleteId = SonicHeroesDefinitions.MetalMadnessId;
+            //var isBossComplete = Mod.ArchipelagoHandler.IsLocationChecked(bossCompleteId);
+
+            var isBossComplete = Mod.ArchipelagoHandler.Session.DataStorage.GetClientStatus() is ArchipelagoClientState.ClientGoal;
+            
             var cursorPos = new ImVec2();
             ImGui.GetCursorScreenPos(cursorPos);
             DrawCircle(_drawList, _outerWidth - _windowWidth / 2, cursorPos.Y + _circRadius, _circRadius, isBossComplete);
@@ -370,7 +377,7 @@ public class LevelTracker
                     //level completions per story
                     if (Mod.LevelSelectManager.GoalUnlockConditions.HasFlag(GoalUnlockConditions.LevelCompletionsPerStory))
                     {
-                        text = $"Level Completions: {Mod.LevelSelectManager.GetCompletedLevelsForTeam(team)} / {Mod.ArchipelagoHandler.SlotData.GoalLevelCompletionsPerStory}";
+                        text = $"Level Completions: {Mod.LevelSelectManager.GetCompletedLevelsForTeam(team, taskName)} / {Mod.ArchipelagoHandler.SlotData.GoalLevelCompletionsPerStory}";
                         WriteCenteredText(text, taskName, Color.Empty);
                     }
                 }
@@ -379,7 +386,7 @@ public class LevelTracker
             //Level Completions (All Teams)
             if (Mod.LevelSelectManager.GoalUnlockConditions.HasFlag(GoalUnlockConditions.LevelCompletionsAllTeams))
             {
-                var levelcompletions = Enum.GetValues<Team>().Where(x => (bool)Mod.LevelSelectManager.IsThisTeamEnabled(x, taskName)!).Sum(team => Mod.LevelSelectManager.GetCompletedLevelsForTeam(team));
+                var levelcompletions = Enum.GetValues<Team>().Where(x => (bool)Mod.LevelSelectManager.IsThisTeamEnabled(x, taskName)!).Sum(team => Mod.LevelSelectManager.GetCompletedLevelsForTeam(team, taskName));
                 var levelcompletionsneeded = Mod.ArchipelagoHandler.SlotData.GoalLevelCompletions;
                 
                 text = $"Total Level Completions For All Teams: {levelcompletions} / {levelcompletionsneeded}";
@@ -423,8 +430,10 @@ public class LevelTracker
             //no checks for bonus stages yet (only emerald)
             if (level < LevelId.EmeraldStage1)
                 return;
-            var emeraldLocationID = SonicHeroesDefinitions.EmeraldStartId + level - LevelId.EmeraldStage1;
-            var emeraldCompleted = Mod.ArchipelagoHandler.IsLocationChecked(emeraldLocationID);
+            // var emeraldLocationID = SonicHeroesDefinitions.EmeraldStartId + level - LevelId.EmeraldStage1;
+            // var emeraldCompleted = Mod.ArchipelagoHandler.IsLocationChecked(emeraldLocationID);
+            var emeraldCompleted = LocationHelper.IsEmeraldLocationSent(level, taskName);
+            
             
             WriteCenteredText($"{(Emerald)(level - LevelId.EmeraldStage1)} Chaos Emerald Location", taskName);
             var cursorPos = new ImVec2();
@@ -446,8 +455,9 @@ public class LevelTracker
             if (gate == null)
                 return;
             
-            var bossCompleteId = 0xA0 + (int)team * 42 + 28 + ((int)level - 16) * 2;
-            var isBossComplete = Mod.ArchipelagoHandler.IsLocationChecked(bossCompleteId);
+            // var bossCompleteId = 0xA0 + (int)team * 42 + 28 + ((int)level - 16) * 2;
+            // var isBossComplete = Mod.ArchipelagoHandler.IsLocationChecked(bossCompleteId);
+            var isBossComplete = LocationHelper.IsBossGoalLocationSent(team, level, taskName);
             var cursorPos = new ImVec2();
             ImGui.GetCursorScreenPos(cursorPos);
             DrawCircle(_drawList, _outerWidth - _windowWidth / 2, cursorPos.Y + _circRadius, _circRadius, isBossComplete);
@@ -484,8 +494,9 @@ public class LevelTracker
         {
             var text = $"{(Emerald)(level - LevelId.EmeraldStage1)} Chaos Emerald Location";
             var cursorPos = new ImVec2();
-            var emeraldLocationID = SonicHeroesDefinitions.EmeraldStartId + level - LevelId.EmeraldStage1;
-            var emeraldStageComplete = Mod.ArchipelagoHandler.IsLocationChecked(emeraldLocationID);
+            // var emeraldLocationID = SonicHeroesDefinitions.EmeraldStartId + level - LevelId.EmeraldStage1;
+            // var emeraldStageComplete = Mod.ArchipelagoHandler.IsLocationChecked(emeraldLocationID);
+            var emeraldStageComplete = LocationHelper.IsEmeraldLocationSent(level, taskName);
             WriteCenteredText(text, taskName, Color.Empty);
             ImGui.GetCursorScreenPos(cursorPos);
             DrawCircle(_drawList, _outerWidth - _windowWidth / 2, cursorPos.Y + _circRadius, _circRadius, emeraldStageComplete);
@@ -511,11 +522,14 @@ public class LevelTracker
             //var superHardGate = Mod.LevelSelectManager.FindGateForLevel(level, Team.SuperHardMode);
             if (gate == null && !Mod.IsDebug)
                 return;
+
+            // var act1CompleteId = 0xA0 + (int)team * 42 + ((int)level - 2) * 2 + 0;
+            // var act2CompleteId = 0xA0 + (int)team * 42 + ((int)level - 2) * 2 + 1;
+            // var isAct1Complete = Mod.ArchipelagoHandler.IsLocationChecked(act1CompleteId);
+            // var isAct2Complete = Mod.ArchipelagoHandler.IsLocationChecked(act2CompleteId);
             
-            var act1CompleteId = 0xA0 + (int)team * 42 + ((int)level - 2) * 2 + 0;
-            var act2CompleteId = 0xA0 + (int)team * 42 + ((int)level - 2) * 2 + 1;
-            var isAct1Complete = Mod.ArchipelagoHandler.IsLocationChecked(act1CompleteId);
-            var isAct2Complete = Mod.ArchipelagoHandler.IsLocationChecked(act2CompleteId);
+            var isAct1Complete = LocationHelper.IsLevelGoalLocationSent(team, level, Act.Act1, taskName);
+            var isAct2Complete = LocationHelper.IsLevelGoalLocationSent(team, level, Act.Act2, taskName);
             
 
             var shouldRightSideBeDrawn = Mod.LevelSelectManager.IsThisTeamActEnabled(team, Act.Act2, taskName) || (bool)Mod.LevelSelectManager.IsThisTeamEnabled(Team.SuperHardMode, taskName)!;
@@ -542,8 +556,9 @@ public class LevelTracker
                 {
                     //SuperHard
                     text = "SuperHard Mode (Act 2)";
-                    act2CompleteId = SonicHeroesDefinitions.SuperHardModeId + ((int)level - 2);
-                    isAct2Complete = Mod.ArchipelagoHandler.IsLocationChecked(act2CompleteId);
+                    // act2CompleteId = SonicHeroesDefinitions.SuperHardModeId + ((int)level - 2);
+                    // isAct2Complete = Mod.ArchipelagoHandler.IsLocationChecked(act2CompleteId);
+                    isAct2Complete = LocationHelper.IsLevelGoalLocationSent(Team.SuperHardMode, level, Act.Act2, taskName);
                 }
                 
                 ImGui.__Internal.CalcTextSize((IntPtr)(&textSize), text, null, false, -1.0f);
@@ -586,10 +601,13 @@ public class LevelTracker
             if (gate == null && !Mod.IsDebug)
                 return;
             
-            var act1CompleteId = 0xA0 + (int)team * 42 + ((int)level - 2) * 2 + 0;
-            var act2CompleteId = 0xA0 + (int)team * 42 + ((int)level - 2) * 2 + 1;
-            var isAct1Complete = Mod.ArchipelagoHandler.IsLocationChecked(act1CompleteId);
-            var isAct2Complete = Mod.ArchipelagoHandler.IsLocationChecked(act2CompleteId);
+            // var act1CompleteId = 0xA0 + (int)team * 42 + ((int)level - 2) * 2 + 0;
+            // var act2CompleteId = 0xA0 + (int)team * 42 + ((int)level - 2) * 2 + 1;
+            // var isAct1Complete = Mod.ArchipelagoHandler.IsLocationChecked(act1CompleteId);
+            // var isAct2Complete = Mod.ArchipelagoHandler.IsLocationChecked(act2CompleteId);
+            var isAct1Complete = LocationHelper.IsLevelGoalLocationSent(team, level, Act.Act1, taskName);
+            var isAct2Complete = LocationHelper.IsLevelGoalLocationSent(team, level, Act.Act2, taskName);
+            
             ImGui.GetCursorScreenPos(cursorPos);
             
             if (Mod.LevelSelectManager.IsThisTeamActEnabled(team, Act.Act1, taskName))
@@ -657,10 +675,12 @@ public class LevelTracker
             if (gate == null && !Mod.IsDebug)
                 return;
             
-            var act1CompleteId = 0xA0 + (int)team * 42 + ((int)level - 2) * 2 + 0;
-            var act2CompleteId = 0xA0 + (int)team * 42 + ((int)level - 2) * 2 + 1;
-            var isAct1Complete = Mod.ArchipelagoHandler.IsLocationChecked(act1CompleteId);
-            var isAct2Complete = Mod.ArchipelagoHandler.IsLocationChecked(act2CompleteId);
+            // var act1CompleteId = 0xA0 + (int)team * 42 + ((int)level - 2) * 2 + 0;
+            // var act2CompleteId = 0xA0 + (int)team * 42 + ((int)level - 2) * 2 + 1;
+            // var isAct1Complete = Mod.ArchipelagoHandler.IsLocationChecked(act1CompleteId);
+            // var isAct2Complete = Mod.ArchipelagoHandler.IsLocationChecked(act2CompleteId);
+            var isAct1Complete = LocationHelper.IsLevelGoalLocationSent(team, level, Act.Act1, taskName);
+            var isAct2Complete = LocationHelper.IsLevelGoalLocationSent(team, level, Act.Act2, taskName);
             ImGui.GetCursorScreenPos(cursorPos);
             
             if (Mod.LevelSelectManager.IsThisTeamActEnabled(team, Act.Act1, taskName))
@@ -728,10 +748,12 @@ public class LevelTracker
             if (gate == null && !Mod.IsDebug)
                 return;
             
-            var act1CompleteId = 0xA0 + (int)team * 42 + ((int)level - 2) * 2 + 0;
-            var act2CompleteId = 0xA0 + (int)team * 42 + ((int)level - 2) * 2 + 1;
-            var isAct1Complete = Mod.ArchipelagoHandler.IsLocationChecked(act1CompleteId);
-            var isAct2Complete = Mod.ArchipelagoHandler.IsLocationChecked(act2CompleteId);
+            // var act1CompleteId = 0xA0 + (int)team * 42 + ((int)level - 2) * 2 + 0;
+            // var act2CompleteId = 0xA0 + (int)team * 42 + ((int)level - 2) * 2 + 1;
+            // var isAct1Complete = Mod.ArchipelagoHandler.IsLocationChecked(act1CompleteId);
+            // var isAct2Complete = Mod.ArchipelagoHandler.IsLocationChecked(act2CompleteId);
+            var isAct1Complete = LocationHelper.IsLevelGoalLocationSent(team, level, Act.Act1, taskName);
+            var isAct2Complete = LocationHelper.IsLevelGoalLocationSent(team, level, Act.Act2, taskName);
             ImGui.GetCursorScreenPos(cursorPos);
             
             if (Mod.LevelSelectManager.IsThisTeamActEnabled(team, Act.Act1, taskName))
@@ -769,7 +791,7 @@ public class LevelTracker
             HandleAbilityDisplayForRegion(team, region, taskName);
             
             //ObjSanity
-            var chaotixData = _chaotixsanityData[(int)level];
+            var chaotixData = ChaotixsanityData[(int)level];
             if (!((bool)Mod.LevelSelectManager.IsThisSanityEnabled(team, SanityType.ObjSanity, taskName, oneSet: true) || (bool)Mod.LevelSelectManager.IsThisSanityEnabled(team, SanityType.ObjSanity, taskName, bothActs: true)))
                 return;
 
@@ -958,12 +980,21 @@ public class LevelTracker
                 //draw left circles
                 for (var i = 0; i < keylist.Count; i++)
                 {
-                    var bonusKeyChecked = (bool)Mod.LevelSelectManager.IsThisSanityEnabled(team, SanityType.KeySanity, taskName, oneSet: true)
-                        //1 set
-                        ? Mod.ArchipelagoHandler.IsLocationChecked(SonicHeroesDefinitions.BonusKeyNoActStartId + bonusKeyOffset + i) 
-                        //both sets
-                        : Mod.ArchipelagoHandler.IsLocationChecked(SonicHeroesDefinitions.BonusKeyAct1StartId + bonusKeyOffset + i);
-            
+                    // var bonusKeyChecked = (bool)Mod.LevelSelectManager.IsThisSanityEnabled(team, SanityType.KeySanity, taskName, oneSet: true)
+                    //     //1 set
+                    //     ? Mod.ArchipelagoHandler.IsLocationChecked(SonicHeroesDefinitions.BonusKeyNoActStartId + bonusKeyOffset + i) 
+                    //     //both sets
+                    //     : Mod.ArchipelagoHandler.IsLocationChecked(SonicHeroesDefinitions.BonusKeyAct1StartId + bonusKeyOffset + i);
+
+                    var bonusKeyChecked = false;
+                    if ((bool)Mod.LevelSelectManager.IsThisSanityEnabled(team, SanityType.KeySanity, taskName, oneSet: true)!)
+                    {
+                        bonusKeyChecked = LocationHelper.IsKeySanityLocationSent(team, level, Act.Act1, true, i + 1, taskName);
+                    }
+                    else
+                    {
+                        bonusKeyChecked = LocationHelper.IsKeySanityLocationSent(team, level, Act.Act1, false, i + 1, taskName);
+                    }
                     DrawCircle(_drawList,_windowPosX + textStart - 4 * _circRadius * (keylist.Count + 1) + 4 * _circRadius * i, cursorPos.Y + 2 * _circRadius,
                         _circRadius, bonusKeyChecked);
                 }
@@ -974,12 +1005,20 @@ public class LevelTracker
                 //draw right circles
                 for (var i = 0; i < keylist.Count; i++)
                 {
-                    var bonusKeyChecked = (bool)Mod.LevelSelectManager.IsThisSanityEnabled(team, SanityType.KeySanity, taskName, oneSet: true)
-                        //1 set
-                        ? Mod.ArchipelagoHandler.IsLocationChecked(SonicHeroesDefinitions.BonusKeyNoActStartId + bonusKeyOffset + i) 
-                        //both sets
-                        : Mod.ArchipelagoHandler.IsLocationChecked(SonicHeroesDefinitions.BonusKeyAct2StartId + bonusKeyOffset + i);
-            
+                    // var bonusKeyChecked = (bool)Mod.LevelSelectManager.IsThisSanityEnabled(team, SanityType.KeySanity, taskName, oneSet: true)
+                    //     //1 set
+                    //     ? Mod.ArchipelagoHandler.IsLocationChecked(SonicHeroesDefinitions.BonusKeyNoActStartId + bonusKeyOffset + i) 
+                    //     //both sets
+                    //     : Mod.ArchipelagoHandler.IsLocationChecked(SonicHeroesDefinitions.BonusKeyAct2StartId + bonusKeyOffset + i);
+                    var bonusKeyChecked = false;
+                    if ((bool)Mod.LevelSelectManager.IsThisSanityEnabled(team, SanityType.KeySanity, taskName, oneSet: true)!)
+                    {
+                        bonusKeyChecked = LocationHelper.IsKeySanityLocationSent(team, level, Act.Act2, true, i + 1, taskName);
+                    }
+                    else
+                    {
+                        bonusKeyChecked = LocationHelper.IsKeySanityLocationSent(team, level, Act.Act2, false, i + 1, taskName);
+                    }
                     DrawCircle(_drawList,_windowPosX + textEnd + 4 * _circRadius * (i + 2), cursorPos.Y + 2 * _circRadius, _circRadius, bonusKeyChecked);
                 }
             }
@@ -1039,12 +1078,21 @@ public class LevelTracker
                 //draw left circles
                 for (var i = 0; i < checkpointlist.Count; i++)
                 {
-                    var checkpointChecked = (bool)Mod.LevelSelectManager.IsThisSanityEnabled(team, SanityType.CheckpointSanity, taskName, oneSet: true)! 
-                        //1 set
-                        ? Mod.ArchipelagoHandler.IsLocationChecked(SonicHeroesDefinitions.CheckpointNoActStartId + checkpointOffset + i) 
-                        //both sets
-                        : Mod.ArchipelagoHandler.IsLocationChecked(SonicHeroesDefinitions.CheckpointAct1StartId + checkpointOffset + i);
-            
+                    // var checkpointChecked = (bool)Mod.LevelSelectManager.IsThisSanityEnabled(team, SanityType.CheckpointSanity, taskName, oneSet: true)! 
+                    //     //1 set
+                    //     ? Mod.ArchipelagoHandler.IsLocationChecked(SonicHeroesDefinitions.CheckpointNoActStartId + checkpointOffset + i) 
+                    //     //both sets
+                    //     : Mod.ArchipelagoHandler.IsLocationChecked(SonicHeroesDefinitions.CheckpointAct1StartId + checkpointOffset + i);
+                    var checkpointChecked = false;
+                    if ((bool)Mod.LevelSelectManager.IsThisSanityEnabled(team, SanityType.CheckpointSanity, taskName, oneSet: true)!)
+                    {
+                        checkpointChecked = LocationHelper.IsCheckpointSanityLocationSent(team, level, Act.Act1, true, i + 1, taskName);
+                    }
+                    else
+                    {
+                        checkpointChecked = LocationHelper.IsCheckpointSanityLocationSent(team, level, Act.Act1, false, i + 1, taskName);
+                    }
+                    
                     DrawCircle(_drawList,_windowPosX + textStart - 4 * _circRadius * (checkpointlist.Count + 1) + 4 * _circRadius * i, cursorPos.Y + 2 * _circRadius, _circRadius, checkpointChecked);
                 }
             }
@@ -1056,11 +1104,21 @@ public class LevelTracker
                     //Sonic Here
                     for (var i = 0; i < checkpointlist.Count; i++)
                     {
-                        var checkpointChecked = (bool)Mod.LevelSelectManager.IsThisSanityEnabled(team, SanityType.CheckpointSanity, taskName, oneSet: true)! 
-                            //1 set
-                            ? Mod.ArchipelagoHandler.IsLocationChecked(SonicHeroesDefinitions.CheckpointNoActStartId + checkpointOffset + i) 
-                            //both sets
-                            : Mod.ArchipelagoHandler.IsLocationChecked(SonicHeroesDefinitions.CheckpointAct2StartId + checkpointOffset + i);
+                        // var checkpointChecked = (bool)Mod.LevelSelectManager.IsThisSanityEnabled(team, SanityType.CheckpointSanity, taskName, oneSet: true)! 
+                        //     //1 set
+                        //     ? Mod.ArchipelagoHandler.IsLocationChecked(SonicHeroesDefinitions.CheckpointNoActStartId + checkpointOffset + i) 
+                        //     //both sets
+                        //     : Mod.ArchipelagoHandler.IsLocationChecked(SonicHeroesDefinitions.CheckpointAct2StartId + checkpointOffset + i);
+                        
+                        var checkpointChecked = false;
+                        if ((bool)Mod.LevelSelectManager.IsThisSanityEnabled(team, SanityType.CheckpointSanity, taskName, oneSet: true)!)
+                        {
+                            checkpointChecked = LocationHelper.IsCheckpointSanityLocationSent(team, level, Act.Act2, true, i + 1, taskName);
+                        }
+                        else
+                        {
+                            checkpointChecked = LocationHelper.IsCheckpointSanityLocationSent(team, level, Act.Act2, false, i + 1, taskName);
+                        }
                         DrawCircle(_drawList, _windowPosX + textEnd + 4 * _circRadius * (i + 2), cursorPos.Y + 2 * _circRadius, _circRadius, checkpointChecked);
                     }
                 }
@@ -1069,7 +1127,9 @@ public class LevelTracker
                     for (var i = 0; i < superhardcheckpointlist.Count; i++)
                     {
                         //SuperHard here
-                        var checkpointChecked = Mod.ArchipelagoHandler.IsLocationChecked(SonicHeroesDefinitions.CheckpointAct2StartId + superhardcheckpointOffset + i);
+                        // var checkpointChecked = Mod.ArchipelagoHandler.IsLocationChecked(SonicHeroesDefinitions.CheckpointAct2StartId + superhardcheckpointOffset + i);
+                        var checkpointChecked = LocationHelper.IsCheckpointSanityLocationSent(team, level, Act.Act2, true, i + 1, taskName);
+                    
                         DrawCircle(_drawList, _windowPosX + textEnd + 4 * _circRadius * (i + 2), cursorPos.Y + 2 * _circRadius,
                             _circRadius, checkpointChecked);
                     }

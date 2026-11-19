@@ -1,4 +1,6 @@
+using Archipelago.MultiClient.Net.Enums;
 using Sonic_Heroes_AP_Client.AbilityAndCharacter;
+using Sonic_Heroes_AP_Client.Archipelago;
 using Sonic_Heroes_AP_Client.Definitions;
 using Sonic_Heroes_AP_Client.Logging;
 
@@ -74,20 +76,36 @@ public class LevelSelectManager
     }
 
 
+    
     public bool IsThisBossCompletedYet(LevelId level, string taskName)
     {
-        if (level is LevelId.MetalMadness or LevelId.MetalOverlord or LevelId.SeaGate)
-            return Mod.ArchipelagoHandler.IsLocationChecked(SonicHeroesDefinitions.MetalMadnessId);
-        
-        foreach (var team in Enum.GetValues<Team>().Where(x => (bool)IsThisTeamEnabled(x, taskName)!))
+        try
         {
-            var tempTeam = team;
-            if (tempTeam == Team.SuperHardMode)
-                tempTeam = Team.Sonic;
+            if (level is LevelId.MetalMadness or LevelId.MetalOverlord or LevelId.SeaGate)
+                return Mod.ArchipelagoHandler.Session.DataStorage.GetClientStatus() is ArchipelagoClientState.ClientGoal;
+                // return Mod.ArchipelagoHandler.IsLocationChecked(SonicHeroesDefinitions.MetalMadnessId);
+        
+            foreach (var team in Enum.GetValues<Team>().Where(x => (bool)IsThisTeamEnabled(x, taskName)))
+            {
+                if (LocationHelper.IsBossGoalLocationSent(team, level, taskName))
+                {
+                    return true;
+                }
+                
+                // var tempTeam = team;
+                // if (tempTeam == Team.SuperHardMode)
+                //     tempTeam = Team.Sonic;
+                //
+                // // if (Mod.ArchipelagoHandler.IsLocationChecked(0xA0 + ((int)level - 2) * 2 + 42 * (int)tempTeam))
+                // //     return true;
+            }
 
-            if (Mod.ArchipelagoHandler.IsLocationChecked(0xA0 + ((int)level - 2) * 2 + 42 * (int)tempTeam))
-                return true;
         }
+        catch (Exception e)
+        {
+            LoggingHandler.LogMessage($"{e}", taskName, LogLevel.Error);
+        }
+        
         return false;
     }
     
@@ -109,12 +127,9 @@ public class LevelSelectManager
             }
                 
             //GateBoss Unlocking (Not Final Boss)
-            foreach (var gate in GateData
-                         .Where(gate => gate.GetIsUnlocked(taskName) && Mod.SaveDataHandler.CustomSaveData.Emblems >= gate.BossCost 
-                                                        && gate.BossLevel.LevelId != LevelId.MetalMadness))
+            foreach (var gate in GateData.Where(gate => gate.GetIsUnlocked(taskName) && Mod.SaveDataHandler.CustomSaveData.Emblems >= gate.BossCost && gate.BossLevel.LevelId != LevelId.MetalMadness))
             {
                 gate.BossLevel.SetIsUnlocked(true, taskName);
-                
             }
             
             
@@ -140,7 +155,7 @@ public class LevelSelectManager
             
             foreach (var team in Enum.GetValues<Team>().Where(x => (bool)Mod.LevelSelectManager.IsThisTeamEnabled(x, taskName)!))
             {
-                levelCompletions += Mod.LevelSelectManager.GetCompletedLevelsForTeam(team);
+                levelCompletions += Mod.LevelSelectManager.GetCompletedLevelsForTeam(team, taskName);
                 if (needCharacters)
                 {
                     if (!AbilityCharacterManager.HasAllCharsForTeam(team, taskName))
@@ -154,7 +169,7 @@ public class LevelSelectManager
                 {
                     levelCompletionsForTeam = isCompletingNewLevel && team == teamWithExtraLevelComplete ? 1 : 0;
                     
-                    if (levelCompletionsForTeam + Mod.LevelSelectManager.GetCompletedLevelsForTeam(team) <
+                    if (levelCompletionsForTeam + Mod.LevelSelectManager.GetCompletedLevelsForTeam(team, taskName) <
                         Mod.ArchipelagoHandler.SlotData.GoalLevelCompletionsPerStory)
                     {
                         finalBossUnlockRequirementsMessage.Add($"{Mod.ArchipelagoHandler.SlotData.GoalLevelCompletionsPerStory} Level Completions for Team: {team} For Final Boss");
@@ -232,23 +247,24 @@ public class LevelSelectManager
     }
     
     
-    public bool GetIfLevelGoaled(Team team, LevelId level)
+    public bool GetIfLevelGoaled(Team team, LevelId level, string taskName)
     {
-        var locationId = 0xA0 + (int)team * 42 + ((int)level - 2) * 2 + 0; //the + 0 is the Act
+        return LocationHelper.IsLevelGoalLocationSent(team, level, Act.Act1, taskName) || LocationHelper.IsLevelGoalLocationSent(team, level, Act.Act2, taskName);
 
-        if (team is not Team.SuperHardMode)
-            return Mod.ArchipelagoHandler.IsLocationChecked(locationId) ||
-                   Mod.ArchipelagoHandler.IsLocationChecked(locationId + 1);
-        
-        locationId = SonicHeroesDefinitions.SuperHardModeId + ((int)level - 2);
-        return Mod.ArchipelagoHandler.IsLocationChecked(locationId);
+        // var locationId = 0xA0 + (int)team * 42 + ((int)level - 2) * 2 + 0; //the + 0 is the Act
+        // if (team is not Team.SuperHardMode)
+        //     return Mod.ArchipelagoHandler.IsLocationChecked(locationId) ||
+        //            Mod.ArchipelagoHandler.IsLocationChecked(locationId + 1);
+        //
+        // locationId = SonicHeroesDefinitions.SuperHardModeId + ((int)level - 2);
+        // return Mod.ArchipelagoHandler.IsLocationChecked(locationId);
     }
     
 
-    public int GetCompletedLevelsForTeam(Team team)
+    public int GetCompletedLevelsForTeam(Team team, string taskName)
     {
         var levelCompletions = 0;
-        levelCompletions += Enum.GetValues<LevelId>().Where(x => x is >= LevelId.SeasideHill and <= LevelId.FinalFortress).Count(level => GetIfLevelGoaled(team, level));
+        levelCompletions += Enum.GetValues<LevelId>().Where(x => x is >= LevelId.SeasideHill and <= LevelId.FinalFortress).Count(level => GetIfLevelGoaled(team, level, taskName));
         return levelCompletions;
     }
     

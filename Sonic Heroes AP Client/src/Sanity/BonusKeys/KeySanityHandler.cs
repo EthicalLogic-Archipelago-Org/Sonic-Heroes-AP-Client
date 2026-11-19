@@ -1,5 +1,6 @@
 
 using System.Numerics;
+using Sonic_Heroes_AP_Client.Archipelago;
 using Sonic_Heroes_AP_Client.Definitions;
 using Sonic_Heroes_AP_Client.GameState;
 using Sonic_Heroes_AP_Client.LevelSpawnPosition;
@@ -64,7 +65,7 @@ public static class KeySanityHandler
 
                 if (keysPickedUp >= Mod.LevelSelectManager.BonusKeysNeededForBonusStage)
                 {
-                    if (Mod.LevelSelectManager.GetIfLevelGoaled((Team)team, (LevelId)level))
+                    if (Mod.LevelSelectManager.GetIfLevelGoaled((Team)team, (LevelId)level, taskName))
                     {
                         if (SonicHeroesDefinitions.LevelToBonusStage.ContainsKey((LevelId)level))
                         {
@@ -72,35 +73,37 @@ public static class KeySanityHandler
                         }
                     }
                 }
-
-                bool oneSetEnabled = (bool)Mod.LevelSelectManager.IsThisSanityEnabled((Team)team, SanityType.KeySanity, taskName, oneSet: true)!;
-                bool bothActsEnabled = team is not Team.SuperHardMode && (bool)Mod.LevelSelectManager.IsThisSanityEnabled((Team)team, SanityType.KeySanity, taskName, bothActs: true)!;
                 
-                
-                if (!oneSetEnabled && !bothActsEnabled)
-                    return;
+                LocationHelper.SendKeySanityLocation((Team)team, (LevelId)level, (Act)act, i + 1, taskName);
 
-                if (oneSetEnabled)
-                {
-                    Mod.ArchipelagoHandler.CheckLocation(SonicHeroesDefinitions.BonusKeyNoActStartId + BonusKeyData.AllKeyPositions.IndexOf(keylist[i]));
-                }
+                // bool oneSetEnabled = (bool)Mod.LevelSelectManager.IsThisSanityEnabled((Team)team, SanityType.KeySanity, taskName, oneSet: true)!;
+                // bool bothActsEnabled = team is not Team.SuperHardMode && (bool)Mod.LevelSelectManager.IsThisSanityEnabled((Team)team, SanityType.KeySanity, taskName, bothActs: true)!;
+                //
+                //
+                // if (!oneSetEnabled && !bothActsEnabled)
+                //     return;
 
-                if (bothActsEnabled)
-                {
-                    if (act == Act.Act1)
-                    {
-                        Mod.ArchipelagoHandler.CheckLocation(SonicHeroesDefinitions.BonusKeyAct1StartId + BonusKeyData.AllKeyPositions.IndexOf(keylist[i]));
-                    }
-                    else
-                    {
-                        Mod.ArchipelagoHandler.CheckLocation(SonicHeroesDefinitions.BonusKeyAct2StartId + BonusKeyData.AllKeyPositions.IndexOf(keylist[i]));
-                    }
-                }
+                // if (oneSetEnabled)
+                // {
+                //     Mod.ArchipelagoHandler.CheckLocation(SonicHeroesDefinitions.BonusKeyNoActStartId + BonusKeyData.AllKeyPositions.IndexOf(keylist[i]));
+                // }
+                //
+                // if (bothActsEnabled)
+                // {
+                //     if (act == Act.Act1)
+                //     {
+                //         Mod.ArchipelagoHandler.CheckLocation(SonicHeroesDefinitions.BonusKeyAct1StartId + BonusKeyData.AllKeyPositions.IndexOf(keylist[i]));
+                //     }
+                //     else
+                //     {
+                //         Mod.ArchipelagoHandler.CheckLocation(SonicHeroesDefinitions.BonusKeyAct2StartId + BonusKeyData.AllKeyPositions.IndexOf(keylist[i]));
+                //     }
+                // }
                 break;
             }
             
             if (Mod.ArchipelagoHandler.SlotData != null)
-                Mod.ArchipelagoHandler!.Save(taskName);
+                Mod.ArchipelagoHandler.Save(taskName);
             LoggingHandler.LogMessage($"Key Position is: {keyPos.X}, {keyPos.Y}, {keyPos.Z}", taskName, LogLevel.SuperDebug);
         }
         catch (Exception e)

@@ -974,7 +974,7 @@ public static class FunctionHooks
             {
                 if (Mod.LevelSelectManager.FinalBoss is FinalBoss.MetalMadness or FinalBoss.MetalOverlord) 
                 {
-                    apHandler.CheckLocation(SonicHeroesDefinitions.MetalMadnessId);
+                    // apHandler.CheckLocation(SonicHeroesDefinitions.MetalMadnessId);
                     LoggingHandler.LogMessage($"Victory", TaskName, LogLevel.APAction);
                     apHandler.Release();
                 }
@@ -990,13 +990,13 @@ public static class FunctionHooks
                 return 0;
             }
             
-            var locationId = 0xA0 + (int)team * 42 + (levelIndex - 2) * 2 + isMission2;
+            // var locationId = 0xA0 + (int)team * 42 + (levelIndex - 2) * 2 + isMission2;
 
             if (team is Team.Sonic && isMission2 == 1 &&
                 (bool)Mod.LevelSelectManager.IsThisTeamEnabled(Team.SuperHardMode, TaskName)!)
             {
                 team = Team.SuperHardMode;
-                locationId = SonicHeroesDefinitions.SuperHardModeId + (levelIndex - 2);
+                // locationId = SonicHeroesDefinitions.SuperHardModeId + (levelIndex - 2);
             }
             else
             {
@@ -1027,14 +1027,16 @@ public static class FunctionHooks
                         Mod.LevelSelectManager.RecalculateOpenLevels(TaskName);
                     }
                     Mod.ArchipelagoHandler?.Save(TaskName);
-                    locationId = 0xA0 + (levelIndex - 2) * 2;
+                    // locationId = 0xA0 + (levelIndex - 2) * 2;
 
                     foreach (var tempTeam in Enum.GetValues<Team>().Where(x => (bool)Mod.LevelSelectManager.IsThisTeamEnabled(x, TaskName)!))
                     {
-                        if (tempTeam == Team.SuperHardMode)
-                            apHandler.CheckLocation(locationId + 42 * (int)Team.Sonic);
-                        else
-                            apHandler.CheckLocation(locationId + 42 * (int)tempTeam);
+                        LocationHelper.SendBossGoalLocation(tempTeam, (LevelId)levelIndex, TaskName);
+                        // if (tempTeam == Team.SuperHardMode)
+                        //     apHandler.CheckLocation(locationId + 42 * (int)Team.Sonic);
+                        //     
+                        // else
+                        //     apHandler.CheckLocation(locationId + 42 * (int)tempTeam);
                     }
                         
                 }
@@ -1042,24 +1044,26 @@ public static class FunctionHooks
                 return 1;
             }
             
-            LoggingHandler.LogMessage($"Checking Mission Completion Location Here: Id = 0x{(SonicHeroesDefinitions.AllIdsStartOffset + locationId):X}", TaskName, LogLevel.Debug);
+            // LoggingHandler.LogMessage($"Checking Mission Completion Location Here: Id = 0x{(SonicHeroesDefinitions.AllIdsStartOffset + locationId):X}", TaskName, LogLevel.Debug);
             //Mod.SaveDataHandler.CustomSaveData.LevelsGoaled[story][(LevelId)levelIndex] = true;
             LevelSpawnUnlockHandler.BonusStageUnlockCallback(team, (LevelId)levelIndex, TaskName, goal: true);
+            
+            
+            var isLevelNotCompletedYet = !LocationHelper.IsLevelGoalLocationSent(team, (LevelId)levelIndex, Act.Act1, TaskName) && !LocationHelper.IsLevelGoalLocationSent(team, (LevelId)levelIndex, Act.Act2, TaskName);
 
-            var isLevelNotCompletedYet = false;
-
-            if (team is not Team.SuperHardMode)
-            {
-                isLevelNotCompletedYet = isMission2 > 0
-                    ? !apHandler.IsLocationChecked(locationId) && !apHandler.IsLocationChecked(locationId - 1) && !apHandler.IsLocationChecked(locationId) && !apHandler.IsLocationChecked(locationId)
-                    : !apHandler.IsLocationChecked(locationId) && !apHandler.IsLocationChecked(locationId + 1) && !apHandler.IsLocationChecked(locationId) && !apHandler.IsLocationChecked(locationId);
-            }
-            else
-            {
-                isLevelNotCompletedYet = !apHandler.IsLocationChecked(locationId);
-            }
+            // if (team is not Team.SuperHardMode)
+            // {
+            //     isLevelNotCompletedYet = isMission2 > 0
+            //         ? !apHandler.IsLocationChecked(locationId) && !apHandler.IsLocationChecked(locationId - 1) && !apHandler.IsLocationChecked(locationId) && !apHandler.IsLocationChecked(locationId)
+            //         : !apHandler.IsLocationChecked(locationId) && !apHandler.IsLocationChecked(locationId + 1) && !apHandler.IsLocationChecked(locationId) && !apHandler.IsLocationChecked(locationId);
+            // }
+            // else
+            // {
+            //     isLevelNotCompletedYet = !apHandler.IsLocationChecked(locationId);
+            // }
             Mod.LevelSelectManager.RecalculateOpenLevels(TaskName, team, isLevelNotCompletedYet);
-            apHandler.CheckLocation(locationId);
+            LocationHelper.SendLevelGoalLocation(team, (LevelId)levelIndex, (Act)isMission2, TaskName);
+            // apHandler.CheckLocation(locationId);
         }
         catch (Exception e)
         {
@@ -1198,8 +1202,12 @@ public static class FunctionHooks
     private static int OnCompleteEmeraldStage(int eax)
     {
         LoggingHandler.LogMessage($"CompleteEmeraldStage Start: eax: {eax}", TaskName, LogLevel.SuperDebug);
-        var locationId = SonicHeroesDefinitions.EmeraldStartId + (eax - 21) / 3;
-        Mod.ArchipelagoHandler.CheckLocation(locationId);
+        // var locationId = SonicHeroesDefinitions.EmeraldStartId + (eax - 21) / 3;
+        // Mod.ArchipelagoHandler.CheckLocation(locationId);
+        var level = LevelId.EmeraldStage1 + (eax - 21) / 3;
+        LocationHelper.SendEmeraldLocation(level, TaskName);
+        
+        
         LoggingHandler.LogMessage($"CompleteEmeraldStage End", TaskName, LogLevel.SuperDebug);
         return 0;
     }
@@ -1490,7 +1498,8 @@ public static class FunctionHooks
         {
             if (Mod.LevelSelectManager.FinalBoss is FinalBoss.SeaGate)
             {
-                Mod.ArchipelagoHandler.CheckLocation(SonicHeroesDefinitions.MetalMadnessId);
+                // Mod.ArchipelagoHandler.CheckLocation(SonicHeroesDefinitions.MetalMadnessId);
+                LocationHelper.SendMetalMadnessFillerLocation(TaskName);
                 Mod.ArchipelagoHandler.Release();
             }
         }

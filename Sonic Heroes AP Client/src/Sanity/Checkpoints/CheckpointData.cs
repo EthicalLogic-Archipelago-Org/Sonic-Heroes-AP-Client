@@ -11,7 +11,6 @@ public readonly struct CheckPointPriority (Team team, LevelId levelid, int prior
     public readonly int Priority = priority;
     //public readonly bool SuperHard = superhard;
     public readonly Vector3 SpawnCoords = new (x, y, z);
-
 }
 
 public static class CheckpointData

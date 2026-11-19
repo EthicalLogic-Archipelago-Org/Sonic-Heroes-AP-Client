@@ -10,6 +10,7 @@ using Archipelago.MultiClient.Net.MessageLog.Messages;
 using Archipelago.MultiClient.Net.Packets;
 using Sonic_Heroes_AP_Client.Configuration;
 using Sonic_Heroes_AP_Client.Definitions;
+using Sonic_Heroes_AP_Client.Exceptions;
 using Sonic_Heroes_AP_Client.Logging;
 using Sonic_Heroes_AP_Client.MusicShuffle;
 using Sonic_Heroes_AP_Client.UI;
@@ -293,12 +294,12 @@ public class ArchipelagoHandler
         var ringLink = RingLinkHandler.IsRingLinkEnabled(taskName);
         if (ringLink)
             tags.Add("RingLink");
-        Mod.ArchipelagoHandler.UpdateTags(tags);
+        Mod.ArchipelagoHandler.UpdateTags(tags, taskName);
         LoggingHandler.LogMessage($"Check Tags Done", taskName, LogLevel.SuperDebug);
     }
     
     
-    public void UpdateTags(List<string> tags)
+    public void UpdateTags(List<string> tags, string taskName)
     {
         var packet = new ConnectUpdatePacket
         {
@@ -309,20 +310,57 @@ public class ArchipelagoHandler
     }
     
     
-    public void CheckLocations(Int64[] ids)
+    public void CheckLocations(Int64[] ids, string taskName)
     {
         ids.ToList().ForEach(id => LocationsToCheck.Enqueue(id + SonicHeroesDefinitions.AllIdsStartOffset));
     }
     
     
-    public void CheckLocation(Int64 id)
+    public void CheckLocation(Int64 id, string taskName)
     {
         LoggingHandler.LogMessage($"Sending Location Id: 0x{(SonicHeroesDefinitions.AllIdsStartOffset + id):X}", "IGNORE ME", LogLevel.Debug,3);
         LocationsToCheck.Enqueue(SonicHeroesDefinitions.AllIdsStartOffset + id);
     }
     
+    public void CheckLocations(List<string> locNames, string taskName)
+    {
+        locNames.ForEach(locName => CheckLocation(locName, taskName, 1));
+    }
+
+    public void CheckLocation(string locName, string taskName, int stackFrameOverrideOffset = 0)
+    {
+        LoggingHandler.LogMessage($"Sending Location Name: {locName}", taskName, LogLevel.Debug,3 + stackFrameOverrideOffset);
+        try
+        {
+            long locId = Mod.ArchipelagoHandler.Session.Locations.GetLocationIdFromName(game: SonicHeroesDefinitions.GameName, locationName: locName);
+            if (locId < 1)
+            {
+                throw new SonicHeroesException($"This Location Name does not match: {locName}", taskName);
+            }
+            LocationsToCheck.Enqueue(locId);
+        }
+        catch (Exception e)
+        {
+            LoggingHandler.LogMessage($"{e}", taskName, LogLevel.Error);
+        }
+    }
     
-    public bool IsLocationChecked(Int64 id)
+    public bool IsLocationChecked(string locName, string taskName)
+    {
+        try
+        {
+            long locId = Mod.ArchipelagoHandler.Session.Locations.GetLocationIdFromName(game: SonicHeroesDefinitions.GameName, locationName: locName);
+            return locId < 1 ? throw new SonicHeroesException($"This Location Name does not match: {locName}", taskName) : Session.Locations.AllLocationsChecked.Contains(locId);
+        }
+        catch (Exception e)
+        {
+            LoggingHandler.LogMessage($"{e}", taskName, LogLevel.Error, 3);
+        }
+        return false;
+    }
+    
+    
+    public bool IsLocationChecked(Int64 id, string taskName)
     {
         return Session.Locations.AllLocationsChecked.Contains(id + SonicHeroesDefinitions.AllIdsStartOffset);
     }
@@ -334,6 +372,8 @@ public class ArchipelagoHandler
         var endId = end + SonicHeroesDefinitions.AllIdsStartOffset;
         return Session.Locations.AllLocationsChecked.Count(loc => loc >= startId && loc < endId);
     }
+    
+    
     
     
     public void Save(string taskName)

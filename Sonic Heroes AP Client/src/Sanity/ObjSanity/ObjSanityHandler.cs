@@ -1,6 +1,7 @@
 
 using Reloaded.Memory;
 using Reloaded.Memory.Interfaces;
+using Sonic_Heroes_AP_Client.Archipelago;
 using Sonic_Heroes_AP_Client.Definitions;
 using Sonic_Heroes_AP_Client.GameState;
 using Sonic_Heroes_AP_Client.Logging;
@@ -124,10 +125,11 @@ public static class ObjSanityHandler
             }
 
             int currentAmount = Mod.SaveDataHandler.CustomSaveData.DarkObjSanityEnemyKills[(LevelId)levelId].Count(x => x);
+            int maxAmount = Mod.SaveDataHandler.CustomSaveData.DarkObjSanityEnemyKills[(LevelId)levelId].Count;
             // TODO handle this better
-            // var locationId = 0xA0 + (int)team * 42 + (levelIndex - 2) * 2 + isMission2;
             
-            int hasGoaledActB = Mod.ArchipelagoHandler.IsLocationChecked(0xA0 + (int)Team.Dark * 42 + ((int)levelId - 2) * 2 + 1) ? 1 : 0;
+            
+            int hasGoaledActB = LocationHelper.IsLevelGoalLocationSent(Team.Dark, (LevelId)levelId, (Act)act, taskName) ? 1 : 0;
             currentAmount = Math.Min(currentAmount, 108 - hasGoaledActB);
             SetTEnemyScoreManagerEnemyKilledCount(currentAmount, taskName);
         }
@@ -277,7 +279,8 @@ public static class ObjSanityHandler
                 levelOffset = act == Act.Act1 ? 0xBC0 : 0xC88;
             for (var i = previousCount + 1; i <= newCount; i++)
                 if (i % checkSize == 0)
-                    Mod.ArchipelagoHandler.CheckLocation(SonicHeroesDefinitions.RoseObjSanityStartId - 1 + levelOffset + i);
+                    LocationHelper.SendRoseObjSanityLocation((LevelId)levelId, i, taskName);
+                    //Mod.ArchipelagoHandler.CheckLocation(SonicHeroesDefinitions.RoseObjSanityStartId - 1 + levelOffset + i);
         }
         catch (Exception e)
         {
@@ -304,28 +307,27 @@ public static class ObjSanityHandler
             switch (levelId)
             {
                 case LevelId.SeasideHill:
-                    HandleChaotixsanity(act == Act.Act1 ? 0x11B7 : 0x11C1, 
-                        act == Act.Act1 ? 10 : 20 , newCount, (LevelId)levelId!, (Act)act!);
+                    HandleChaotixsanity(act == Act.Act1 ? 0x11B7 : 0x11C1,act == Act.Act1 ? 10 : 20 , newCount, (LevelId)levelId!, (Act)act!, taskName);
                     break;
                 case LevelId.BingoHighway:
                     HandleChaotixsanity(act == Act.Act1 ? 0x1543 : 0x154D, 
-                        act == Act.Act1 ? 10 : 20 , newCount, (LevelId)levelId!, (Act)act!);
+                        act == Act.Act1 ? 10 : 20 , newCount, (LevelId)levelId!, (Act)act!, taskName);
                     break;
                 case LevelId.LostJungle:
                     HandleChaotixsanity(act == Act.Act1 ? 0x15B1 : 0x15BB, 
-                        act == Act.Act1 ? 10 : 20, newCount, (LevelId)levelId!, (Act)act!);
+                        act == Act.Act1 ? 10 : 20, newCount, (LevelId)levelId!, (Act)act!, taskName);
                     break;
                 case LevelId.HangCastle:
                     HandleChaotixsanity(act == Act.Act1 ? 0x15CF : 0x15D9, 
-                        10, newCount, (LevelId)levelId!, (Act)act!);
+                        10, newCount, (LevelId)levelId!, (Act)act!, taskName);
                     break;
                 case LevelId.MysticMansion:
                     HandleChaotixsanity(act == Act.Act1 ? 0x15E3 : 0x161F, 
-                        act == Act.Act1 ? 60 : 46, newCount, (LevelId)levelId!, (Act)act!);
+                        act == Act.Act1 ? 60 : 46, newCount, (LevelId)levelId!, (Act)act!, taskName);
                     break;
                 case LevelId.FinalFortress:
                     HandleChaotixsanity(act == Act.Act1 ? 0x164D : 0x1652, 
-                        act == Act.Act1 ? 5 : 10, newCount, (LevelId)levelId!, (Act)act!);
+                        act == Act.Act1 ? 5 : 10, newCount, (LevelId)levelId!, (Act)act!, taskName);
                     break;
                 default:
                     return;
@@ -338,7 +340,7 @@ public static class ObjSanityHandler
     }
 
     
-    public static void HandleChaotixsanity(int levelOffset, int maxCount, int newCount, LevelId levelId, Act act)
+    public static void HandleChaotixsanity(int levelOffset, int maxCount, int newCount, LevelId levelId, Act act, string taskName)
     {
         if (ChaotixChecksCompleted[((int)levelId - 2) + (14 * (int)act)] < newCount)
             ChaotixChecksCompleted[((int)levelId - 2) + (14 * (int)act)] = newCount;
@@ -348,7 +350,8 @@ public static class ObjSanityHandler
             return;
         //$"Check Index {newCount}"
         //(levelOffset + newCount).ToString("X")
-        Mod.ArchipelagoHandler.CheckLocation(levelOffset + newCount);
+        //Mod.ArchipelagoHandler.CheckLocation(levelOffset + newCount);
+        LocationHelper.SendChaotixObjSanityLocation(levelId, act, newCount, taskName);
     }
 
     
@@ -397,7 +400,8 @@ public static class ObjSanityHandler
             // Loop through all enemy counts that were skipped (or reached in succession)
             for (var i = previousCount + 1; i <= newCount; i++)
                 if (i % checkSize == 0)
-                    Mod.ArchipelagoHandler.CheckLocation(0x14F + levelOffset + i);
+                    //Mod.ArchipelagoHandler.CheckLocation(0x14F + levelOffset + i);
+                    LocationHelper.SendChaotixObjSanityLocation((LevelId)levelId, (Act)act, i, taskName);
         }
         catch (Exception e)
         {
@@ -422,7 +426,7 @@ public static class ObjSanityHandler
             var act = GameStateHandler.GetCurrentAct(taskName);
             if (levelId != LevelId.BulletStation)
                 return; 
-            HandleChaotixsanity(act == Act.Act1 ? 0x1561 : 0x157F,act == Act.Act1 ? 30 : 50 , newCount, (LevelId)levelId, (Act)act!);
+            HandleChaotixsanity(act == Act.Act1 ? 0x1561 : 0x157F,act == Act.Act1 ? 30 : 50 , newCount, (LevelId)levelId, (Act)act!, taskName);
 
         }
         catch (Exception e)
@@ -447,7 +451,7 @@ public static class ObjSanityHandler
             var act = GameStateHandler.GetCurrentAct(taskName);
             if (levelId != LevelId.PowerPlant)
                 return; 
-            HandleChaotixsanity(act == Act.Act1 ? 0x127F : 0x1282,act == Act.Act1 ? 3 : 5, newCount, (LevelId)levelId, (Act)act!);
+            HandleChaotixsanity(act == Act.Act1 ? 0x127F : 0x1282,act == Act.Act1 ? 3 : 5, newCount, (LevelId)levelId, (Act)act!, taskName);
 
         }
         catch (Exception e)

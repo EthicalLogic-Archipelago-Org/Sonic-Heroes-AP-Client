@@ -1,4 +1,5 @@
 using System.Numerics;
+using Sonic_Heroes_AP_Client.Archipelago;
 using Sonic_Heroes_AP_Client.Definitions;
 using Sonic_Heroes_AP_Client.GameState;
 using Sonic_Heroes_AP_Client.Logging;
@@ -93,24 +94,26 @@ public static class EggPawnsSanityHandler
                 eggPawn = EggPawnsData.AllEggPawns.First(x => x.Group == eggPawn.Group * -1);
             }
             
-            bool oneSetEnabled = (bool)Mod.LevelSelectManager.IsThisSanityEnabled(team, SanityType.EggPawnSanityGroup, taskName, oneSet: true)!;
-            bool bothActsEnabled = team is not Team.SuperHardMode && (bool)Mod.LevelSelectManager.IsThisSanityEnabled(team, SanityType.EggPawnSanityGroup, taskName, bothActs: true)!;
+            LocationHelper.SendStageObjSanityGroupLocation(eggPawn, act, taskName);
             
-            if (oneSetEnabled)
-            {
-                var startOffset = SonicHeroesDefinitions.EggPawnSanityGroupNoActStartIdOffset;
-                var idToSend = startOffset + EggPawnsData.AllEggPawns.IndexOf(eggPawn) - eggPawn.IdOffsetGroup;
-                LoggingHandler.LogMessage($"Sending Location ID: 0x{idToSend:X} ", taskName, LogLevel.Debug);
-                Mod.ArchipelagoHandler.CheckLocation(id: idToSend);
-            }
-
-            if (bothActsEnabled)
-            {
-                var startOffset = act is Act.Act1 ? SonicHeroesDefinitions.EggPawnSanityGroupActAStartIdOffset : SonicHeroesDefinitions.EggPawnSanityGroupActBStartIdOffset;
-                var idToSend = startOffset + EggPawnsData.AllEggPawns.IndexOf(eggPawn) - eggPawn.IdOffsetGroup;
-                LoggingHandler.LogMessage($"Sending Location ID: 0x{idToSend:X} ", taskName, LogLevel.Debug);
-                Mod.ArchipelagoHandler.CheckLocation(id: idToSend);
-            }
+            // bool oneSetEnabled = (bool)Mod.LevelSelectManager.IsThisSanityEnabled(team, SanityType.EggPawnSanityGroup, taskName, oneSet: true)!;
+            // bool bothActsEnabled = team is not Team.SuperHardMode && (bool)Mod.LevelSelectManager.IsThisSanityEnabled(team, SanityType.EggPawnSanityGroup, taskName, bothActs: true)!;
+            
+            // if (oneSetEnabled)
+            // {
+            //     var startOffset = SonicHeroesDefinitions.EggPawnSanityGroupNoActStartIdOffset;
+            //     var idToSend = startOffset + EggPawnsData.AllEggPawns.IndexOf(eggPawn) - eggPawn.IdOffsetGroup;
+            //     LoggingHandler.LogMessage($"Sending Location ID: 0x{idToSend:X} ", taskName, LogLevel.Debug);
+            //     Mod.ArchipelagoHandler.CheckLocation(id: idToSend);
+            // }
+            //
+            // if (bothActsEnabled)
+            // {
+            //     var startOffset = act is Act.Act1 ? SonicHeroesDefinitions.EggPawnSanityGroupActAStartIdOffset : SonicHeroesDefinitions.EggPawnSanityGroupActBStartIdOffset;
+            //     var idToSend = startOffset + EggPawnsData.AllEggPawns.IndexOf(eggPawn) - eggPawn.IdOffsetGroup;
+            //     LoggingHandler.LogMessage($"Sending Location ID: 0x{idToSend:X} ", taskName, LogLevel.Debug);
+            //     Mod.ArchipelagoHandler.CheckLocation(id: idToSend);
+            // }
 
         }
         catch (Exception e)
@@ -132,24 +135,26 @@ public static class EggPawnsSanityHandler
                 return;
             }
             
-            bool oneSetEnabled = (bool)Mod.LevelSelectManager.IsThisSanityEnabled(team, SanityType.EggPawnSanityFull, taskName, oneSet: true)!;
-            bool bothActsEnabled = team is not Team.SuperHardMode && (bool)Mod.LevelSelectManager.IsThisSanityEnabled(team, SanityType.EggPawnSanityFull, taskName, bothActs: true)!;
+            LocationHelper.SendStageObjSanityFullLocation(eggPawn, act, taskName);
             
-            if (oneSetEnabled)
-            {
-                var startOffset = SonicHeroesDefinitions.EggPawnSanityFullNoActStartIdOffset;
-                var idToSend = startOffset + EggPawnsData.AllEggPawns.IndexOf(eggPawn) - eggPawn.IdOffsetFull;
-                LoggingHandler.LogMessage($"Sending Location ID: 0x{idToSend:X} ", taskName, LogLevel.Debug);
-                Mod.ArchipelagoHandler.CheckLocation(id: idToSend);
-            }
-
-            if (bothActsEnabled)
-            {
-                var startOffset = act is Act.Act1 ? SonicHeroesDefinitions.EggPawnSanityFullActAStartIdOffset : SonicHeroesDefinitions.EggPawnSanityFullActBStartIdOffset;
-                var idToSend = startOffset + EggPawnsData.AllEggPawns.IndexOf(eggPawn) - eggPawn.IdOffsetFull;
-                LoggingHandler.LogMessage($"Sending Location ID: 0x{idToSend:X} ", taskName, LogLevel.Debug);
-                Mod.ArchipelagoHandler.CheckLocation(id: idToSend);
-            }
+            // bool oneSetEnabled = (bool)Mod.LevelSelectManager.IsThisSanityEnabled(team, SanityType.EggPawnSanityFull, taskName, oneSet: true)!;
+            // bool bothActsEnabled = team is not Team.SuperHardMode && (bool)Mod.LevelSelectManager.IsThisSanityEnabled(team, SanityType.EggPawnSanityFull, taskName, bothActs: true)!;
+            
+            // if (oneSetEnabled)
+            // {
+            //     var startOffset = SonicHeroesDefinitions.EggPawnSanityFullNoActStartIdOffset;
+            //     var idToSend = startOffset + EggPawnsData.AllEggPawns.IndexOf(eggPawn) - eggPawn.IdOffsetFull;
+            //     LoggingHandler.LogMessage($"Sending Location ID: 0x{idToSend:X} ", taskName, LogLevel.Debug);
+            //     Mod.ArchipelagoHandler.CheckLocation(id: idToSend);
+            // }
+            //
+            // if (bothActsEnabled)
+            // {
+            //     var startOffset = act is Act.Act1 ? SonicHeroesDefinitions.EggPawnSanityFullActAStartIdOffset : SonicHeroesDefinitions.EggPawnSanityFullActBStartIdOffset;
+            //     var idToSend = startOffset + EggPawnsData.AllEggPawns.IndexOf(eggPawn) - eggPawn.IdOffsetFull;
+            //     LoggingHandler.LogMessage($"Sending Location ID: 0x{idToSend:X} ", taskName, LogLevel.Debug);
+            //     Mod.ArchipelagoHandler.CheckLocation(id: idToSend);
+            // }
         }
         catch (Exception e)
         {
