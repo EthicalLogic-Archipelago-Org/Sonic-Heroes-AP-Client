@@ -70,7 +70,7 @@ public static class HintRingSanityHandler
             HintRingsData.HintRingData hintRing = hintRingData;
             if (hintRing.IdOffsetGroup == StageObjData.IdOffsetInvalid)
             {
-                hintRing = HintRingsData.AllHintRings.First(x => x.Group == hintRing.Group * -1);
+                hintRing = HintRingsData.AllHintRings.First(x => x.Team == hintRingData.Team && x.LevelId == hintRingData.LevelId && x.Group == hintRingData.Group * -1);
             }
             
             LocationHelper.SendStageObjSanityGroupLocation(hintRing, act, taskName);

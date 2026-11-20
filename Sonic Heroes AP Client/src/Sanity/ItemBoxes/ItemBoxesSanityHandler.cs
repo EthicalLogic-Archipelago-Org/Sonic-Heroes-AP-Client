@@ -92,7 +92,7 @@ public static class ItemBoxesSanityHandler
 
             if (itemBox.IdOffsetGroup == StageObjData.IdOffsetInvalid)
             {
-                itemBox = ItemBoxesData.AllItemBoxes.First(x => x.Group == itemBox.Group * -1);
+                itemBox = ItemBoxesData.AllItemBoxes.First(x => x.Team == itemBoxData.Team && x.LevelId == itemBoxData.LevelId && x.Group == itemBoxData.Group * -1);
             }
             
             LocationHelper.SendStageObjSanityGroupLocation(itemBox, act, taskName);

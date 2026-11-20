@@ -91,7 +91,7 @@ public static class EggPawnsSanityHandler
 
             if (eggPawn.IdOffsetGroup == StageObjData.IdOffsetInvalid)
             {
-                eggPawn = EggPawnsData.AllEggPawns.First(x => x.Group == eggPawn.Group * -1);
+                eggPawn = EggPawnsData.AllEggPawns.First(x => x.Team == eggPawnData.Team && x.LevelId == eggPawnData.LevelId && x.Group == eggPawnData.Group * -1);
             }
             
             LocationHelper.SendStageObjSanityGroupLocation(eggPawn, act, taskName);

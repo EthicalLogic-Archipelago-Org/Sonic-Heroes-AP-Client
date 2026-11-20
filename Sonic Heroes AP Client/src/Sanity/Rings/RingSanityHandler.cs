@@ -102,7 +102,7 @@ public static class RingSanityHandler
 
             if (ring.IdOffsetGroup == StageObjData.IdOffsetInvalid)
             {
-                ring = RingsData.AllRings.First(x => x.Group == ring.Group * -1);
+                ring = RingsData.AllRings.First(x => x.Team == ringData.Team && x.LevelId == ringData.LevelId && x.Group == ringData.Group * -1);
             }
             
             LocationHelper.SendStageObjSanityGroupLocation(ring, act, taskName);
@@ -139,14 +139,16 @@ public static class RingSanityHandler
         {
             RingsData.RingData ring = ringData;
 
-            if (ring.IdOffsetFull == StageObjData.IdOffsetInvalid)
+            if (ring.IdOffsetFull < 0)
             {
-                //this should never happen
-                LoggingHandler.LogMessage($"Ring Full matched on invalid Ring", taskName, LogLevel.Error);
-                return;
+                LoggingHandler.LogMessage($"RingIndex before Sum: {ringIndex}", taskName, LogLevel.SuperDebug);
+                ringIndex += RingsData.AllRings.Where(x => x.Team == ringData.Team && x.LevelId == ringData.LevelId && x.Group == ringData.Group).TakeWhile(tempRing => tempRing != ringData).Sum(tempRing => tempRing.NumRings);
+                LoggingHandler.LogMessage($"RingIndex after Sum: {ringIndex}", taskName, LogLevel.SuperDebug);
+                
+                ring = RingsData.AllRings.First(x => x.Team == ringData.Team && x.LevelId == ringData.LevelId && x.Group == ring.Group * -1);
             }
             
-            LocationHelper.SendStageObjSanityFullLocation(ring, act, taskName);
+            LocationHelper.SendStageObjSanityFullLocation(ring, act, taskName, ringIndex + 1);
             
             // bool oneSetEnabled = (bool)Mod.LevelSelectManager.IsThisSanityEnabled(team, SanityType.RingSanityFull, taskName, oneSet: true)!;
             // bool bothActsEnabled = team is not Team.SuperHardMode && (bool)Mod.LevelSelectManager.IsThisSanityEnabled(team, SanityType.RingSanityFull, taskName, bothActs: true)!;

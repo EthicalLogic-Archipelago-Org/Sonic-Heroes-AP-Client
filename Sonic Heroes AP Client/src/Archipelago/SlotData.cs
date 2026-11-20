@@ -134,9 +134,9 @@ public class SlotData
                 }
                 Mod.LevelSelectManager.GoalUnlockConditions |= (GoalUnlockConditions)res;
             }
-            DarksanityCheckSize = (int)(long)slotDict["DarkSanity"];
-            RosesanityCheckSize = (int)(long)slotDict["RoseSanity"];
-            ChaotixsanityRingCheckSize = (int)(long)slotDict["ChaotixSanity"];
+            DarksanityCheckSize = (int)(long)slotDict["DarkSanity"] > 0 ? 1 : 0;
+            RosesanityCheckSize = (int)(long)slotDict["RoseSanity"] > 0 ? 1 : 0;
+            ChaotixsanityRingCheckSize = (int)(long)slotDict["ChaotixSanity"] > 0 ? 1 : 0;
             //RemoveCasinoParkVIPTableLaserGate =  (long)slotDict["RemoveCasinoParkVIPTableLaserGate"] == 1;
             RemoveCasinoParkVIPTableLaserGate = true;
             AbilityCharacterUnlockType = (AbilityCharacterUnlockType)(int)(long)slotDict["AbilityUnlocks"];

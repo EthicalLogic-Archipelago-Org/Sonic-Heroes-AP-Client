@@ -90,7 +90,7 @@ public static class ItemBalloonsSanityHandler
 
             if (itemBalloon.IdOffsetGroup == StageObjData.IdOffsetInvalid)
             {
-                itemBalloon = ItemBalloonsData.AllItemBalloons.First(x => x.Group == itemBalloon.Group * -1);
+                itemBalloon = ItemBalloonsData.AllItemBalloons.First(x => x.Team == itemBalloonData.Team && x.LevelId == itemBalloonData.LevelId && x.Group == itemBalloonData.Group * -1);
             }
             
             LocationHelper.SendStageObjSanityGroupLocation(itemBalloon, act, taskName);
@@ -132,7 +132,7 @@ public static class ItemBalloonsSanityHandler
                 return;
             }
             
-            LocationHelper.SendStageObjSanityGroupLocation(itemBalloon, act, taskName);
+            LocationHelper.SendStageObjSanityFullLocation(itemBalloon, act, taskName);
             
             // bool oneSetEnabled = (bool)Mod.LevelSelectManager.IsThisSanityEnabled(team, SanityType.ItemBalloonSanityFull, taskName, oneSet: true)!;
             // bool bothActsEnabled = team is not Team.SuperHardMode && (bool)Mod.LevelSelectManager.IsThisSanityEnabled(team, SanityType.ItemBalloonSanityFull, taskName, bothActs: true)!;

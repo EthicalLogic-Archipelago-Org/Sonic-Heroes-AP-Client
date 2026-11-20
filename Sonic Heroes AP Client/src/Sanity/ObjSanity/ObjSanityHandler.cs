@@ -401,7 +401,11 @@ public static class ObjSanityHandler
             for (var i = previousCount + 1; i <= newCount; i++)
                 if (i % checkSize == 0)
                     //Mod.ArchipelagoHandler.CheckLocation(0x14F + levelOffset + i);
-                    LocationHelper.SendChaotixObjSanityLocation((LevelId)levelId, (Act)act, i, taskName);
+                    if (storyId is Team.Dark)
+                        LocationHelper.SendDarkObjSanityLocation((LevelId)levelId, i, taskName);
+                    else 
+                        LocationHelper.SendChaotixObjSanityLocation((LevelId)levelId, (Act)act, i, taskName);
+                    
         }
         catch (Exception e)
         {

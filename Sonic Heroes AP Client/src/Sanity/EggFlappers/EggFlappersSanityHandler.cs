@@ -92,7 +92,7 @@ public static class EggFlappersSanityHandler
 
             if (eggFlapper.IdOffsetGroup == StageObjData.IdOffsetInvalid)
             {
-                eggFlapper = EggFlappersData.AllEggFlappers.First(x => x.Group == eggFlapper.Group * -1);
+                eggFlapper = EggFlappersData.AllEggFlappers.First(x => x.Team == eggFlapperData.Team && x.LevelId == eggFlapperData.LevelId && x.Group == eggFlapperData.Group * -1);
             }
             
             LocationHelper.SendStageObjSanityGroupLocation(eggFlapper, act, taskName);
