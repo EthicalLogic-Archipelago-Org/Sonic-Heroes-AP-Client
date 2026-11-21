@@ -32,7 +32,10 @@ public static class TripleSpringsData
 
     public static List<TripleSpringData> RoseTripleSprings = new()
     {
-        
+        new TripleSpringData(Team: Team.Rose, LevelId: LevelId.SeasideHill, Region: "First Cliff Before Big Ruin Beach At Checkpoint 1", LocName: "First Cliff Before Big Ruin Beach At Checkpoint 1 Triple Spring", Power: 3.6999998f, NoControlTime: 20, ItemReward: ItemReward.Rings10, Scale: 0f, Group: 0, IdOffsetGroup: 0, IdOffsetFull: 0, LinkID: 0, SpawnCoords: new Vector3(x: 83.1179f, y: 185f, z: -16175.29f)),
+        new TripleSpringData(Team: Team.Rose, LevelId: LevelId.SeasideHill, Region: "Path After Blockage Before Big Ruin Beach After Checkpoint 1", LocName: "Path After Blockage Before Big Ruin Beach After Checkpoint 1 Triple Spring", Power: 2f, NoControlTime: 20, ItemReward: ItemReward.Rings10, Scale: -0.2f, Group: 0, IdOffsetGroup: 0, IdOffsetFull: 0, LinkID: 0, SpawnCoords: new Vector3(x: 1210.293f, y: 535f, z: -16647.35f)),
+        new TripleSpringData(Team: Team.Rose, LevelId: LevelId.SeasideHill, Region: "Big Ruin Beach Island 1 After Checkpoint 1", LocName: "Big Ruin Beach Island 1 After Checkpoint 1 Triple Spring", Power: 1154.348f, NoControlTime: 20, ItemReward: ItemReward.Rings10, Scale: 5.0232f, Group: 0, IdOffsetGroup: 0, IdOffsetFull: 0, LinkID: 0, SpawnCoords: new Vector3(x: 1154.348f, y: 5.0232f, z: -17808.47f)),
+        new TripleSpringData(Team: Team.Rose, LevelId: LevelId.SeasideHill, Region: "Higher Big Special Ruin Before Volcano After Checkpoint 2", LocName: "Higher Big Special Ruin Before Volcano After Checkpoint 2 Triple Spring", Power: 899.9999f, NoControlTime: 0, ItemReward: ItemReward.Rings5, Scale: 199.99f, Group: 0, IdOffsetGroup: 0, IdOffsetFull: 0, LinkID: 0, SpawnCoords: new Vector3(x: 899.9999f, y: 199.99f, z: -23668.75f)),
     };
 
     public static List<TripleSpringData> ChaotixTripleSprings = new()
