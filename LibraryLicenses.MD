@@ -23,3 +23,4 @@ In The LibraryLicenses folder are the license files for the following dependenci
     SharpDXLicense
 
 ### Heroes.Controller.Hook.Interfaces
+    HeroesControllerHookLicense
